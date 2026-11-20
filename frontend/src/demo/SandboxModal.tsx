@@ -521,10 +521,10 @@ function BondsSandboxView() {
 export function SandboxPage({ topic, onBack }: SandboxPageProps) {
   return (
     <div
-      className={`flex min-h-svh flex-col justify-between text-foreground ${topic.bandClassName}`}
+      className={`flex flex-1 flex-col justify-between ${topic.bandClassName}`}
       style={{ backgroundImage: topic.ambientGlow }}
     >
-      <header className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur-sm">
+      <header className="sticky top-[var(--app-header-height)] z-20 border-b border-border bg-card/90 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-md items-center justify-between gap-2 px-4 py-3">
           <Button
             type="button"
@@ -547,7 +547,7 @@ export function SandboxPage({ topic, onBack }: SandboxPageProps) {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-6">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-6">
         <div>
           <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
             {topic.sandboxTitle}
@@ -560,7 +560,7 @@ export function SandboxPage({ topic, onBack }: SandboxPageProps) {
         {topic.sandboxType === 'etf' && <EtfSandboxView />}
         {topic.sandboxType === 'ike' && <IkeSandboxView />}
         {topic.sandboxType === 'bonds' && <BondsSandboxView />}
-      </main>
+      </div>
 
       <footer className="sticky bottom-0 z-20 border-t border-border bg-card/95 backdrop-blur-sm">
         <div className="mx-auto w-full max-w-md px-4 py-3">

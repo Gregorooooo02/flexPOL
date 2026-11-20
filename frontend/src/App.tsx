@@ -1,13 +1,17 @@
-import { CoachPanelPreview } from './demo/CoachPanelPreview';
-import { LearningPathDemo } from './demo/LearningPathDemo';
+import { Navigate, Route, Routes } from 'react-router';
+import { AppLayout } from './layouts/AppLayout';
+import { DemoPage } from './pages/DemoPage';
+import { HomePage } from './pages/HomePage';
 
 export function App() {
   return (
-    <>
-      <LearningPathDemo />
-      {/* Temporary: lets us try the AI coach until it is placed in the lesson screens */}
-      <CoachPanelPreview />
-    </>
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route index element={<HomePage />} />
+        <Route path="demo" element={<DemoPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
   );
 }
 
