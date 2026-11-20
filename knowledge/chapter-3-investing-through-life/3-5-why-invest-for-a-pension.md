@@ -61,9 +61,9 @@ the smaller the monthly amount you'll need.
 ## Control questions
 
 ### Q1. What is the "retirement gap"?
-- A) The time between leaving school and starting work
-- B) The difference between the income you'll need in retirement and the income you'll receive ✅
-- C) The fee for a pension account
+- A) The fee for a pension account
+- B) The time between leaving school and starting work
+- C) The difference between the income you'll need in retirement and the income you'll receive ✅
 - D) The age difference between retirees
 
 **Explanation:** it's the shortfall your own savings must cover.
@@ -71,8 +71,8 @@ the smaller the monthly amount you'll need.
 ### Q2. Why might public pensions provide less in the future?
 - A) Because people live longer and there are fewer workers per retiree ✅
 - B) Because pensions are being abolished everywhere
-- C) Because inflation is gone
-- D) They will always provide more.
+- C) They will always provide more.
+- D) Because inflation is gone
 
 **Explanation:** demographic change puts pressure on public pension systems.
 
@@ -91,7 +91,3 @@ the smaller the monthly amount you'll need.
 - D) Investing has no fees.
 
 **Explanation:** long horizons are exactly where investment growth helps most.
-
-### Q5 (reflection). Why does starting early make the monthly amount needed for a pension smaller?
-
-**What a good answer mentions:** more years of contributions plus more time for compounding means each month's contribution does more work.

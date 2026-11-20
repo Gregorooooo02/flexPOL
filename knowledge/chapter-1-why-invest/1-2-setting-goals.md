@@ -63,29 +63,25 @@ Most people have several goals at once. A sensible order is:
 **Explanation:** only C names what the money is for, how much and when.
 
 ### Q2. Sort the goals: a holiday in 8 months, a home deposit in 6 years, retirement in 30 years.
-- A) Long, medium, short
-- B) Short, medium, long ✅
-- C) Short, short, long
-- D) Medium, long, long
+- A) Short, medium, long ✅
+- B) Medium, long, long
+- C) Long, medium, short
+- D) Short, short, long
 
 **Explanation:** under 2 years is short-term, 2–10 years is medium-term, over 10 years is long-term.
 
 ### Q3. Why should the goal come before choosing an instrument?
-- A) Because instruments change every year
-- B) Because the goal's timing and amount decide how much risk the money can take ✅
+- A) It doesn't matter which comes first.
+- B) Because instruments change every year
 - C) Because goals are required by law
-- D) It doesn't matter which comes first.
+- D) Because the goal's timing and amount decide how much risk the money can take ✅
 
 **Explanation:** money needed soon can't wait out a drop in value; money needed in 30 years can.
 
 ### Q4. For a short-term goal, what matters most?
-- A) The highest possible return
+- A) Owning one exciting stock
 - B) Safety and being able to access the money ✅
-- C) Owning one exciting stock
+- C) The highest possible return
 - D) Locking the money away for a long time
 
 **Explanation:** with little time, there is no room to recover from losses or to wait for a locked term to end.
-
-### Q5 (reflection). Write one goal of your own (fictional is fine) using the "what, how much, when" format.
-
-**What a good answer contains:** a purpose, an amount and a date or timeframe, for example "8,000 coins for a motorbike in 2 years."

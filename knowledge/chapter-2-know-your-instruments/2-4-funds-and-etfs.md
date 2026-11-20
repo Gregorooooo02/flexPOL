@@ -55,45 +55,41 @@ An **index** is a list of companies that represents a market or a part of it, fo
 ## Control questions
 
 ### Q1. What does a fund do?
-- A) Lends your money to a single company
-- B) Pools money from many investors and spreads it across many investments ✅
-- C) Guarantees a fixed return
-- D) Keeps your money in cash
+- A) Keeps your money in cash
+- B) Lends your money to a single company
+- C) Pools money from many investors and spreads it across many investments ✅
+- D) Guarantees a fixed return
 
 **Explanation:** pooling lets small investors own a slice of many assets.
 
 ### Q2. What does an index fund do?
-- A) A manager picks the best stocks.
-- B) It copies a list of companies that represents a market. ✅
-- C) It invests only in cash.
-- D) It invests in a single company.
+- A) It copies a list of companies that represents a market. ✅
+- B) It invests only in cash.
+- C) It invests in a single company.
+- D) A manager picks the best stocks.
 
 **Explanation:** index funds follow an index instead of trying to beat it.
 
 ### Q3. Why are index funds usually cheaper than actively managed funds?
 - A) They are smaller.
-- B) They don't need a team researching and picking investments. ✅
-- C) They are subsidized by the government.
-- D) They aren't; they're always more expensive.
+- B) They are subsidized by the government.
+- C) They aren't; they're always more expensive.
+- D) They don't need a team researching and picking investments. ✅
 
 **Explanation:** following a list costs much less than active research and trading.
 
 ### Q4. The whole market falls 15%. What happens to a broad index fund?
-- A) It's protected and stays flat.
+- A) It rises 15%.
 - B) It falls roughly in line with the market. ✅
-- C) It rises 15%.
+- C) It's protected and stays flat.
 - D) It closes.
 
 **Explanation:** an index fund mirrors its market, in both directions.
 
 ### Q5. Which gives the most diversification for a small amount of money?
-- A) Buying one stock
-- B) Buying a broad global index fund ✅
-- C) Buying two stocks in the same industry
-- D) A single bond from one company
+- A) Buying two stocks in the same industry
+- B) Buying one stock
+- C) A single bond from one company
+- D) Buying a broad global index fund ✅
 
 **Explanation:** one purchase gives exposure to hundreds or thousands of companies.
-
-### Q6 (reflection). Why might a beginner choose an index fund instead of picking individual stocks?
-
-**What a good answer mentions:** diversification, lower costs, less effort, and that beating the market consistently is hard even for professionals.

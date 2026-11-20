@@ -60,26 +60,26 @@ Most plans combine several instruments. That mix is called an **allocation**.
 ## Control questions
 
 ### Q1. Which instrument has the highest liquidity?
-- A) A 3-year term deposit
-- B) Cash in a savings account ✅
-- C) A 10-year bond
-- D) A pension account locked until 65
+- A) A 10-year bond
+- B) A pension account locked until 65
+- C) Cash in a savings account ✅
+- D) A 3-year term deposit
 
 **Explanation:** cash is available immediately, at no cost.
 
 ### Q2. Which statement is true?
-- A) Index funds are always the best choice.
+- A) The right instrument depends on the goal, horizon and risk capacity. ✅
 - B) Cash is always the safest choice for every goal.
-- C) The right instrument depends on the goal, horizon and risk capacity. ✅
+- C) Index funds are always the best choice.
 - D) Higher return always means a better instrument.
 
 **Explanation:** each tool fits some jobs better than others.
 
 ### Q3. Match the goal to the instrument: an emergency fund, retirement in 30 years, a home deposit needed in exactly 2 years.
 - A) Index fund, cash, single stock
-- B) Cash, broad index fund, 2-year term deposit ✅
+- B) Speculative asset, cash, index fund
 - C) Single stock, term deposit, cash
-- D) Speculative asset, cash, index fund
+- D) Cash, broad index fund, 2-year term deposit ✅
 
 **Explanation:** each goal's horizon and liquidity needs point to a different tool.
 
@@ -92,13 +92,9 @@ Most plans combine several instruments. That mix is called an **allocation**.
 **Explanation:** an allocation is the mix of instruments in a plan.
 
 ### Q5. Which instrument fits a goal in 1 year the worst?
-- A) Cash
-- B) A 1-year term deposit
-- C) A single volatile stock ✅
-- D) A short-term savings account
+- A) A 1-year term deposit
+- B) Cash
+- C) A short-term savings account
+- D) A single volatile stock ✅
 
 **Explanation:** a big drop right before the deadline would leave no time to recover.
-
-### Q6 (reflection). Build an allocation for this fictional goal: 10,000 coins for a home deposit in 5 years, with an emergency fund already in place. Explain each part.
-
-**What a good answer mentions:** a mostly steady mix (for example deposits or bonds plus some cash) with a moderate basket share, and the reasoning that a medium horizon allows some growth but can't absorb a large crash.

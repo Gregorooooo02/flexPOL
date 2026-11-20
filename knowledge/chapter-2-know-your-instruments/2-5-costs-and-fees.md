@@ -53,10 +53,10 @@ A 1% fee cost about **14,200 coins**, roughly a quarter of the final value. A 2%
 ## Control questions
 
 ### Q1. Why do small yearly fees have a big effect over time?
-- A) They're charged once, at the start.
-- B) They're charged every year on the whole balance and compound. ✅
-- C) They only apply to large investors.
-- D) They don't; small fees never matter.
+- A) They don't; small fees never matter.
+- B) They're charged once, at the start.
+- C) They're charged every year on the whole balance and compound. ✅
+- D) They only apply to large investors.
 
 **Explanation:** a fee taken every year reduces the base that compounding works on.
 
@@ -69,21 +69,17 @@ A 1% fee cost about **14,200 coins**, roughly a quarter of the final value. A 2%
 **Explanation:** if they hold the same investments, the cheaper one keeps more of the same return.
 
 ### Q3. What is a management fee?
-- A) A one-time fee for opening an account
-- B) A yearly percentage charged for running a fund ✅
-- C) A tax on dividends
-- D) A penalty for selling early
+- A) A penalty for selling early
+- B) A tax on dividends
+- C) A one-time fee for opening an account
+- D) A yearly percentage charged for running a fund ✅
 
 **Explanation:** it's usually shown as the fund's expense ratio.
 
 ### Q4. Which habit increases costs the most?
 - A) Buying an index fund and holding it for years
 - B) Buying and selling many times a month ✅
-- C) Comparing fees before investing
-- D) Investing a fixed amount every month in one fund
+- C) Investing a fixed amount every month in one fund
+- D) Comparing fees before investing
 
 **Explanation:** each trade can carry transaction fees and spreads.
-
-### Q5 (reflection). A fund charges 2.5% a year and promises to beat the market. What questions would you ask before investing?
-
-**What a good answer mentions:** its track record after fees compared with a cheap index fund, what the extra cost buys, and whether the promise is realistic.

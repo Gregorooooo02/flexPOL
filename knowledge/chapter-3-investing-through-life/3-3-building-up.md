@@ -55,36 +55,32 @@ A common mistake is stopping retirement contributions "for a few years" to fund 
 
 ### Q1. Why should different goals have different allocations?
 - A) To make the plan look complicated
-- B) Because each goal has its own horizon and risk capacity ✅
-- C) Because the law requires it
+- B) Because the law requires it
+- C) Because each goal has its own horizon and risk capacity ✅
 - D) They shouldn't; one allocation fits everything.
 
 **Explanation:** money needed in 3 years and money needed in 27 years face different risks.
 
 ### Q2. Sam needs money for a renovation in 3 years. Which allocation fits best?
-- A) 100% in one volatile stock
-- B) Mostly deposits and bonds, with little or no stocks ✅
+- A) Mostly deposits and bonds, with little or no stocks ✅
+- B) 100% in one volatile stock
 - C) 100% in a 10-year locked instrument
 - D) Speculative assets
 
 **Explanation:** a short-to-medium horizon needs stability and access on time.
 
 ### Q3. What is "lifestyle inflation"?
-- A) Rising prices in shops
-- B) Spending more every time income rises, so savings don't grow ✅
-- C) A type of investment fund
-- D) The cost of insurance
+- A) The cost of insurance
+- B) A type of investment fund
+- C) Rising prices in shops
+- D) Spending more every time income rises, so savings don't grow ✅
 
 **Explanation:** if spending grows as fast as income, there's nothing extra to invest.
 
 ### Q4. Money is tight because of a new child. What's usually better for retirement savings?
 - A) Stop all contributions for 10 years.
 - B) Lower contributions for a while, but keep them going. ✅
-- C) Sell all investments.
-- D) Move everything into a speculative asset to catch up.
+- C) Move everything into a speculative asset to catch up.
+- D) Sell all investments.
 
 **Explanation:** keeping even a small amount invested preserves compounding time and the habit.
-
-### Q5 (reflection). Create three fictional goals for someone aged 40 and give each a horizon and a rough allocation.
-
-**What a good answer mentions:** three different horizons, with safer allocations for near goals and growth-oriented ones for far goals.

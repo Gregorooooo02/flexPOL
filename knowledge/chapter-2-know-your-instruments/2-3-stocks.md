@@ -54,45 +54,41 @@ Even professional investors often fail to pick the "winners" consistently.
 ## Control questions
 
 ### Q1. What do you own when you buy a stock?
-- A) A loan to the company
-- B) A small piece of ownership in the company ✅
-- C) A guarantee of fixed interest
-- D) A savings account at the company
+- A) A savings account at the company
+- B) A loan to the company
+- C) A small piece of ownership in the company ✅
+- D) A guarantee of fixed interest
 
 **Explanation:** shareholders are part-owners. Bond holders are lenders.
 
 ### Q2. What is a dividend?
-- A) A fee for buying stocks
-- B) Part of a company's profit paid to shareholders ✅
-- C) A type of bond
-- D) A tax on investments
+- A) Part of a company's profit paid to shareholders ✅
+- B) A fee for buying stocks
+- C) A tax on investments
+- D) A type of bond
 
 **Explanation:** dividends share profits with owners, though not all companies pay them.
 
 ### Q3. Why is a single stock riskier than a market basket?
 - A) It's not; they're the same.
-- B) The outcome depends entirely on one company. ✅
-- C) Single stocks can't be sold.
-- D) Single stocks have higher fees by law.
+- B) Single stocks can't be sold.
+- C) Single stocks have higher fees by law.
+- D) The outcome depends entirely on one company. ✅
 
 **Explanation:** with one company, any bad news hits your whole investment.
 
 ### Q4. A company you own announces a big product failure. What is the most likely short-term effect?
-- A) The share price rises.
+- A) The share price is guaranteed to stay the same.
 - B) The share price falls. ✅
-- C) The share price is guaranteed to stay the same.
+- C) The share price rises.
 - D) The company must return your money.
 
 **Explanation:** bad news usually lowers expectations of future profits, and the price drops.
 
 ### Q5. For which goal are stocks the most suitable?
-- A) A holiday in 6 months
-- B) An emergency fund
-- C) Retirement in 30 years, as part of a diversified portfolio ✅
-- D) Rent due next month
+- A) An emergency fund
+- B) Rent due next month
+- C) A holiday in 6 months
+- D) Retirement in 30 years, as part of a diversified portfolio ✅
 
 **Explanation:** a long horizon gives time to recover from the volatility.
-
-### Q6 (reflection). Would you rather own one company you really like, or a small piece of 500 companies? Explain your choice in terms of risk.
-
-**What a good answer mentions:** the trade-off between a possibly higher return and concentration risk, and how many companies reduce the impact of any single failure.

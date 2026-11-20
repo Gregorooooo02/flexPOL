@@ -54,18 +54,18 @@ Higher possible growth comes with **risk**. Investments can fall in value, somet
 ## Control questions
 
 ### Q1. You keep 1,000 coins in cash for 10 years while prices rise 3% a year. What happens?
-- A) You have fewer coins.
-- B) You have the same number of coins, but they buy less. ✅
-- C) Your coins buy more.
-- D) Nothing changes.
+- A) Nothing changes.
+- B) Your coins buy more.
+- C) You have the same number of coins, but they buy less. ✅
+- D) You have fewer coins.
 
 **Explanation:** the number of coins stays the same, but inflation reduces their purchasing power.
 
 ### Q2. What is compounding?
-- A) Paying fees on your investments
-- B) Earning returns on your earlier returns ✅
-- C) Splitting money between several investments
-- D) Moving money from savings into investments
+- A) Earning returns on your earlier returns ✅
+- B) Moving money from savings into investments
+- C) Paying fees on your investments
+- D) Splitting money between several investments
 
 **Explanation:** with compounding, growth builds on earlier growth, so the effect gets stronger over time.
 
@@ -79,12 +79,8 @@ Higher possible growth comes with **risk**. Investments can fall in value, somet
 
 ### Q4. Which statement best describes the difference between saving and investing?
 - A) Saving is always better than investing.
-- B) Investing is always better than saving.
-- C) Saving keeps money safe and accessible; investing aims for growth but goes up and down. ✅
-- D) There is no difference.
+- B) Saving keeps money safe and accessible; investing aims for growth but goes up and down. ✅
+- C) There is no difference.
+- D) Investing is always better than saving.
 
 **Explanation:** they do different jobs. Most people need both.
-
-### Q5 (reflection). In your own words: why does starting to invest early matter more than investing a large amount later?
-
-**What a good answer mentions:** compounding needs time. Money invested earlier has more years for its growth to build on itself.

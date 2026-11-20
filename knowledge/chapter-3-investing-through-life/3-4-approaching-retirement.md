@@ -54,45 +54,41 @@ The same percentage drop can have a much bigger effect late in the journey.
 ## Control questions
 
 ### Q1. What is a glide path?
-- A) A sudden switch from stocks to cash at retirement
-- B) A gradual shift from growth-oriented to steadier investments as a target date approaches ✅
-- C) A type of pension
-- D) A fee schedule
+- A) A fee schedule
+- B) A sudden switch from stocks to cash at retirement
+- C) A gradual shift from growth-oriented to steadier investments as a target date approaches ✅
+- D) A type of pension
 
 **Explanation:** it lowers risk step by step over many years.
 
 ### Q2. A 30% crash hits at age 30 and again at age 64. When does it usually hurt the plan more?
-- A) At 30
-- B) At 64 ✅
-- C) Equally at both ages
-- D) It never matters.
+- A) At 64 ✅
+- B) At 30
+- C) It never matters.
+- D) Equally at both ages
 
 **Explanation:** at 64 the savings are larger, withdrawals are near, and there's little time to recover.
 
 ### Q3. Why does part of the money stay invested in the market basket even at 65?
 - A) By mistake
-- B) Retirement can last decades, and the money still needs to grow and beat inflation. ✅
-- C) It can't be moved.
-- D) Bonds are not allowed after 65.
+- B) It can't be moved.
+- C) Bonds are not allowed after 65.
+- D) Retirement can last decades, and the money still needs to grow and beat inflation. ✅
 
 **Explanation:** a retirement of 20–30 years is still a long horizon for part of the money.
 
 ### Q4. How does a cash buffer of 1–3 years of spending help in retirement?
-- A) It earns the highest return.
+- A) It replaces a pension.
 - B) It lets you avoid selling investments during a market drop. ✅
-- C) It removes all risk.
-- D) It replaces a pension.
+- C) It earns the highest return.
+- D) It removes all risk.
 
 **Explanation:** spending comes from the buffer while investments recover.
 
 ### Q5. What is sequence risk?
-- A) The risk of choosing funds in the wrong order
-- B) The risk that poor returns happen right before or early in retirement ✅
-- C) The risk of paying fees in sequence
-- D) The risk of inflation over many years
+- A) The risk of paying fees in sequence
+- B) The risk of choosing funds in the wrong order
+- C) The risk of inflation over many years
+- D) The risk that poor returns happen right before or early in retirement ✅
 
 **Explanation:** the timing of losses, not only their size, shapes the outcome.
-
-### Q6 (reflection). Why is it a bad idea to move everything to cash on the first day of retirement?
-
-**What a good answer mentions:** inflation slowly eats cash over a long retirement, and part of the money still has a long horizon.

@@ -56,9 +56,9 @@ They don't always match. Someone may love excitement (high tolerance) while need
 
 ### Q1. What does high volatility mean?
 - A) The investment always loses money.
-- B) The price moves up and down a lot. ✅
-- C) The investment can't be sold.
-- D) The investment pays a fixed rate.
+- B) The investment pays a fixed rate.
+- C) The price moves up and down a lot. ✅
+- D) The investment can't be sold.
 
 **Explanation:** volatility is about the size and frequency of price moves, in both directions.
 
@@ -71,10 +71,10 @@ They don't always match. Someone may love excitement (high tolerance) while need
 **Explanation:** from 500 back to 1,000 is a 100% gain.
 
 ### Q3. Someone offers an investment with "high returns and no risk". What should you think?
-- A) Great deal, invest quickly.
-- B) Be very skeptical; higher returns always come with higher risk. ✅
-- C) It's normal for funds.
-- D) It's only risky for beginners.
+- A) It's normal for funds.
+- B) Great deal, invest quickly.
+- C) It's only risky for beginners.
+- D) Be very skeptical; higher returns always come with higher risk. ✅
 
 **Explanation:** risk and return go together. A "no-risk, high-return" promise is a warning sign.
 
@@ -87,13 +87,9 @@ They don't always match. Someone may love excitement (high tolerance) while need
 **Explanation:** what you can afford matters more than what you'd enjoy.
 
 ### Q5. Match each chart to an instrument: a flat line, a wavy line, a jagged line.
-- A) Volatile asset, basket, cash
-- B) Cash, basket, volatile asset ✅
-- C) Basket, cash, volatile asset
-- D) Cash, volatile asset, basket
+- A) Basket, cash, volatile asset
+- B) Volatile asset, basket, cash
+- C) Cash, volatile asset, basket
+- D) Cash, basket, volatile asset ✅
 
 **Explanation:** cash barely moves, the basket wobbles, and the concentrated asset swings hard.
-
-### Q6 (reflection). How would you probably feel if your investment fell 25% in a month? What would you do, and why?
-
-**What a good answer mentions:** an honest emotional reaction, and a decision that depends on the goal and horizon, not only on the feeling.

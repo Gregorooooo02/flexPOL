@@ -6,7 +6,7 @@ For the hackathon MVP, **Chapter 1** is built in full. Chapters 2 and 3 appear i
 
 ## Lesson files
 
-Each subchapter has its own file, with the lesson for the user and control questions (with answers and explanations).
+Each subchapter has its own file, with the lesson for the user and A–D control questions (with answers and explanations). Each chapter ends with a 10-question A–D final quiz covering all its subchapters.
 
 - **[Chapter 1 — Why Invest?](chapter-1-why-invest/)**
   - [1.1 Why investing is worth it](chapter-1-why-invest/1-1-why-investing-is-worth-it.md)
@@ -14,6 +14,7 @@ Each subchapter has its own file, with the lesson for the user and control quest
   - [1.3 Time horizon and liquidity](chapter-1-why-invest/1-3-time-horizon-and-liquidity.md)
   - [1.4 Risk and volatility](chapter-1-why-invest/1-4-risk-and-volatility.md)
   - [1.5 Diversification](chapter-1-why-invest/1-5-diversification.md)
+  - [Final quiz](chapter-1-why-invest/final-quiz.md)
 - **[Chapter 2 — Know Your Instruments](chapter-2-know-your-instruments/)**
   - [2.1 Cash and savings accounts](chapter-2-know-your-instruments/2-1-cash-and-savings-accounts.md)
   - [2.2 Deposits and bonds](chapter-2-know-your-instruments/2-2-deposits-and-bonds.md)
@@ -22,6 +23,7 @@ Each subchapter has its own file, with the lesson for the user and control quest
   - [2.5 Costs and fees](chapter-2-know-your-instruments/2-5-costs-and-fees.md)
   - [2.6 High-risk and speculative assets](chapter-2-know-your-instruments/2-6-high-risk-and-speculative-assets.md)
   - [2.7 Comparing instruments](chapter-2-know-your-instruments/2-7-comparing-instruments.md)
+  - [Final quiz](chapter-2-know-your-instruments/final-quiz.md)
 - **[Chapter 3 — Investing Through Life](chapter-3-investing-through-life/)**
   - [3.1 Your life stage changes your plan](chapter-3-investing-through-life/3-1-your-life-stage-changes-your-plan.md)
   - [3.2 Starting out (18–30)](chapter-3-investing-through-life/3-2-starting-out.md)
@@ -30,6 +32,7 @@ Each subchapter has its own file, with the lesson for the user and control quest
   - [3.5 Why invest for a pension](chapter-3-investing-through-life/3-5-why-invest-for-a-pension.md)
   - [3.6 Pension vehicles](chapter-3-investing-through-life/3-6-pension-vehicles.md)
   - [3.7 Staying on course](chapter-3-investing-through-life/3-7-staying-on-course.md)
+  - [Final quiz](chapter-3-investing-through-life/final-quiz.md)
 
 ---
 

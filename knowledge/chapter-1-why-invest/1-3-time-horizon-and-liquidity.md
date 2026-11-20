@@ -58,44 +58,40 @@ The emergency fund is what lets your investments stay invested.
 
 ### Q1. What does "liquidity" mean?
 - A) How much an investment earns
-- B) How quickly and cheaply an investment can be turned into cash ✅
-- C) How risky an investment is
-- D) How many people own an investment
+- B) How many people own an investment
+- C) How quickly and cheaply an investment can be turned into cash ✅
+- D) How risky an investment is
 
 **Explanation:** liquidity is about access to your money, not about return or risk.
 
 ### Q2. Maya needs money in 8 months. Which instrument fits **worst**?
-- A) Accessible Cash
-- B) A 2-year Locked-term instrument ✅
-- C) A mix of mostly cash with a small basket share
+- A) A 2-year Locked-term instrument ✅
+- B) A mix of mostly cash with a small basket share
+- C) Accessible Cash
 - D) None of them; all fit equally.
 
 **Explanation:** the locked term ends after she needs the money, so she would pay a penalty or miss the deadline.
 
 ### Q3. Why can a long time horizon handle more volatility?
-- A) Because prices only go up over long periods
-- B) Because there are more years to recover from temporary drops ✅
-- C) Because long-term investments have no risk
-- D) Because inflation stops over time
+- A) Because inflation stops over time
+- B) Because long-term investments have no risk
+- C) Because prices only go up over long periods
+- D) Because there are more years to recover from temporary drops ✅
 
 **Explanation:** long horizons don't remove risk, but they give time for recovery.
 
 ### Q4. What is the main job of an emergency fund?
-- A) Earning the highest return
+- A) Replacing a pension
 - B) Covering surprise costs so you don't have to sell investments at a bad moment ✅
 - C) Paying for holidays
-- D) Replacing a pension
+- D) Earning the highest return
 
 **Explanation:** it's a safety net that protects the rest of your plan.
 
 ### Q5. Why do locked-term instruments often pay slightly more than cash?
 - A) They are always risk-free.
-- B) They reward you for giving up access to your money for a period. ✅
+- B) They don't; they always pay less.
 - C) The bank likes long-term customers.
-- D) They don't; they always pay less.
+- D) They reward you for giving up access to your money for a period. ✅
 
 **Explanation:** you trade liquidity for a higher rate.
-
-### Q6 (reflection). Name one situation where locking money away would be a good idea, and one where it would be a mistake.
-
-**What a good answer mentions:** good when the money won't be needed before the term ends and an emergency fund already exists; a mistake when the money might be needed soon or there is no emergency fund.

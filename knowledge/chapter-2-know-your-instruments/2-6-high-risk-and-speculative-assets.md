@@ -60,44 +60,40 @@ Speculation isn't always wrong, but it is closer to a bet than a plan.
 
 ### Q1. What is the main difference between investing and speculating?
 - A) There is none.
-- B) Investing relies on value produced over time; speculating relies mostly on price going up. ✅
-- C) Speculating is always illegal.
-- D) Investing is only for professionals.
+- B) Investing is only for professionals.
+- C) Investing relies on value produced over time; speculating relies mostly on price going up. ✅
+- D) Speculating is always illegal.
 
 **Explanation:** speculation is a bet on price, usually without underlying income.
 
 ### Q2. What does leverage do?
-- A) It lowers your risk.
-- B) It multiplies both gains and losses. ✅
+- A) It multiplies both gains and losses. ✅
+- B) It removes fees.
 - C) It guarantees a profit.
-- D) It removes fees.
+- D) It lowers your risk.
 
 **Explanation:** borrowed money makes every move bigger, in both directions.
 
 ### Q3. A social media post says: "This coin will 10x next week, buy NOW!" Which is the best reaction?
 - A) Buy immediately before you miss out.
 - B) Put your emergency fund into it.
-- C) Treat it as a warning sign and don't act on pressure. ✅
-- D) Borrow money to buy more.
+- C) Borrow money to buy more.
+- D) Treat it as a warning sign and don't act on pressure. ✅
 
 **Explanation:** urgency, huge promises and anonymous tips are classic warning signs.
 
 ### Q4. If you choose to speculate, which rule is the most important?
-- A) Use your emergency fund.
-- B) Use borrowed money to increase gains.
-- C) Only use a small amount you can afford to lose completely. ✅
-- D) Put all your savings in to maximize the chance of winning.
+- A) Use borrowed money to increase gains.
+- B) Only use a small amount you can afford to lose completely. ✅
+- C) Put all your savings in to maximize the chance of winning.
+- D) Use your emergency fund.
 
 **Explanation:** speculation can go to zero, so it should never threaten important goals.
 
 ### Q5. What is FOMO?
 - A) A type of bond
-- B) The fear of missing out, which pushes people to buy because others are buying ✅
+- B) A tax rule
 - C) A fund strategy
-- D) A tax rule
+- D) The fear of missing out, which pushes people to buy because others are buying ✅
 
 **Explanation:** FOMO is an emotion, not a reason to invest.
-
-### Q6 (reflection). Describe a situation (real or imagined) where hype could push someone into a bad decision. What should they have checked first?
-
-**What a good answer mentions:** the pressure or emotion involved, and checks such as fit with their goal, how much they could lose, where the value comes from, and who is promoting it.

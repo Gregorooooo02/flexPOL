@@ -66,9 +66,9 @@ A short written plan makes it easier to stay calm:
 
 ### Q1. What is portfolio drift?
 - A) Moving money between banks
-- B) The allocation changing away from its target because some investments grow faster than others ✅
-- C) A type of fee
-- D) Selling everything in a crash
+- B) Selling everything in a crash
+- C) The allocation changing away from its target because some investments grow faster than others ✅
+- D) A type of fee
 
 **Explanation:** different returns slowly change the mix.
 
@@ -81,29 +81,25 @@ A short written plan makes it easier to stay calm:
 **Explanation:** the basket is 7,500 and the target is 6,000, so 1,500 coins move to bonds.
 
 ### Q3. What is a cheap way to rebalance without selling?
-- A) Stop investing.
-- B) Direct new contributions to the part that's below target. ✅
-- C) Open a new account.
-- D) Buy a speculative asset.
+- A) Buy a speculative asset.
+- B) Open a new account.
+- C) Stop investing.
+- D) Direct new contributions to the part that's below target. ✅
 
 **Explanation:** new money fixes the mix without transaction costs from selling.
 
 ### Q4. The market drops 25% and your horizon is 20 years. What does panic selling do?
-- A) Protects your gains
+- A) Lowers your fees
 - B) Locks in the loss and may make you miss the recovery ✅
-- C) Lowers your fees
+- C) Protects your gains
 - D) Rebalances your portfolio
 
 **Explanation:** selling turns a temporary drop into a permanent loss.
 
 ### Q5. Which event is a good reason to review your plan?
-- A) A celebrity tweet about a stock
-- B) The birth of a child ✅
-- C) One bad day in the market
-- D) A friend's new car
+- A) One bad day in the market
+- B) A celebrity tweet about a stock
+- C) A friend's new car
+- D) The birth of a child ✅
 
 **Explanation:** life changes affect goals, horizon and risk capacity.
-
-### Q6 (reflection). Write the sentence you'd want to read to yourself when the market falls 20%.
-
-**What a good answer mentions:** a reminder of the goal and horizon, the role of diversification and the emergency fund, and a commitment not to act on panic.

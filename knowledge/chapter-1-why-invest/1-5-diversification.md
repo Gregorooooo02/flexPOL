@@ -55,45 +55,41 @@ Diversification **reduces** risk. It doesn't **remove** it.
 ## Control questions
 
 ### Q1. What is diversification?
-- A) Putting all your money into the best-performing stock
-- B) Spreading money across many investments to reduce the impact of one bad result ✅
-- C) Moving money between accounts often
-- D) Keeping everything in cash
+- A) Keeping everything in cash
+- B) Putting all your money into the best-performing stock
+- C) Spreading money across many investments to reduce the impact of one bad result ✅
+- D) Moving money between accounts often
 
 **Explanation:** spreading money out means no single result decides your whole outcome.
 
 ### Q2. One company in your portfolio falls 50%. It made up 10% of your money. Roughly how much does your total portfolio fall from this?
-- A) 50%
-- B) 10%
-- C) 5% ✅
-- D) 0%
+- A) 0%
+- B) 5% ✅
+- C) 10%
+- D) 50%
 
 **Explanation:** 50% of a 10% share = 5% of the total.
 
 ### Q3. Which portfolio is most diversified?
-- A) 100% in one volatile company
+- A) 100% in a locked-term instrument
 - B) 10 companies, all in the same industry
-- C) A mix of cash, a broad market basket and a locked-term instrument ✅
-- D) 100% in a locked-term instrument
+- C) 100% in one volatile company
+- D) A mix of cash, a broad market basket and a locked-term instrument ✅
 
 **Explanation:** C spreads money across different types of instruments that react differently to events.
 
 ### Q4. The whole market falls 20%. What happens to a well-diversified portfolio?
-- A) Nothing, diversification fully protects it.
+- A) It always rises.
 - B) It probably falls too, but usually less than the most concentrated portfolios. ✅
-- C) It always rises.
+- C) Nothing, diversification fully protects it.
 - D) It falls exactly 20%, always.
 
 **Explanation:** diversification reduces risk from single events, not from market-wide drops.
 
 ### Q5. What is "concentration risk"?
-- A) The risk of having too many investments
-- B) The risk of depending heavily on one investment or one area ✅
-- C) The risk of high fees
-- D) The risk of inflation
+- A) The risk of inflation
+- B) The risk of high fees
+- C) The risk of having too many investments
+- D) The risk of depending heavily on one investment or one area ✅
 
 **Explanation:** the more concentrated the portfolio, the more one event can hurt it.
-
-### Q6 (reflection). Your friend has put all their savings into one "hot" company they read about online. What would you tell them, and why?
-
-**What a good answer mentions:** concentration risk, that one bad event could wipe out a large part of the savings, and the idea of spreading money across more investments in line with their goal.

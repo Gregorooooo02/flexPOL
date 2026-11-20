@@ -52,44 +52,40 @@ A **bond** is a loan you give to a government or a company. They promise to:
 
 ### Q1. What is a bond?
 - A) A share of ownership in a company
-- B) A loan you give to a government or company in exchange for interest ✅
-- C) A savings account with no term
+- B) A savings account with no term
+- C) A loan you give to a government or company in exchange for interest ✅
 - D) A type of fund
 
 **Explanation:** a bond holder is a lender, not an owner.
 
 ### Q2. What usually happens if you withdraw from a term deposit early?
-- A) You get a bonus.
-- B) Nothing changes.
-- C) You lose some or all of the interest. ✅
-- D) The term gets longer.
+- A) You lose some or all of the interest. ✅
+- B) The term gets longer.
+- C) Nothing changes.
+- D) You get a bonus.
 
 **Explanation:** the early withdrawal penalty is the price of breaking the agreement.
 
 ### Q3. Why does a weaker company pay more interest on its bonds than a stable government?
-- A) Because it's more generous
-- B) To make up lenders for the higher risk of not being paid back ✅
+- A) It doesn't; they pay the same.
+- B) Because it's more generous
 - C) Because the law requires it
-- D) It doesn't; they pay the same.
+- D) To make up lenders for the higher risk of not being paid back ✅
 
 **Explanation:** higher credit risk requires higher interest to attract lenders.
 
 ### Q4. You need 5,000 coins in exactly 1 year. Which choice fits best?
-- A) A 5-year locked-term instrument
+- A) A 10-year bond
 - B) A 1-year term deposit ✅
 - C) A volatile single stock
-- D) A 10-year bond
+- D) A 5-year locked-term instrument
 
 **Explanation:** the term matches the date the money is needed.
 
 ### Q5. What is the main trade-off with locked-term instruments?
-- A) High risk for high return
-- B) A somewhat higher rate in exchange for less access to your money ✅
+- A) Ownership in exchange for dividends
+- B) High risk for high return
 - C) No interest at all
-- D) Ownership in exchange for dividends
+- D) A somewhat higher rate in exchange for less access to your money ✅
 
 **Explanation:** you give up liquidity to earn a better rate.
-
-### Q6 (reflection). Why might someone keep part of a long-term portfolio in bonds even though stocks may grow more?
-
-**What a good answer mentions:** steadier value, less severe drops, balance against volatile assets, and money available on a known date.

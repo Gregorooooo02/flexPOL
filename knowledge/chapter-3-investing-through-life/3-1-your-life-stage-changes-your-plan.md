@@ -49,36 +49,32 @@ Age is a starting point, not a rule. Other things matter just as much:
 
 ### Q1. Why do younger investors usually have a higher risk capacity for retirement savings?
 - A) They know more about investing.
-- B) They have a long horizon and future income to recover from losses. ✅
-- C) Young people's investments can't lose value.
+- B) Young people's investments can't lose value.
+- C) They have a long horizon and future income to recover from losses. ✅
 - D) They pay no fees.
 
 **Explanation:** time and future income give room to recover.
 
 ### Q2. What is "human capital"?
-- A) Money in a savings account
-- B) The value of your future earning power ✅
-- C) The number of employees at a company
-- D) A type of fund
+- A) The value of your future earning power ✅
+- B) A type of fund
+- C) Money in a savings account
+- D) The number of employees at a company
 
 **Explanation:** your ability to earn income is an asset, often the biggest one when young.
 
 ### Q3. Two 35-year-olds: one has a stable job and no dependents, the other has unpredictable income and three children. Who likely has the higher risk capacity?
-- A) The one with the stable job and no dependents ✅
+- A) Neither can invest.
 - B) The one with three children
 - C) They're the same, because they're the same age.
-- D) Neither can invest.
+- D) The one with the stable job and no dependents ✅
 
 **Explanation:** age is only one factor; stability and responsibilities matter too.
 
 ### Q4. Why is a large loss more dangerous near retirement?
-- A) Fees are higher for older people.
+- A) It isn't more dangerous.
 - B) There's less time and less future income to recover. ✅
 - C) Markets fall more for older investors.
-- D) It isn't more dangerous.
+- D) Fees are higher for older people.
 
 **Explanation:** with a short horizon, savings need to be used soon, and there is no salary to rebuild them.
-
-### Q5 (reflection). Think of a fictional person at your current life stage. What is one thing in their life that should shape their investment plan?
-
-**What a good answer mentions:** a concrete factor (a horizon, a goal, job stability, dependents) and how it affects the amount of risk.

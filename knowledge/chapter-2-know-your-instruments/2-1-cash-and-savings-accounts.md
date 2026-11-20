@@ -47,36 +47,32 @@ Cash means money in your wallet, in a current account or in a **savings account*
 
 ### Q1. What is the main strength of a savings account?
 - A) High returns
-- B) Safety and quick access to the money ✅
-- C) Protection against inflation
-- D) Ownership of a company
+- B) Ownership of a company
+- C) Safety and quick access to the money ✅
+- D) Protection against inflation
 
 **Explanation:** low risk and high liquidity are what make cash useful.
 
 ### Q2. Your savings pay 1% interest and inflation is 3%. What happens to your purchasing power?
-- A) It grows by 1% a year.
-- B) It stays the same.
-- C) It shrinks by about 2% a year. ✅
-- D) It grows by 3% a year.
+- A) It shrinks by about 2% a year. ✅
+- B) It grows by 1% a year.
+- C) It grows by 3% a year.
+- D) It stays the same.
 
 **Explanation:** the real return is roughly interest minus inflation: 1% − 3% = −2%.
 
 ### Q3. Which goal fits cash best?
 - A) Retirement in 35 years
-- B) An emergency fund ✅
+- B) Building wealth over 20 years
 - C) A child's studies in 18 years
-- D) Building wealth over 20 years
+- D) An emergency fund ✅
 
 **Explanation:** an emergency fund needs safety and immediate access.
 
 ### Q4. Why is cash a weak choice for a 30-year goal?
 - A) It's too risky.
-- B) It can't be withdrawn.
-- C) Over long periods, inflation can eat much of its value. ✅
+- B) Over long periods, inflation can eat much of its value. ✅
+- C) It can't be withdrawn.
 - D) It's illegal to hold cash that long.
 
 **Explanation:** low growth plus inflation adds up to a large loss of purchasing power over decades.
-
-### Q5 (reflection). How much of your own monthly expenses (fictional is fine) would you keep in cash as an emergency fund, and why?
-
-**What a good answer mentions:** a concrete amount, often 3–6 months of essential expenses, tied to how stable their income is.

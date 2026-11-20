@@ -54,37 +54,33 @@ Ten extra years and only 12,000 coins more paid in nearly **doubled** the result
 ## Control questions
 
 ### Q1. In the example, why does the person who starts at 25 end up with about twice as much?
-- A) They paid in twice as much money.
-- B) Their money had 10 more years to compound. ✅
-- C) They had a better fund.
-- D) They paid lower taxes.
+- A) They paid lower taxes.
+- B) They had a better fund.
+- C) Their money had 10 more years to compound. ✅
+- D) They paid in twice as much money.
 
 **Explanation:** they paid in only 12,000 coins more, but compounding had more time to work.
 
 ### Q2. What should usually come before investing?
-- A) Buying a car
-- B) Paying off expensive debt and building an emergency fund ✅
+- A) Paying off expensive debt and building an emergency fund ✅
+- B) Buying a car
 - C) Picking a hot stock
 - D) Waiting until age 30
 
 **Explanation:** expensive debt and the lack of a safety net undermine any investment plan.
 
 ### Q3. What does "pay yourself first" mean?
-- A) Spending on yourself before paying bills
-- B) Setting money aside for savings and investments right after receiving income ✅
-- C) Paying yourself a salary from your investments
-- D) Paying off friends' debts first
+- A) Paying yourself a salary from your investments
+- B) Paying off friends' debts first
+- C) Spending on yourself before paying bills
+- D) Setting money aside for savings and investments right after receiving income ✅
 
 **Explanation:** saving first, then spending what's left, makes saving consistent.
 
 ### Q4. A 23-year-old has a stable job, an emergency fund and a 40-year horizon for retirement. Which allocation fits best?
 - A) 100% cash
 - B) Mostly a broad market basket, with a smaller steady part ✅
-- C) 100% in one trending stock
-- D) Nothing, they're too young.
+- C) Nothing, they're too young.
+- D) 100% in one trending stock
 
 **Explanation:** a long horizon allows growth, and diversification controls the risk.
-
-### Q5 (reflection). What's one habit you could start this month (fictional is fine) that would help your future self?
-
-**What a good answer mentions:** a concrete, doable action such as a small automatic transfer, tracking spending, or starting an emergency fund.
