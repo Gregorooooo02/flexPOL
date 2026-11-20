@@ -130,3 +130,102 @@
     @apply font-sans;
   }
 }
+
+/* Subtle on-click feedback & pipe progress animations */
+@keyframes fx-node-punch {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(0.86);
+  }
+  70% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes fx-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  65% {
+    transform: translateX(-4px);
+  }
+  85% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes fx-pipe-draw {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fx-sheen {
+  0% {
+    transform: translateX(-130%) skewX(-20deg);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.45;
+  }
+  100% {
+    transform: translateX(180%) skewX(-20deg);
+    opacity: 0;
+  }
+}
+
+@keyframes fx-option-pop {
+  0% {
+    transform: scale(0.97);
+  }
+  55% {
+    transform: scale(1.018);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fx-node-punch {
+    animation: fx-node-punch 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .fx-shake {
+    animation: fx-shake 320ms ease-out;
+  }
+
+  .fx-pipe-fill {
+    stroke-dasharray: 100;
+    animation: fx-pipe-draw 580ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .fx-sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 45%;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+    animation: fx-sheen 440ms ease-out forwards;
+  }
+
+  .fx-option-pop {
+    animation: fx-option-pop 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}

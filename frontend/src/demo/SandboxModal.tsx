@@ -520,15 +520,27 @@ function BondsSandboxView() {
 
 export function SandboxPage({ topic, onBack }: SandboxPageProps) {
   return (
-    <div className="flex min-h-svh flex-col justify-between bg-background text-foreground">
-      <header className="sticky top-0 z-20 border-b border-border bg-card/95 backdrop-blur-sm">
+    <div
+      className={`flex min-h-svh flex-col justify-between text-foreground ${topic.bandClassName}`}
+      style={{ backgroundImage: topic.ambientGlow }}
+    >
+      <header className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-md items-center justify-between gap-2 px-4 py-3">
-          <Button type="button" variant="ghost" size="sm" onClick={onBack} className="-ml-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="-ml-2 transition-transform active:scale-95"
+          >
             <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2.2} />
             Ścieżka
           </Button>
 
-          <Badge className="bg-[#fe9900] px-2.5 py-0.5 text-[#07090a]">
+          <Badge
+            className="px-2.5 py-0.5 text-[#07090a]"
+            style={{ backgroundColor: topic.accentHex }}
+          >
             <HugeiconsIcon icon={FlaskConicalIcon} strokeWidth={2.2} />
             Sandbox · {topic.title}
           </Badge>

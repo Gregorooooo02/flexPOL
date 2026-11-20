@@ -40,8 +40,11 @@ export interface TopicDefinition {
   readonly sandboxShortLabel: string;
   readonly sandboxDescription: string;
   readonly bandClassName: string;
+  readonly ambientGlow: string;
   readonly pipeColor: string;
-  readonly activeRingColor: string;
+  readonly pipeSecondary: string;
+  readonly accentHex: string;
+  readonly spikyFillHex: string;
   readonly nodes: readonly LearningNode[];
 }
 
@@ -56,8 +59,11 @@ export const TOPICS: readonly TopicDefinition[] = [
     sandboxShortLabel: 'Portfel ETF',
     sandboxDescription: 'Wpłaty miesięczne, horyzont i trzy stopy zwrotu.',
     bandClassName: 'bg-[#07090a]',
-    pipeColor: '#efb100',
-    activeRingColor: '#ffd22e',
+    ambientGlow: 'radial-gradient(circle at 50% 0%, rgba(255, 210, 46, 0.14), transparent 70%)',
+    pipeColor: '#ffd22e',
+    pipeSecondary: '#efb100',
+    accentHex: '#ffd22e',
+    spikyFillHex: '#efb100',
     nodes: [
       {
         id: 'etf-1',
@@ -338,9 +344,12 @@ export const TOPICS: readonly TopicDefinition[] = [
     sandboxTitle: 'Tarcza podatkowa — IKE vs zwykłe konto',
     sandboxShortLabel: 'Tarcza podatkowa',
     sandboxDescription: 'Porównanie kapitału z 19% podatkiem Belki i bez niego.',
-    bandClassName: 'bg-[#151a1c]',
+    bandClassName: 'bg-[#14100c]',
+    ambientGlow: 'radial-gradient(circle at 50% 0%, rgba(254, 153, 0, 0.16), transparent 70%)',
     pipeColor: '#fe9900',
-    activeRingColor: '#ffd22e',
+    pipeSecondary: '#e17101',
+    accentHex: '#fe9900',
+    spikyFillHex: '#e17101',
     nodes: [
       {
         id: 'ike-1',
@@ -621,9 +630,12 @@ export const TOPICS: readonly TopicDefinition[] = [
     sandboxTitle: 'Obligacje EDO vs lokata',
     sandboxShortLabel: 'Symulator EDO',
     sandboxDescription: 'Indeksacja inflacją z roczną kapitalizacją w horyzoncie 2–10 lat.',
-    bandClassName: 'bg-[#21292b]',
-    pipeColor: '#e17101',
-    activeRingColor: '#ffd22e',
+    bandClassName: 'bg-[#131b1d]',
+    ambientGlow: 'radial-gradient(circle at 50% 0%, rgba(186, 77, 0, 0.22), transparent 70%)',
+    pipeColor: '#ba4d00',
+    pipeSecondary: '#973b00',
+    accentHex: '#ff8a3d',
+    spikyFillHex: '#ba4d00',
     nodes: [
       {
         id: 'bonds-1',

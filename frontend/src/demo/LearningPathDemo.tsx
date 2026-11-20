@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useReducer, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   BookOpen01Icon,
@@ -71,12 +71,11 @@ interface NodeLayoutSlot {
 const STAGE_W = 340;
 const STAGE_H = 690;
 
-// Exact Noom-style serpentine coordinates for 4 modules + bottom Sandbox station
 const NODE_SLOTS: readonly [NodeLayoutSlot, NodeLayoutSlot, NodeLayoutSlot, NodeLayoutSlot] = [
   { cx: 170, cy: 64, labelSide: 'right', labelLeft: 224, labelTop: 28, labelWidth: 112 },
   { cx: 68, cy: 204, labelSide: 'right', labelLeft: 124, labelTop: 170, labelWidth: 204 },
   { cx: 272, cy: 344, labelSide: 'left', labelLeft: 12, labelTop: 310, labelWidth: 204 },
-  { cx: 68, cy: 484, labelSide: 'right', labelLeft: 124, labelTop: 450, labelWidth: 204 },
+  { cx: 68, cy: 484, labelSide: 'right', labelLeft: 132, labelTop: 446, labelWidth: 196 },
 ];
 
 const SANDBOX_SLOT: NodeLayoutSlot = {
@@ -88,15 +87,10 @@ const SANDBOX_SLOT: NodeLayoutSlot = {
   labelWidth: 112,
 };
 
-// Orthogonal rounded-elbow pipe segments matching the reference diagram
 const PIPE_SEGMENTS: readonly [string, string, string, string] = [
-  // 0 -> 1: down from top-center, bend left, down to x=68
   'M 170 64 L 170 110 Q 170 134 146 134 L 92 134 Q 68 134 68 158 L 68 204',
-  // 1 -> 2: down from x=68, bend right across, down to x=272
   'M 68 204 L 68 250 Q 68 274 92 274 L 248 274 Q 272 274 272 298 L 272 344',
-  // 2 -> 3: down from x=272, bend left across, down to x=68
   'M 272 344 L 272 390 Q 272 414 248 414 L 92 414 Q 68 414 68 438 L 68 484',
-  // 3 -> Sandbox: down from x=68, bend right to center x=170
   'M 68 484 L 68 530 Q 68 554 92 554 L 146 554 Q 170 554 170 578 L 170 624',
 ];
 
@@ -104,7 +98,8 @@ const INITIAL_PROGRESS_STATE: DemoProgressState = {
   completedList: INITIAL_COMPLETED_IDS,
   banner: {
     tone: 'neutral',
-    message: 'Moduł 101 zaliczony — linia dotarła do 102. Kliknij kółko albo tytuł, żeby otworzyć lekcję.',
+    message:
+      'Moduł 101 zaliczony — linia dotarła do 102. Kliknij kółko albo tytuł, żeby otworzyć lekcję.',
   },
 };
 
@@ -188,6 +183,17 @@ export function LearningPathDemo() {
     INITIAL_PROGRESS_STATE,
   );
   const [activeView, setActiveView] = useState<ActiveView>({ kind: 'path' });
+  const [burstNodeId, setBurstNodeId] = useState<string | null>(null);
+  const [shakeNodeId, setShakeNodeId] = useState<string | null>(null);
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) {
+        window.clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
 
   const completedSet = useMemo(() => new Set(completedList), [completedList]);
 
@@ -197,8 +203,35 @@ export function LearningPathDemo() {
   );
 
   const goToView = useCallback((nextView: ActiveView) => {
+    setBurstNodeId(null);
+    setShakeNodeId(null);
     setActiveView(nextView);
     window.scrollTo({ top: 0 });
+  }, []);
+
+  const triggerNavBurst = useCallback(
+    (effectId: string, nextView: ActiveView) => {
+      if (timerRef.current !== null) {
+        window.clearTimeout(timerRef.current);
+      }
+      setBurstNodeId(effectId);
+      const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      const delay = reducedMotion ? 40 : 250;
+      timerRef.current = window.setTimeout(() => {
+        goToView(nextView);
+      }, delay);
+    },
+    [goToView],
+  );
+
+  const triggerLockedShake = useCallback((effectId: string) => {
+    if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current);
+    }
+    setShakeNodeId(effectId);
+    timerRef.current = window.setTimeout(() => {
+      setShakeNodeId(null);
+    }, 340);
   }, []);
 
   const handleOpenNode = useCallback(
@@ -207,6 +240,7 @@ export function LearningPathDemo() {
       if (status === 'locked') {
         const nodeIdx = ALL_NODES_FLAT.findIndex((entry) => entry.node.id === node.id);
         const prevEntry = nodeIdx > 0 ? ALL_NODES_FLAT[nodeIdx - 1] : undefined;
+        triggerLockedShake(node.id);
         dispatch({
           type: 'setBanner',
           banner: {
@@ -218,14 +252,16 @@ export function LearningPathDemo() {
         });
         return;
       }
-      goToView({ kind: 'lesson', nodeId: node.id });
+      triggerNavBurst(node.id, { kind: 'lesson', nodeId: node.id });
     },
-    [completedSet, goToView],
+    [completedSet, triggerLockedShake, triggerNavBurst],
   );
 
   const handleOpenSandbox = useCallback(
     (topic: TopicDefinition) => {
+      const effectId = `sandbox-${topic.id}`;
       if (!isTopicSandboxUnlocked(topic, completedSet)) {
+        triggerLockedShake(effectId);
         dispatch({
           type: 'setBanner',
           banner: {
@@ -235,9 +271,9 @@ export function LearningPathDemo() {
         });
         return;
       }
-      goToView({ kind: 'sandbox', topicId: topic.id });
+      triggerNavBurst(effectId, { kind: 'sandbox', topicId: topic.id });
     },
-    [completedSet, goToView],
+    [completedSet, triggerLockedShake, triggerNavBurst],
   );
 
   const handleCompleteLesson = useCallback((nodeId: string) => {
@@ -249,6 +285,11 @@ export function LearningPathDemo() {
   }, []);
 
   const handleReset = useCallback(() => {
+    if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current);
+    }
+    setBurstNodeId(null);
+    setShakeNodeId(null);
     setActiveView({ kind: 'path' });
     dispatch({ type: 'reset' });
   }, []);
@@ -285,7 +326,7 @@ export function LearningPathDemo() {
       <header className="sticky top-0 z-20 border-b border-border bg-card/95 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-md flex-col gap-2 px-4 py-3">
           <div className="flex items-center justify-between gap-2">
-            <Badge className="bg-primary px-2 py-0.5 text-primary-foreground">
+            <Badge className="gap-1.5 bg-primary px-2.5 py-0.5 text-primary-foreground">
               <HugeiconsIcon icon={ChartLineData01Icon} strokeWidth={2.2} />
               flexPOL
             </Badge>
@@ -314,12 +355,18 @@ export function LearningPathDemo() {
               variant="secondary"
               disabled={!firstUnfinishedTopic}
               onClick={handleCompleteCurrentTopic}
-              className="flex-1"
+              className="flex-1 transition-transform active:scale-95"
             >
               <HugeiconsIcon icon={FastForwardIcon} strokeWidth={2} />
               {firstUnfinishedTopic ? `Zalicz ${firstUnfinishedTopic.title}` : 'Komplet'}
             </Button>
-            <Button type="button" size="xs" variant="outline" onClick={handleReset}>
+            <Button
+              type="button"
+              size="xs"
+              variant="outline"
+              onClick={handleReset}
+              className="transition-transform active:scale-95"
+            >
               <HugeiconsIcon icon={RefreshIcon} strokeWidth={2} />
               Reset
             </Button>
@@ -333,10 +380,12 @@ export function LearningPathDemo() {
             <Card
               size="sm"
               className={cn(
-                'border py-2.5',
+                'border py-2.5 transition-colors',
                 banner.tone === 'gold'
                   ? 'border-[#e17101] bg-[#973b00]/20'
-                  : 'border-border bg-card',
+                  : banner.tone === 'locked'
+                    ? 'border-[#ba4d00] bg-[#973b00]/15'
+                    : 'border-border bg-card',
               )}
               role="status"
               aria-live="polite"
@@ -361,20 +410,28 @@ export function LearningPathDemo() {
               sandboxUnlocked &&
               getNodeStatus(nextTopic.nodes[0].id, completedSet) !== 'locked';
 
+            const sandboxEffectId = `sandbox-${topic.id}`;
+            const isSandboxBursting = burstNodeId === sandboxEffectId;
+            const isSandboxShaking = shakeNodeId === sandboxEffectId;
+
             return (
               <section
                 key={topic.id}
                 aria-labelledby={`topic-heading-${topic.id}`}
                 className={cn('border-b border-border px-4 py-8', topic.bandClassName)}
+                style={{ backgroundImage: topic.ambientGlow }}
               >
                 <div className="mx-auto flex w-full max-w-md flex-col items-center">
-                  <Card size="sm" className="w-full border border-border bg-card/90 py-3.5">
+                  <Card
+                    size="sm"
+                    className="w-full border border-border bg-card/85 py-3.5 backdrop-blur-xs"
+                  >
                     <CardHeader className="px-4">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <Badge
                             className="px-2 py-0.5 text-[#07090a]"
-                            style={{ backgroundColor: topic.pipeColor }}
+                            style={{ backgroundColor: topic.accentHex }}
                           >
                             {topic.seriesNumber}
                           </Badge>
@@ -383,6 +440,7 @@ export function LearningPathDemo() {
                         <Badge
                           variant="outline"
                           className="border border-border px-2 py-0.5 tabular-nums"
+                          style={{ color: topic.accentHex }}
                         >
                           {doneCount}/{topic.nodes.length}
                         </Badge>
@@ -392,6 +450,11 @@ export function LearningPathDemo() {
                         value={progressPct}
                         aria-label={`Postęp ${topic.title}`}
                         className="mt-1.5 [&_[data-slot=progress-track]]:h-1.5"
+                        style={
+                          {
+                            '--primary': topic.accentHex,
+                          } as Record<string, string>
+                        }
                       />
                     </CardHeader>
                   </Card>
@@ -422,9 +485,12 @@ export function LearningPathDemo() {
                               y1={0}
                               x2={170}
                               y2={64}
+                              pathLength={100}
                               stroke={topic.pipeColor}
                               strokeWidth="12"
                               strokeLinecap="round"
+                              className="fx-pipe-fill"
+                              style={{ filter: `drop-shadow(0 0 6px ${topic.pipeColor}66)` }}
                             />
                           )}
                         </>
@@ -446,10 +512,13 @@ export function LearningPathDemo() {
                               <path
                                 d={pathD}
                                 fill="none"
+                                pathLength={100}
                                 stroke={topic.pipeColor}
                                 strokeWidth="12"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
+                                className="fx-pipe-fill"
+                                style={{ filter: `drop-shadow(0 0 6px ${topic.pipeColor}66)` }}
                               />
                             )}
                           </g>
@@ -473,9 +542,12 @@ export function LearningPathDemo() {
                               y1={624}
                               x2={170}
                               y2={STAGE_H}
+                              pathLength={100}
                               stroke={topic.pipeColor}
                               strokeWidth="12"
                               strokeLinecap="round"
+                              className="fx-pipe-fill"
+                              style={{ filter: `drop-shadow(0 0 6px ${topic.pipeColor}66)` }}
                             />
                           )}
                         </>
@@ -486,6 +558,9 @@ export function LearningPathDemo() {
                       {topic.nodes.map((node, index) => {
                         const slot = NODE_SLOTS[index];
                         const status = getNodeStatus(node.id, completedSet);
+                        const isBursting = burstNodeId === node.id;
+                        const isShaking = shakeNodeId === node.id;
+
                         const statusText =
                           status === 'completed'
                             ? 'Zaliczone'
@@ -497,8 +572,10 @@ export function LearningPathDemo() {
                           status === 'completed'
                             ? topic.pipeColor
                             : status === 'active'
-                              ? topic.activeRingColor
-                              : '#2d3234';
+                              ? topic.accentHex
+                              : isShaking
+                                ? '#ba4d00'
+                                : '#2d3234';
 
                         return (
                           <li key={node.id}>
@@ -507,8 +584,20 @@ export function LearningPathDemo() {
                               style={{ left: `${slot.cx}px`, top: `${slot.cy}px` }}
                             >
                               <div
-                                className="relative flex size-[86px] items-center justify-center rounded-full p-2"
-                                style={{ backgroundColor: ringColor }}
+                                className={cn(
+                                  'relative flex size-[86px] items-center justify-center rounded-full p-2 transition-transform',
+                                  isBursting && 'fx-node-punch',
+                                  isShaking && 'fx-shake',
+                                )}
+                                style={{
+                                  backgroundColor: ringColor,
+                                  boxShadow:
+                                    status === 'active'
+                                      ? `0 0 24px -4px ${topic.accentHex}70`
+                                      : isBursting
+                                        ? `0 0 32px ${topic.accentHex}`
+                                        : undefined,
+                                }}
                               >
                                 <Button
                                   type="button"
@@ -518,14 +607,16 @@ export function LearningPathDemo() {
                                   aria-label={`Moduł ${node.code}: ${node.title} — ${statusText}`}
                                   onClick={() => handleOpenNode(node)}
                                   className={cn(
-                                    'size-full rounded-full border-0 shadow-none',
-                                    status === 'completed' &&
-                                      'bg-card text-[#ffd22e] hover:bg-secondary',
-                                    status === 'active' &&
-                                      'bg-[#07090a] text-[#ffd22e] hover:bg-card',
+                                    'relative z-10 size-full overflow-hidden rounded-full border-0 shadow-none transition-transform active:scale-90',
+                                    isBursting && 'fx-sheen',
+                                    status === 'completed' && 'bg-card hover:bg-secondary',
+                                    status === 'active' && 'bg-[#07090a] hover:bg-card',
                                     status === 'locked' &&
                                       'cursor-not-allowed bg-[#21292b] text-muted-foreground hover:bg-[#21292b]',
                                   )}
+                                  style={
+                                    status !== 'locked' ? { color: topic.accentHex } : undefined
+                                  }
                                 >
                                   {renderNodeIcon(node, status)}
                                 </Button>
@@ -533,7 +624,8 @@ export function LearningPathDemo() {
                                 {status === 'active' && (
                                   <Badge
                                     aria-hidden="true"
-                                    className="pointer-events-none absolute -bottom-2.5 left-1/2 size-6 -translate-x-1/2 justify-center rounded-full border-2 border-background bg-[#ffd22e] text-[#07090a]"
+                                    className="pointer-events-none absolute -bottom-2.5 left-1/2 z-20 size-6 -translate-x-1/2 justify-center rounded-full border-2 border-background text-[#07090a]"
+                                    style={{ backgroundColor: topic.accentHex }}
                                   >
                                     <HugeiconsIcon
                                       icon={Coins01Icon}
@@ -561,8 +653,11 @@ export function LearningPathDemo() {
                               <span
                                 className={cn(
                                   'font-heading text-sm font-bold tabular-nums',
-                                  status === 'locked' ? 'text-muted-foreground' : 'text-[#ffd22e]',
+                                  status === 'locked' && 'text-muted-foreground',
                                 )}
+                                style={
+                                  status !== 'locked' ? { color: topic.accentHex } : undefined
+                                }
                               >
                                 {node.code}
                               </span>
@@ -572,11 +667,11 @@ export function LearningPathDemo() {
                                 aria-disabled={status === 'locked' ? 'true' : undefined}
                                 onClick={() => handleOpenNode(node)}
                                 className={cn(
-                                  'h-auto p-0 text-sm leading-snug font-normal tracking-normal whitespace-normal normal-case underline underline-offset-4',
+                                  'h-auto p-0 text-sm leading-snug font-normal tracking-normal whitespace-normal normal-case underline underline-offset-4 transition-transform active:scale-95',
                                   slot.labelSide === 'left' ? 'text-right' : 'text-left',
                                   status === 'locked'
                                     ? 'cursor-not-allowed text-muted-foreground no-underline hover:no-underline'
-                                    : 'text-foreground hover:text-[#ffd22e]',
+                                    : 'text-foreground',
                                 )}
                               >
                                 {node.title}
@@ -592,9 +687,20 @@ export function LearningPathDemo() {
                           style={{ left: `${SANDBOX_SLOT.cx}px`, top: `${SANDBOX_SLOT.cy}px` }}
                         >
                           <div
-                            className="relative flex size-[86px] items-center justify-center rounded-full p-2"
+                            className={cn(
+                              'relative flex size-[86px] items-center justify-center rounded-full p-2 transition-transform',
+                              isSandboxBursting && 'fx-node-punch',
+                              isSandboxShaking && 'fx-shake',
+                            )}
                             style={{
-                              backgroundColor: sandboxUnlocked ? '#fe9900' : '#2d3234',
+                              backgroundColor: sandboxUnlocked
+                                ? topic.accentHex
+                                : isSandboxShaking
+                                  ? '#ba4d00'
+                                  : '#2d3234',
+                              boxShadow: sandboxUnlocked
+                                ? `0 0 24px -4px ${topic.accentHex}70`
+                                : undefined,
                             }}
                           >
                             <Button
@@ -607,11 +713,14 @@ export function LearningPathDemo() {
                               }`}
                               onClick={() => handleOpenSandbox(topic)}
                               className={cn(
-                                'size-full rounded-full border-0 shadow-none',
-                                sandboxUnlocked
-                                  ? 'bg-[#fe9900] text-[#07090a] hover:bg-[#ffd22e]'
-                                  : 'cursor-not-allowed bg-[#21292b] text-muted-foreground hover:bg-[#21292b]',
+                                'relative z-10 size-full overflow-hidden rounded-full border-0 text-[#07090a] shadow-none transition-transform active:scale-90',
+                                isSandboxBursting && 'fx-sheen',
+                                !sandboxUnlocked &&
+                                  'cursor-not-allowed bg-[#21292b] text-muted-foreground hover:bg-[#21292b]',
                               )}
+                              style={
+                                sandboxUnlocked ? { backgroundColor: topic.accentHex } : undefined
+                              }
                             >
                               {sandboxUnlocked ? (
                                 <HugeiconsIcon
@@ -641,8 +750,9 @@ export function LearningPathDemo() {
                           <span
                             className={cn(
                               'font-heading text-xs font-bold tracking-wider uppercase',
-                              sandboxUnlocked ? 'text-[#fe9900]' : 'text-muted-foreground',
+                              !sandboxUnlocked && 'text-muted-foreground',
                             )}
+                            style={sandboxUnlocked ? { color: topic.accentHex } : undefined}
                           >
                             Sandbox
                           </span>
@@ -652,9 +762,9 @@ export function LearningPathDemo() {
                             aria-disabled={!sandboxUnlocked ? 'true' : undefined}
                             onClick={() => handleOpenSandbox(topic)}
                             className={cn(
-                              'h-auto p-0 text-left text-sm leading-snug font-normal tracking-normal whitespace-normal normal-case underline underline-offset-4',
+                              'h-auto p-0 text-left text-sm leading-snug font-normal tracking-normal whitespace-normal normal-case underline underline-offset-4 transition-transform active:scale-95',
                               sandboxUnlocked
-                                ? 'text-foreground hover:text-[#fe9900]'
+                                ? 'text-foreground'
                                 : 'cursor-not-allowed text-muted-foreground no-underline hover:no-underline',
                             )}
                           >
