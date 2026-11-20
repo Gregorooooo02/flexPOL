@@ -605,22 +605,27 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                 <div className="mx-auto flex w-full max-w-md flex-col items-center lg:mx-0 lg:max-w-none lg:items-center">
                   <Card
                     size="sm"
-                    className="w-full border border-border bg-card/85 py-3.5 backdrop-blur-xs"
+                    className="w-full border border-border bg-card/85 py-3.5 backdrop-blur-xs lg:sticky lg:left-8 lg:self-start lg:max-w-[calc(100vw_-_4rem)]"
                   >
-                    <CardHeader className="px-4">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
+                    <CardHeader className="min-w-0 px-4">
+                      <div className="flex min-w-0 items-center justify-between gap-2">
+                        <div className="flex min-w-0 flex-1 items-center gap-2">
                           <Badge
                             className="px-2 py-0.5 text-[#07090a]"
                             style={{ backgroundColor: topic.accentHex }}
                           >
                             {topic.seriesNumber}
                           </Badge>
-                          <CardTitle id={`topic-heading-${topic.id}`}>{topic.title}</CardTitle>
+                          <CardTitle
+                            id={`topic-heading-${topic.id}`}
+                            className="min-w-0 break-words"
+                          >
+                            {topic.title}
+                          </CardTitle>
                         </div>
                         <Badge
                           variant="outline"
-                          className="border border-border px-2 py-0.5 tabular-nums"
+                          className="shrink-0 border border-border px-2 py-0.5 tabular-nums"
                           style={{ color: topic.accentHex }}
                         >
                           {doneCount}/{topic.nodes.length}
