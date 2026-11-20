@@ -1,0 +1,22 @@
+[
+  {"file_key": "sap", "name": "SAP SE", "symbol": "SAP.DE", "asset_class": "STOCK", "currency": "EUR"},
+  {"file_key": "siemens", "name": "Siemens AG", "symbol": "SIE.DE", "asset_class": "STOCK", "currency": "EUR"},
+  {"file_key": "allianz", "name": "Allianz SE", "symbol": "ALV.DE", "asset_class": "STOCK", "currency": "EUR"},
+  {"file_key": "deutsche-telekom", "name": "Deutsche Telekom AG", "symbol": "DTE.DE", "asset_class": "STOCK", "currency": "EUR"},
+  {"file_key": "airbus", "name": "Airbus SE", "symbol": "AIR.PA", "asset_class": "STOCK", "currency": "EUR"},
+  {"file_key": "schneider-electric", "name": "Schneider Electric SE", "symbol": "SU.PA", "asset_class": "STOCK", "currency": "EUR"},
+  {"file_key": "totalenergies", "name": "TotalEnergies SE", "symbol": "TTE.PA", "asset_class": "STOCK", "currency": "EUR"},
+  {"file_key": "lvmh", "name": "LVMH Moet Hennessy Louis Vuitton SE", "symbol": "MC.PA", "asset_class": "STOCK", "currency": "EUR"},
+  {"file_key": "loreal", "name": "L'Oreal SA", "symbol": "OR.PA", "asset_class": "STOCK", "currency": "EUR"},
+  {"file_key": "asml", "name": "ASML Holding NV", "symbol": "ASML.AS", "asset_class": "STOCK", "currency": "EUR"},
+  {"file_key": "ing", "name": "ING Groep NV", "symbol": "INGA.AS", "asset_class": "STOCK", "currency": "EUR"},
+  {"file_key": "santander", "name": "Banco Santander SA", "symbol": "SAN.MC", "asset_class": "STOCK", "currency": "EUR"},
+  {"file_key": "vanguard-all-world", "name": "Vanguard FTSE All-World UCITS ETF (Acc)", "symbol": "VWCE.DE", "asset_class": "EQUITY_ETF", "currency": "EUR", "exposure": "Global developed and emerging-market equities", "distribution_policy": "ACCUMULATING"},
+  {"file_key": "ishares-world", "name": "iShares Core MSCI World UCITS ETF (Acc)", "symbol": "EUNL.DE", "asset_class": "EQUITY_ETF", "currency": "EUR", "exposure": "Developed-market equities", "distribution_policy": "ACCUMULATING"},
+  {"file_key": "ishares-sp500", "name": "iShares Core S&P 500 UCITS ETF (Acc)", "symbol": "SXR8.DE", "asset_class": "EQUITY_ETF", "currency": "EUR", "exposure": "US large-cap equities", "distribution_policy": "ACCUMULATING"},
+  {"file_key": "ishares-nasdaq100", "name": "iShares NASDAQ 100 UCITS ETF (Acc)", "symbol": "SXRV.DE", "asset_class": "EQUITY_ETF", "currency": "EUR", "exposure": "Nasdaq-100 equities", "distribution_policy": "ACCUMULATING"},
+  {"file_key": "ishares-eurostoxx50", "name": "iShares Core EURO STOXX 50 UCITS ETF (Dist)", "symbol": "EUN2.DE", "asset_class": "EQUITY_ETF", "currency": "EUR", "exposure": "Eurozone large-cap equities", "distribution_policy": "DISTRIBUTING"},
+  {"file_key": "ishares-emerging-markets", "name": "iShares Core MSCI EM IMI UCITS ETF (Acc)", "symbol": "IS3N.DE", "asset_class": "EQUITY_ETF", "currency": "EUR", "exposure": "Emerging-market equities including small caps", "distribution_policy": "ACCUMULATING"},
+  {"file_key": "ishares-world-small-cap", "name": "iShares MSCI World Small Cap UCITS ETF (Acc)", "symbol": "IUSN.DE", "asset_class": "EQUITY_ETF", "currency": "EUR", "exposure": "Developed-market small-cap equities", "distribution_policy": "ACCUMULATING"},
+  {"file_key": "vanguard-esg-global", "name": "Vanguard ESG Global All Cap UCITS ETF (Acc)", "symbol": "V3AA.DE", "asset_class": "EQUITY_ETF", "currency": "EUR", "exposure": "ESG-screened global all-cap equities", "distribution_policy": "ACCUMULATING"}
+]
