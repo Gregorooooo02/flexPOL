@@ -40,7 +40,7 @@ Across the broader product, scenarios can reflect different life stages, goals, 
 - Quizzes with explanations, not just correct/incorrect feedback.
 - Progress indicators, XP, and mastery badges.
 
-**Chapter plan and lesson content:** all learning content lives in the [knowledge/](knowledge/) folder. Start with the overview, [knowledge/learning-chapters.md](knowledge/learning-chapters.md), which lists chapters, subchapters and missions. Each chapter has its own folder with one file per subchapter, holding the lesson for the user and control questions with answers. Read these before working on lesson content, quizzes or missions.
+**Chapter plan and lesson content:** all learning content lives in the [knowledge/](knowledge/) folder. Start with the overview, [knowledge/learning-chapters.md](knowledge/learning-chapters.md), which lists chapters, subchapters and missions. Each chapter has its own folder with one file per subchapter, holding the lesson for the user and control questions with answers. Read these before working on lesson content, quizzes or missions. Sandbox scenarios for Chapters 2 and 3 (draft spec, not implemented) are in [knowledge/sandbox-scenarios.md](knowledge/sandbox-scenarios.md); their values (instruments, amounts, horizons, targets, scoring weights) are in [knowledge/sandbox-scenarios.json](knowledge/sandbox-scenarios.json), the source of truth when the two differ.
 
 ### AI coach
 

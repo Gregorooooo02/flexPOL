@@ -34,6 +34,8 @@ Each subchapter has its own file, with the lesson for the user and A–D control
   - [3.7 Staying on course](chapter-3-investing-through-life/3-7-staying-on-course.md)
   - [Final quiz](chapter-3-investing-through-life/final-quiz.md)
 
+**Sandbox scenarios** for Chapters 2 and 3 (personas, amounts, horizons, instruments and scoring) are specified in [sandbox-scenarios.md](sandbox-scenarios.md), with the structured data in [sandbox-scenarios.json](sandbox-scenarios.json).
+
 ---
 
 ## Chapter 1 — Why Invest?
