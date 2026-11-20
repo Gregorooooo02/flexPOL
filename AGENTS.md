@@ -141,8 +141,9 @@ The repository is a monorepo with two apps: `backend/` and `frontend/`.
 - The H2 console is at `http://localhost:8080/h2-console`.
 - Commands: `./mvnw spring-boot:run` starts the app; `./mvnw test` runs the tests.
 - Instrument catalog/detail/history GET endpoints and `POST /api/simulations` are implemented. Simulations run on demand without persistence; `GBM` uses configured drift/volatility and a reproducible seed, and `FIXED_RATE` supports ACT/365 accrual with STOP-at-maturity behavior. The current seed contains only market instruments; no deposit fixture is API-selectable yet.
-- Simulation requests support 1–360 months and positive investments up to EUR 1,000,000,000,000, rounded to cents. Unknown instruments return 404; undefined/out-of-bounds inputs return 400. Model/configuration failures do not silently fall back to another engine.
-- Synthetic engine contracts, service tests, and MockMvc API integration tests run with `bash mvnw test` from `backend/`. Fixture conventions are documented in `backend/src/test/resources/simulation/README.md`; the earlier test-first engine stubs have been implemented.
+- Simulation requests and responses use `durationDays` (1–10,950 calendar days, approximately 30 years) and support positive investments up to EUR 1,000,000,000,000, rounded to cents. Requested end dates use `startDate.plusDays(durationDays)`; fixed-rate product maturity still uses `termMonths`. Unknown instruments return 404; undefined/out-of-bounds inputs return 400. Model/configuration failures do not silently fall back to another engine.
+- GBM uses a calendar-day horizon but emits the initial point and weekday points, skipping intermediate weekend dates. If the end date is a weekend, one terminal carry-forward point is included without a random draw. A 10-day request from 20 November 2026 ends on 30 November and returns 7 points, not 10 or 11.
+- Run `bash mvnw test` from `backend/`. The current tests cover application startup, the calendar-day `durationDays` endpoint contract, sparse weekday output, weekend endpoints, the exact seed-67 example, horizon bounds, and rejection of the obsolete month-only request format.
 
 ## Frontend (`frontend/`)
 

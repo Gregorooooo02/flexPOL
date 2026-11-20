@@ -10,12 +10,13 @@ import com.flexpol.backend.model.SimulationPoint;
  * One unsaved trajectory, including its initial investment at startDate and the
  * actual random seed used. Monetary values use currency; totalReturn is a
  * fraction (0.10 means 10%) equal to finalValue / initialInvestment - 1.
+ * durationDays is the requested calendar-day horizon, even if maturity shortens it.
  */
 public record SimulationResult(
 		Long instrumentId,
 		String currency,
 		BigDecimal initialInvestment,
-		Integer durationMonths,
+		Integer durationDays,
 		LocalDate startDate,
 		LocalDate endDate,
 		long randomSeed,

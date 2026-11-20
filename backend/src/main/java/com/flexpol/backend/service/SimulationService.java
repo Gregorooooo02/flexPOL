@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class SimulationService {
 
-	private static final int MAX_DURATION_MONTHS = 360;
+	private static final int MAX_DURATION_DAYS = 30 * 365;
 	private static final BigDecimal MAX_INVESTMENT = new BigDecimal("1000000000000");
 	private static final long GENERATED_SEED_BOUND = 1L << 53;
 
@@ -40,9 +40,9 @@ public class SimulationService {
 		if (request == null || request.instrumentId() == null) {
 			throw new IllegalArgumentException("An instrument ID is required");
 		}
-		if (request.durationMonths() == null || request.durationMonths() < 1
-				|| request.durationMonths() > MAX_DURATION_MONTHS) {
-			throw new IllegalArgumentException("Duration must be between 1 and " + MAX_DURATION_MONTHS + " months");
+		if (request.durationDays() == null || request.durationDays() < 1
+				|| request.durationDays() > MAX_DURATION_DAYS) {
+			throw new IllegalArgumentException("Duration must be between 1 and " + MAX_DURATION_DAYS + " days");
 		}
 		if (request.initialInvestment() == null || request.initialInvestment().signum() <= 0
 				|| request.initialInvestment().compareTo(MAX_INVESTMENT) > 0) {
@@ -61,7 +61,7 @@ public class SimulationService {
 			throw new IllegalStateException("Unsupported configured simulation model: " + configuration.modelKey());
 		}
 		var start = definition.latestObservationDate() == null ? LocalDate.now() : definition.latestObservationDate();
-		var end = start.plusMonths(request.durationMonths());
+		var end = start.plusDays(request.durationDays());
 		// Generated seeds survive a JSON number round-trip through JavaScript clients.
 		long seed = request.randomSeed() == null ? ThreadLocalRandom.current().nextLong(GENERATED_SEED_BOUND) : request.randomSeed();
 		var trajectory = engine.simulate(new SimulationContext(initialInvestment, start, end, seed, configuration.parameters()));
@@ -69,7 +69,7 @@ public class SimulationService {
 		var totalReturn = finalValue.subtract(initialInvestment).divide(initialInvestment, 8, RoundingMode.HALF_EVEN);
 
 		return new SimulationResult(definition.instrumentId(), definition.currency(), initialInvestment,
-				request.durationMonths(), start, trajectory.effectiveEndDate(), seed,
+				request.durationDays(), start, trajectory.effectiveEndDate(), seed,
 				finalValue, totalReturn, trajectory.points());
 	}
 }

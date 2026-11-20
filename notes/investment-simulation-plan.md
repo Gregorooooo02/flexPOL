@@ -346,7 +346,7 @@ Return the same instrument representation from catalog and detail endpoints init
 
 #### SimulationRequest
 
-`Long instrumentId`, `BigDecimal initialInvestment`, `Integer durationMonths`, and nullable `Long randomSeed`. The initial contract has no currency selector, recurring contributions, path count, or output interval. Currency is determined by the instrument and is EUR for all seeded instruments.
+`Long instrumentId`, `BigDecimal initialInvestment`, `Integer durationDays` (calendar days), and nullable `Long randomSeed`. The initial contract has no currency selector, recurring contributions, path count, or output interval. Currency is determined by the instrument and is EUR for all seeded instruments.
 
 #### SimulationPoint (`model/`)
 
@@ -360,7 +360,7 @@ The initial simulation will exclude taxes and inflation. Fee treatment must be d
 
 #### SimulationResult
 
-`instrumentId`, `currency`, `initialInvestment`, `durationMonths`, `startDate`, `endDate`, `randomSeed`, `assumptions`, `finalValue`, `totalReturn`, and `points` (`List<SimulationPoint>`).
+`instrumentId`, `currency`, `initialInvestment`, `durationDays`, `startDate`, `endDate`, `randomSeed`, `assumptions`, `finalValue`, `totalReturn`, and `points` (`List<SimulationPoint>`).
 
 `totalReturn` is a fraction: `0.10` means 10%, not `10`. For the initial single-contribution engine, it will equal `finalValue / initialInvestment - 1`. There is one trajectory, no saved run ID, and no percentile bands.
 
@@ -390,7 +390,7 @@ POST /api/simulations
 {
   "instrumentId": 1001,
   "initialInvestment": 10000,
-  "durationMonths": 24,
+  "durationDays": 730,
   "randomSeed": 42
 }
 ```
@@ -441,6 +441,16 @@ Verification: `bash mvnw package` passed all 76 tests with no failures, errors, 
 
 Historical test-first baseline: the first `bash mvnw test` run compiled successfully and ran 43 tests, with 6 passing and 37 reaching deliberate `UnsupportedOperationException` stubs. Those previously red engine tests are now green through production implementation, not disabled or rewritten to accept placeholder exceptions.
 
+API follow-up: the requested horizon is now `durationDays` in both the request and response, and end dates use calendar-day addition. The maximum is 10,950 days (approximately the previous 30-year workload bound). Fixed-rate product `termMonths` is unchanged. Earlier verification notes mentioning month-based requests describe the old contract.
+
+Calendar-output follow-up (final user decision): keep `durationDays` as elapsed calendar days and skip intermediate weekend dates in GBM output. A 10-day request starting on 20 November 2026 ends on 30 November and returns 7 points. The temporary weekend-filling behavior was reverted; the request is not a target point count. Initial points are retained, and a weekend end date receives one terminal carry-forward point. The seed-67 example is covered by an exact-value regression test.
+
+Calendar-output verification history: a temporary calendar-filled implementation passed 16 tests, but was subsequently reverted at the user's request. Current regression expectations require 7 points for the 20–30 November example and sparse weekday output rather than one point per calendar date.
+
+Final verification: `bash mvnw package` passes all 17 current tests, including the exact original seed-67 values, 7 points over 20–30 November, skipped intermediate weekends, terminal carry-forward, and calendar-day horizon bounds.
+
+Day-contract verification: `bash mvnw clean package` passed all 11 tests currently present (application startup and 10 focused endpoint regression cases). Coverage includes 1/30/365/10,950 days, exact calendar-day end dates, the renamed response field, invalid or missing durations, and rejection of a request containing only the obsolete `durationMonths` field. Previously removed simulation test suites were not restored; the earlier 76-test result is historical.
+
 ### Current API usage and bounds
 
 ```http
@@ -450,13 +460,13 @@ Content-Type: application/json
 {
   "instrumentId": 1001,
   "initialInvestment": 10000,
-  "durationMonths": 12,
+  "durationDays": 365,
   "randomSeed": 42
 }
 ```
 
 - The three GET routes and simulation POST return HTTP 200 on success, not 501.
-- Basic inline guards require an instrument ID, 1–360 months, and a positive investment no greater than EUR 1,000,000,000,000 that rounds to at least one cent. These bound calculation work without adding a Bean Validation dependency or a dedicated validation subsystem.
+- Basic inline guards require an instrument ID, 1–10,950 calendar days, and a positive investment no greater than EUR 1,000,000,000,000 that rounds to at least one cent. These bound calculation work without adding a Bean Validation dependency or a dedicated validation subsystem.
 - Amounts are normalized to cents using HALF_EVEN before simulation; returned points/final amounts use two decimal places and total return uses eight.
 - Omit `randomSeed` to generate and receive a replayable seed. Generated seeds are in `[0, 2^53)`, exactly representable as JavaScript JSON numbers. Explicit caller-supplied Java long seeds, including zero and negatives, are preserved; clients using larger-than-safe integers must serialize them without precision loss.
 - Unknown instruments return 404. Missing inputs or unsupported request sizes return 400 using Spring problem details. Missing/malformed model configuration, unsupported configured model keys, and duplicate engine registration are explicit failures rather than silent fallbacks.
@@ -516,7 +526,7 @@ For `POST /api/simulations`:
 
 1. Resolve the instrument, configuration, selected engine, and latest historical display date using read-only database access.
 2. Use that latest display date as `startDate`; for a configured instrument with no history, use the current date. Capture the date once per request.
-3. Calculate the requested end date with `startDate.plusMonths(durationMonths)`.
+3. Calculate the requested end date with `startDate.plusDays(durationDays)`.
 4. Use the caller's `randomSeed` verbatim, including zero. If omitted, generate a seed and return it. Create a fresh deterministic random generator per simulation; never use shared mutable random state for trajectory steps.
 5. Copy the necessary configuration into an immutable context, end database work, and then invoke the engine. Do not hold a transaction open during trajectory generation.
 6. Map the trajectory to `SimulationResult`, including actual start/end dates, initial/final investment values, seed, model/version, complete parameter assumptions, and total return as a fraction.
@@ -526,8 +536,8 @@ Keep controllers thin and HTTP concerns out of calculation engines. Handle unkno
 
 ### Dates, output, and reproducibility
 
-- Market simulations emit the initial point and subsequent weekday points through the requested end date.
-- If a market simulation ends on a weekend, include an end-date point carrying forward the last computed value; do not add another random step for that point.
+- Market simulations use an elapsed calendar-day horizon and emit the initial point plus subsequent weekday points through the requested end date. The number of points is not equal to `durationDays`.
+- Intermediate weekends are skipped. A weekend end date receives one terminal carry-forward point without a random draw, included exactly once.
 - Deposits accrue on calendar dates, according to their own convention.
 - The market calendar is deliberately approximate: weekdays are not an exchange calendar, and `1/252` model-year steps do not exactly match the number of weekdays in a calendar year. State this limitation rather than implying precise annual timing.
 - Include the initial investment at the start date and ensure the last point equals `finalValue`.
@@ -608,7 +618,7 @@ Expose exclusions in response assumptions rather than leaving them implicit. EUR
 
 1. Inspect catalog length, one stock, one ETF, their structured numeric parameters, and one complete chronological history.
 2. Confirm unknown IDs produce 404 for details, history, and simulation.
-3. Request 1-, 12-, and 24-month simulations, including an explicit seed of zero, an ordinary explicit seed, and an omitted seed.
+3. Request 1-, 30-, 365-, and 730-day simulations, including an explicit seed of zero, an ordinary explicit seed, and an omitted seed.
 4. Replay the returned seed and compare paths; use a different seed and confirm a stochastic path changes.
 5. Verify the initial point, requested/effective end date, weekend endpoint behavior, final amount, return fraction, and original calibration metadata.
 6. Invoke engines directly with zero volatility and zero rate to inspect deterministic behavior, and inspect fixed-rate maturity truncation.
