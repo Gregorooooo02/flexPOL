@@ -3,13 +3,13 @@ package com.flexpol.backend.service;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
+import com.flexpol.backend.dto.CoachRequest;
 import com.flexpol.backend.dto.CoachResponse;
-import com.flexpol.backend.entity.Subchapter;
 import com.flexpol.backend.exception.BadRequestException;
-import com.flexpol.backend.exception.ResourceNotFoundException;
-import com.flexpol.backend.repository.SubchapterRepository;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -42,22 +42,24 @@ public class CoachService {
 
 	/** Appended to the system prompt when the learner asks from inside a lesson. */
 	private static final String LESSON_SECTION = "\n\nThe learner is currently studying this lesson:\n\n{lesson}";
+	/** Appended to the system prompt when the learner asks while on a quiz question. */
+	private static final String QUESTION_SECTION = "\n\nRight now, {question}";
 
 	private final ChatClient chatClient;
-	private final SubchapterRepository subchapterRepository;
+	private final CoachContextService contextService;
 	private final String systemPrompt;
 	private final boolean configured;
 
 	public CoachService(
 			ChatClient.Builder chatClientBuilder,
 			ChatMemory chatMemory,
-			SubchapterRepository subchapterRepository,
+			CoachContextService contextService,
 			@Value("classpath:prompts/coach-system.md") Resource systemPrompt,
 			@Value("${spring.ai.openai.api-key:}") String apiKey) {
 		this.chatClient = chatClientBuilder
 				.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
 				.build();
-		this.subchapterRepository = subchapterRepository;
+		this.contextService = contextService;
 		this.systemPrompt = read(systemPrompt);
 		this.configured = StringUtils.hasText(apiKey);
 		if (!configured) {
@@ -66,33 +68,42 @@ public class CoachService {
 	}
 
 	/**
-	 * Sends one learner message to the coach.
-	 *
-	 * @param conversationId id from an earlier reply to continue that conversation, or null to start a new one
+	 * Sends one learner message to the coach, with the lesson and quiz question they are on as context.
+	 * Without a {@code conversationId} a new conversation starts; its id is returned in the response.
 	 */
-	public CoachResponse ask(String message, Long subchapterId, String conversationId) {
+	public CoachResponse ask(CoachRequest request) {
+		String message = request.message();
 		if (!StringUtils.hasText(message)) {
 			throw new BadRequestException("message is required");
 		}
 		if (message.length() > MAX_MESSAGE_LENGTH) {
 			throw new BadRequestException("message must be at most " + MAX_MESSAGE_LENGTH + " characters");
 		}
-		String conversation = conversationId == null ? UUID.randomUUID().toString() : normalize(conversationId);
-		// Lesson text goes in as a template parameter, so braces in the Markdown are never parsed.
-		String lesson = subchapterId == null ? null : lessonContext(subchapterId);
+		if (request.selectedOptionId() != null && request.questionId() == null) {
+			throw new BadRequestException("selectedOptionId requires questionId");
+		}
+		String conversation = request.conversationId() == null
+				? UUID.randomUUID().toString()
+				: normalize(request.conversationId());
+
+		// Context goes in as template parameters, so braces in lesson or question text are never parsed.
+		Map<String, Object> params = new HashMap<>();
+		StringBuilder system = new StringBuilder(systemPrompt);
+		if (request.subchapterId() != null) {
+			system.append(LESSON_SECTION);
+			params.put("lesson", contextService.lessonContext(request.subchapterId()));
+		}
+		if (request.questionId() != null) {
+			system.append(QUESTION_SECTION);
+			params.put("question", contextService.questionContext(request.questionId(), request.selectedOptionId()));
+		}
 
 		if (!configured) {
 			return fallback(conversation);
 		}
 		try {
 			String reply = chatClient.prompt()
-					.system(system -> {
-						if (lesson == null) {
-							system.text(systemPrompt);
-						} else {
-							system.text(systemPrompt + LESSON_SECTION).param("lesson", lesson);
-						}
-					})
+					.system(spec -> spec.text(system.toString()).params(params))
 					.user(message)
 					.advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversation))
 					.call()
@@ -118,12 +129,6 @@ public class CoachService {
 		} catch (IllegalArgumentException ex) {
 			throw new BadRequestException("conversationId must be a UUID returned by the coach");
 		}
-	}
-
-	private String lessonContext(Long subchapterId) {
-		Subchapter subchapter = subchapterRepository.findById(subchapterId)
-				.orElseThrow(() -> new ResourceNotFoundException("Subchapter", subchapterId));
-		return subchapter.getCode() + " " + subchapter.getTitle() + "\n\n" + subchapter.getLessonMarkdown();
 	}
 
 	private static String read(Resource resource) {

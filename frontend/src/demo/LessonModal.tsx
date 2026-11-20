@@ -22,6 +22,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { cn } from 'cn';
 import { getQuiz, getSubchapter, getSubchapterControlQuiz, submitAnswer } from '@/api';
+import { usePublishCoachFocus } from '@/components/coach/coachFocus';
 import { ApiError } from '@/config/axios';
 import type { AnswerOption, AnswerResult, Question, Quiz } from '@/model';
 import type { LearningNode, TopicDefinition } from './learningPath';
@@ -361,6 +362,16 @@ export function LessonPage({
     setAnswers({});
     goToStep({ kind: 'question', index: 0 });
   };
+
+  // Tell the AI coach which lesson and question the learner is on, and their answer once it is checked
+  usePublishCoachFocus({
+    scopeId: node.id,
+    label: `${stepLabel} · ${node.code} ${node.title}`,
+    subchapterId: node.kind === 'lesson' ? node.subchapterId : undefined,
+    questionId: currentQuestion?.id,
+    selectedOptionId: currentResult ? currentAnswer?.optionId : undefined,
+    answerCorrect: currentResult?.correct,
+  });
 
   const correctLabel =
     currentQuestion && currentResult

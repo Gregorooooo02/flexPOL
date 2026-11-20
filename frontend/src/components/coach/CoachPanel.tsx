@@ -1,14 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
 import Markdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { AiChat02Icon, ArrowUp02Icon, Delete02Icon, WifiDisconnected01Icon } from '@hugeicons/core-free-icons';
+import { ArrowUp02Icon, Delete02Icon, ViewIcon, WifiDisconnected01Icon } from '@hugeicons/core-free-icons';
 import { cn } from 'cn';
-import { askCoach } from '@/api';
-import { ApiError } from '@/config/axios';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +23,11 @@ import {
   MessageScrollerViewport,
 } from '@/components/ui/message-scroller';
 import { Spinner } from '@/components/ui/spinner';
+import { hedgieImage, moodForReply } from './hedgie';
+import type { HedgieMood } from './hedgie';
+import { HedgieAvatar } from './HedgieAvatar';
+import { useCoachChat } from './useCoachChat';
+import type { ChatEntry, CoachChat } from './useCoachChat';
 
 /** Must match CoachService.MAX_MESSAGE_LENGTH in the backend. */
 const MAX_MESSAGE_LENGTH = 2000;
@@ -35,13 +38,22 @@ const DEFAULT_SUGGESTIONS = [
   'What does liquidity mean?',
 ] as const;
 
-type ChatEntry =
-  | { readonly id: number; readonly role: 'learner'; readonly text: string }
-  | { readonly id: number; readonly role: 'coach'; readonly text: string; readonly status: 'ok' | 'offline' | 'error' };
-
 export interface CoachPanelProps {
+  /**
+   * The conversation to show, from `useCoachChat()`. Pass it when the panel can unmount while the
+   * conversation should live on (e.g. inside a dialog); without it the panel keeps its own.
+   */
+  readonly chat?: CoachChat;
   /** The lesson the learner is on. When set, the coach answers with that lesson as context. */
   readonly subchapterId?: number;
+  /** The quiz question the learner is on, so "help me with this question" works. */
+  readonly questionId?: number;
+  /** The option the learner picked and had checked for `questionId`. Leave it out before they answer. */
+  readonly selectedOptionId?: number;
+  /** Whether that checked answer was right. Only picks Hedgie's face (joy or encouragement). */
+  readonly answerCorrect?: boolean;
+  /** Shown in the header so the learner knows what the coach can see, e.g. "Question 2/4". */
+  readonly contextLabel?: string;
   readonly title?: string;
   readonly description?: string;
   /** Starter questions shown while the conversation is empty. */
@@ -51,83 +63,52 @@ export interface CoachPanelProps {
 }
 
 /**
- * Chat with the AI coach (Hedgie). Self-contained: it keeps its own conversation and calls
- * POST /api/coach/messages, so it can be dropped into a lesson, a sandbox or a side panel.
- * The backend remembers the conversation: the panel only sends back the `conversationId` from
- * the first reply. Clearing the chat drops the id, so the next message starts a new conversation.
+ * Chat with the AI coach (Hedgie), calling POST /api/coach/messages, so it can be dropped into a
+ * lesson, a sandbox or a side panel. Each message carries the lesson and quiz question passed as
+ * props. The backend remembers the conversation (see `useCoachChat`); clearing the chat starts a new one.
  *
- * To start a fresh conversation when the lesson changes, render it with `key={subchapterId}`.
+ * To start a fresh conversation when the lesson changes, render it (or the owner of `chat`) with
+ * `key={subchapterId}`.
  */
 export function CoachPanel({
+  chat: externalChat,
   subchapterId,
+  questionId,
+  selectedOptionId,
+  answerCorrect,
+  contextLabel,
   title = 'Ask Hedgie',
   description = 'Your learning coach. Ask about any concept; Hedgie explains, but never gives real investment advice.',
   suggestions = DEFAULT_SUGGESTIONS,
   className,
 }: CoachPanelProps) {
-  const [entries, setEntries] = useState<readonly ChatEntry[]>([]);
+  const ownChat = useCoachChat();
+  const { entries, pending, clear } = externalChat ?? ownChat;
+  const sendToCoach = (externalChat ?? ownChat).send;
   const [draft, setDraft] = useState('');
-  const [pending, setPending] = useState(false);
-  /** Server-side conversation; undefined until the first reply, and again after clearing. */
-  const [conversationId, setConversationId] = useState<string>();
-  const nextId = useRef(0);
-  const request = useRef<AbortController | null>(null);
 
-  useEffect(() => () => request.current?.abort(), []);
-
-  async function send(text: string) {
-    const message = text.trim();
-    if (!message || pending) {
+  function send(text: string) {
+    if (!text.trim() || pending) {
       return;
     }
-    const controller = new AbortController();
-    request.current = controller;
-    setEntries((current) => [...current, { id: nextId.current++, role: 'learner', text: message }]);
+    sendToCoach(
+      text,
+      { subchapterId, questionId, selectedOptionId },
+      moodForReply({ questionId, selectedOptionId, answerCorrect }),
+    );
     setDraft('');
-    setPending(true);
-
-    let reply: ChatEntry;
-    try {
-      const response = await askCoach({ message, subchapterId, conversationId }, controller.signal);
-      if (!controller.signal.aborted) {
-        setConversationId(response.conversationId);
-      }
-      reply = {
-        id: nextId.current++,
-        role: 'coach',
-        text: response.reply,
-        status: response.aiAvailable ? 'ok' : 'offline',
-      };
-    } catch (error) {
-      if (controller.signal.aborted) {
-        return;
-      }
-      const text = error instanceof ApiError ? error.message : 'Something went wrong. Please try again.';
-      reply = { id: nextId.current++, role: 'coach', text, status: 'error' };
-    }
-    if (!controller.signal.aborted) {
-      setEntries((current) => [...current, reply]);
-      setPending(false);
-    }
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void send(draft);
+    send(draft);
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
       event.preventDefault();
-      void send(draft);
+      send(draft);
     }
-  }
-
-  function clear() {
-    request.current?.abort();
-    setEntries([]);
-    setPending(false);
-    setConversationId(undefined);
   }
 
   const isEmpty = entries.length === 0 && !pending;
@@ -137,6 +118,12 @@ export function CoachPanel({
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
+        {contextLabel && (
+          <Badge variant="secondary" className="max-w-full">
+            <HugeiconsIcon icon={ViewIcon} strokeWidth={2} data-icon="inline-start" />
+            <span className="truncate">Hedgie sees: {contextLabel}</span>
+          </Badge>
+        )}
         <CardAction>
           <Button variant="ghost" size="icon-sm" onClick={clear} disabled={entries.length === 0 && !pending}>
             <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
@@ -149,22 +136,24 @@ export function CoachPanel({
         {isEmpty ? (
           <Empty className="flex-1">
             <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <HugeiconsIcon icon={AiChat02Icon} strokeWidth={2} />
+              <EmptyMedia>
+                <img src={hedgieImage('greeting')} alt="Hedgie waving hello" className="size-24" />
               </EmptyMedia>
-              <EmptyTitle>No questions yet</EmptyTitle>
-              <EmptyDescription>Pick a starter question or type your own.</EmptyDescription>
+              <EmptyTitle>Hi, I'm Hedgie!</EmptyTitle>
+              <EmptyDescription>
+                Stuck on something? Pick a starter question or ask me anything about it.
+              </EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
               {suggestions.map((suggestion) => (
-                <Button key={suggestion} variant="outline" size="sm" onClick={() => void send(suggestion)}>
+                <Button key={suggestion} variant="outline" size="sm" onClick={() => send(suggestion)}>
                   {suggestion}
                 </Button>
               ))}
             </EmptyContent>
           </Empty>
         ) : (
-          <MessageScrollerProvider autoScroll>
+          <MessageScrollerProvider autoScroll defaultScrollPosition="end">
             <MessageScroller className="min-h-0 flex-1">
               <MessageScrollerViewport>
                 <MessageScrollerContent>
@@ -175,7 +164,7 @@ export function CoachPanel({
                   ))}
                   {pending && (
                     <MessageScrollerItem messageId="pending">
-                      <CoachRow>
+                      <CoachRow mood="hint">
                         <Marker>
                           <MarkerIcon>
                             <Spinner />
@@ -233,7 +222,7 @@ function LearnerMessage({ text }: { readonly text: string }) {
 
 function CoachMessage({ entry }: { readonly entry: Extract<ChatEntry, { role: 'coach' }> }) {
   return (
-    <CoachRow>
+    <CoachRow mood={entry.mood}>
       {entry.status === 'offline' && (
         <Marker>
           <MarkerIcon>
@@ -251,14 +240,12 @@ function CoachMessage({ entry }: { readonly entry: Extract<ChatEntry, { role: 'c
   );
 }
 
-/** The coach's side of a row: avatar, name, then the given content. */
-function CoachRow({ children }: { readonly children: React.ReactNode }) {
+/** The coach's side of a row: Hedgie's face for this reply, name, then the given content. */
+function CoachRow({ mood, children }: { readonly mood: HedgieMood; readonly children: React.ReactNode }) {
   return (
     <Message align="start">
       <MessageAvatar>
-        <Avatar>
-          <AvatarFallback>H</AvatarFallback>
-        </Avatar>
+        <HedgieAvatar mood={mood} />
       </MessageAvatar>
       <MessageContent>
         <MessageHeader>Hedgie</MessageHeader>
