@@ -6,9 +6,9 @@ import { buttonVariants } from '@/components/ui/button';
 
 export function AppLayout() {
   return (
-    <div className="flex min-h-svh flex-col bg-background text-foreground">
-      <header className="border-b border-border bg-card/95 backdrop-blur-sm">
-        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3">
+    <div className="flex min-h-svh flex-col bg-background text-foreground [--app-header-height:4rem]">
+      <header className="sticky top-0 z-30 h-[var(--app-header-height)] shrink-0 border-b border-border bg-card/95 backdrop-blur-sm">
+        <div className="mx-auto flex h-full w-full max-w-7xl items-center justify-between gap-3 px-4">
           <Link to="/" className="outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <Badge className="gap-1.5 bg-primary px-2.5 py-0.5 text-primary-foreground">
               <HugeiconsIcon icon={ChartLineData01Icon} strokeWidth={2.2} aria-hidden="true" />
@@ -38,9 +38,9 @@ export function AppLayout() {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col">
+      <main className="flex flex-1 flex-col">
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 }

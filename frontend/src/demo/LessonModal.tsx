@@ -370,12 +370,12 @@ export function LessonPage({
   return (
     <div
       className={cn(
-        'flex min-h-svh flex-col justify-between text-foreground',
+        'flex flex-1 flex-col justify-between',
         topic.bandClassName,
       )}
       style={{ backgroundImage: topic.ambientGlow }}
     >
-      <header className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur-sm">
+      <header className="sticky top-[var(--app-header-height)] z-20 border-b border-border bg-card/90 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-md flex-col gap-2.5 px-4 py-3">
           <div className="flex items-center justify-between gap-2">
             <Button
@@ -434,7 +434,7 @@ export function LessonPage({
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-6">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-6">
         <div className="flex flex-wrap items-center gap-2">
           <Badge
             className="px-2 py-0.5 text-[#07090a]"
@@ -740,7 +740,7 @@ export function LessonPage({
             </CardHeader>
           </Card>
         )}
-      </main>
+      </div>
 
       <footer className="sticky bottom-0 z-20 border-t border-border bg-card/90 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-md flex-col gap-2 px-4 py-3">

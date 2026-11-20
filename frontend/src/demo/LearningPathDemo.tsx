@@ -2,9 +2,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   BookOpen01Icon,
-  ChartLineData01Icon,
   Coins01Icon,
-  FastForwardIcon,
   Flag02Icon,
   FlaskConicalIcon,
   LockIcon,
@@ -35,6 +33,7 @@ import {
   isTopicSandboxUnlocked,
 } from './learningPath';
 import type { LearningNode, LearningPath, NodeStatus, TopicDefinition } from './learningPath';
+import { DemoToolbar } from './DemoToolbar';
 import { LessonPage } from './LessonModal';
 import { SandboxPage } from './SandboxModal';
 
@@ -253,13 +252,9 @@ export function LearningPathDemo() {
   }
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-background px-4 text-foreground">
+    <div className="flex flex-1 items-center justify-center px-4 py-6">
       <Card size="sm" className="w-full max-w-md border border-border bg-card py-5" role="status" aria-live="polite">
         <CardHeader className="items-center px-5 text-center">
-          <Badge className="mb-2 gap-1.5 bg-primary px-2.5 py-0.5 text-primary-foreground">
-            <HugeiconsIcon icon={ChartLineData01Icon} strokeWidth={2.2} />
-            flexPOL
-          </Badge>
           <CardTitle className="normal-case tracking-normal">
             {loadState.status === 'loading'
               ? 'Loading the learning path…'
@@ -434,59 +429,16 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
   }
 
   return (
-    <div className="min-h-svh bg-background text-foreground">
-      <header className="sticky top-0 z-20 border-b border-border bg-card/95 backdrop-blur-sm">
-        <div className="mx-auto flex w-full max-w-md flex-col gap-2 px-4 py-3">
-          <div className="flex items-center justify-between gap-2">
-            <Badge className="gap-1.5 bg-primary px-2.5 py-0.5 text-primary-foreground">
-              <HugeiconsIcon icon={ChartLineData01Icon} strokeWidth={2.2} />
-              flexPOL
-            </Badge>
+    <div className="flex flex-1 flex-col">
+      <DemoToolbar
+        completedCount={completedList.length}
+        totalCount={path.flatNodes.length}
+        firstUnfinishedTopicTitle={firstUnfinishedTopic?.title ?? null}
+        onCompleteCurrentTopic={handleCompleteCurrentTopic}
+        onReset={handleReset}
+      />
 
-            <h1 className="font-heading text-base font-semibold tracking-tight text-foreground">
-              Course progress
-            </h1>
-
-            <Badge
-              variant="outline"
-              className="gap-1.5 border border-border bg-secondary px-2 py-0.5 tabular-nums"
-            >
-              <span>
-                {completedList.length}/{path.flatNodes.length}
-              </span>
-              <span className="inline-flex size-4 items-center justify-center rounded-full bg-[#ffd22e] text-[#07090a]">
-                <HugeiconsIcon icon={Coins01Icon} className="size-3!" strokeWidth={2.4} />
-              </span>
-            </Badge>
-          </div>
-
-          <div className="flex items-center justify-between gap-2">
-            <Button
-              type="button"
-              size="xs"
-              variant="secondary"
-              disabled={!firstUnfinishedTopic}
-              onClick={handleCompleteCurrentTopic}
-              className="flex-1 transition-transform active:scale-95"
-            >
-              <HugeiconsIcon icon={FastForwardIcon} strokeWidth={2} />
-              {firstUnfinishedTopic ? `Complete ${firstUnfinishedTopic.title}` : 'All done'}
-            </Button>
-            <Button
-              type="button"
-              size="xs"
-              variant="outline"
-              onClick={handleReset}
-              className="transition-transform active:scale-95"
-            >
-              <HugeiconsIcon icon={RefreshIcon} strokeWidth={2} />
-              Reset
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main>
+      <div className="flex-1">
         <div className="border-b border-border bg-card/60 px-4 py-3">
           <div className="mx-auto max-w-md">
             <Card
@@ -894,7 +846,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
             );
           })}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

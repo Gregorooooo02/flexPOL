@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router';
-import { LearningPathDemo } from './demo/LearningPathDemo';
 import { AppLayout } from './layouts/AppLayout';
+import { DemoPage } from './pages/DemoPage';
 import { HomePage } from './pages/HomePage';
 
 export function App() {
@@ -8,7 +8,7 @@ export function App() {
     <Routes>
       <Route element={<AppLayout />}>
         <Route index element={<HomePage />} />
-        <Route path="demo" element={<LearningPathDemo />} />
+        <Route path="demo" element={<DemoPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
