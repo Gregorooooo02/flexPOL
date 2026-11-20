@@ -166,6 +166,7 @@ The repository is a monorepo with two apps: `backend/` and `frontend/`.
 | UI library | React + React DOM | ^19.3 |
 | Language | TypeScript | ~7.0 |
 | Build tool / dev server | Vite with `@vitejs/plugin-react` | Vite ^8.3, plugin ^6.1 |
+| 3D mascot | Three.js | 0.187.0, loads on demand and renders Hedgie after each completed lesson |
 | HTTP client | axios | ^1.21, shared instance and `ApiError` in `src/config/axios.ts` |
 | Markdown | react-markdown + remark-gfm | ^10.1 / ^4.0, render lesson Markdown (including GFM tables) in `src/demo/LessonMarkdown.tsx` |
 | Linting | oxlint | ^1.90, configured in `.oxlintrc.json` |

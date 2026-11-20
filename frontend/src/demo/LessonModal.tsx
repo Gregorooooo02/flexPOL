@@ -26,6 +26,8 @@ import { ApiError } from '@/config/axios';
 import type { AnswerOption, AnswerResult, Question, Quiz } from '@/model';
 import type { LearningNode, TopicDefinition } from './learningPath';
 import { LessonMarkdown } from './LessonMarkdown';
+import { HedgieCelebration } from './hedgie/HedgieCelebration';
+import { useHedgieScene } from './hedgie/useHedgieScene';
 
 interface LessonPageProps {
   readonly node: LearningNode;
@@ -211,6 +213,8 @@ export function LessonPage({
   const [answers, setAnswers] = useState<AnswerMap>({});
   const [flashKey, setFlashKey] = useState<{ optionId: number; seq: number } | null>(null);
   const answerAbortRef = useRef<AbortController | null>(null);
+  const hasHedgie = node.kind === 'lesson';
+  const loadHedgie = useHedgieScene(hasHedgie);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -679,12 +683,16 @@ export function LessonPage({
             }}
           >
             <CardHeader className="items-center px-5 text-center">
-              <Badge
-                className="mb-3 size-14 justify-center rounded-full text-[#07090a]"
-                style={{ backgroundColor: topic.accentHex }}
-              >
-                <HugeiconsIcon icon={Tick02Icon} className="size-7!" strokeWidth={2.5} />
-              </Badge>
+              {hasHedgie ? (
+                <HedgieCelebration loadScene={loadHedgie} />
+              ) : (
+                <Badge
+                  className="mb-3 size-14 justify-center rounded-full text-[#07090a]"
+                  style={{ backgroundColor: topic.accentHex }}
+                >
+                  <HugeiconsIcon icon={Tick02Icon} className="size-7!" strokeWidth={2.5} />
+                </Badge>
+              )}
 
               <Badge
                 className="px-2.5 py-0.5 text-[#07090a]"
