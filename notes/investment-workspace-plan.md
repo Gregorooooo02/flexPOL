@@ -248,9 +248,19 @@ Total: about 8.5 developer-days.
 - The old simulation error handler had been lost in a merge, so unknown instruments and invalid input returned 500. Unknown instruments now map to 404 in `ApiExceptionHandler`, and invalid simulation input maps to 400 through a handler scoped to `SimulationController`.
 - `InstrumentService.getSimulationDefinition` looked up the configuration before checking the instrument existed, so an unknown ID gave a 500 on POST while GET gave 404. It now checks the instrument first.
 
+### M3 status: done — portfolio builder
+
+- The Playground now loads the real catalogue through `src/api/instrumentApi.ts`, with search, class/risk filters, alphabetical ordering, catalogue loading/error/empty states and retry.
+- `PlaygroundPage` owns the catalogue, per-instrument history load states/cache, request controllers, filters, selected instrument, amount draft, historical range and selected horizon alongside its portfolio reducer. No state provider, persistence, global cache or data-fetching dependency was added.
+- `InstrumentRow`, `InstrumentPanel`, `AmountField`, `PortfolioList`, `HoldingRow`, `AllocationBar`, `MoneyValue` and `SignedChange` replace the placeholders. Edits are targets, not additional purchases; `planPosition` determines the Buy/Sell/Remove action. Confirm commits, Cancel discards the draft, and focus returns to the opener. Over-cash and malformed inputs are rejected. The slider and quick allocations update the amount, not a second percentage state.
+- Rows request history as they approach the viewport; opening the dialog reuses that request/cache. Failed histories can be retried without disabling allocations. `workspace/history.ts` and the SVG `Sparkline`/`PriceChart` components use original source dates, with 1M/6M/1Y/All ranges anchored to the last available observation, date-based annual returns, explicit UTC date formatting, and unavailable states instead of fabricated zero returns. Index values are not shown as EUR share prices.
+- `PlaygroundHeader` shows cash, invested amount, allocated percentage and total. A labelled cash/asset-class allocation bar updates on confirmation/removal. A controlled horizon selector offers 1/3/5/10 years without changing allocations. M3 continues to use relative price 1 on day 0; no simulation request, replay, P/L or post-simulation Start over is implemented until M4.
+- Added the missing shadcn source components (`Field`, `Label`, `Select`, `Skeleton`, `ToggleGroup` and its toggle helpers) using the existing style/dependencies, without overwriting existing components or changing manifests. `Slider` gained an optional `thumbProps` prop for accessible labels. No test runner or frontend test files were added.
+- Verification: `npm run build` passes and `npm run lint` reports only the pre-existing UI Fast Refresh warnings. A browser walkthrough against the running backend covered add/reduce/remove (EUR 2,500 → EUR 1,000 → removed, returning cash to EUR 10,000), insufficient cash and malformed input, Cancel, catalogue/history retries, filters, historical ranges, horizon selection, dialog focus restoration, and page-local reset after navigation. At 375 px there is no horizontal overflow and the dialog fits the viewport with a scrollable body. `AGENTS.md` documents the current state and the M4 boundary.
+
 ## Verification (no automated frontend tests)
 
-- `npm run build` and `npm run lint` pass. The three existing Fast Refresh warnings in `components/ui` are known.
+- `npm run build` and `npm run lint` pass. Existing Fast Refresh warnings in `components/ui` are known.
 - Manual checklist:
   - Build a portfolio on day 0: cash falls by exactly what is invested, and rows sum to the total.
   - Over-cash attempt is rejected with a message.

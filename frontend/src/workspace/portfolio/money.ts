@@ -82,22 +82,34 @@ export function parseAmountInput(text: string): Cents | null {
     }
   }
 
-  const integerDigits = (decimalIndex >= 0 ? compact.slice(0, decimalIndex) : compact).replace(/[.,]/g, '');
-  const fractionDigits = decimalIndex >= 0 ? compact.slice(decimalIndex + 1).replace(/[.,]/g, '') : '';
+  const integerPart = decimalIndex >= 0 ? compact.slice(0, decimalIndex) : compact;
+  const fractionDigits = decimalIndex >= 0 ? compact.slice(decimalIndex + 1) : '';
+  const groupSeparator = integerPart.includes(',') ? ',' : '.';
+  const validInteger =
+    integerPart === '' ||
+    /^\d+$/.test(integerPart) ||
+    new RegExp(`^\\d{1,3}(\\${groupSeparator}\\d{3})+$`).test(integerPart);
+  // Never silently turn malformed input such as "1..2" or "1,23,456" into an amount.
+  if (
+    !validInteger ||
+    !/^\d*$/.test(fractionDigits) ||
+    (decimalIndex >= 0 && integerPart.includes(compact[decimalIndex]))
+  )
+    return null;
+  const integerDigits = integerPart.replace(/[.,]/g, '');
   if (integerDigits === '' && fractionDigits === '') {
     return null;
   }
 
-  const wholeUnits = integerDigits === '' ? 0 : Number(integerDigits);
-  let cents = wholeUnits * 100 + Number((fractionDigits + '00').slice(0, 2));
+  let cents = BigInt(integerDigits || '0') * 100n + BigInt((fractionDigits + '00').slice(0, 2));
 
   const rest = fractionDigits.slice(2);
   if (rest !== '') {
     const first = rest[0];
     const exactlyHalf = first === '5' && /^0*$/.test(rest.slice(1));
-    if (first > '5' || (first === '5' && !exactlyHalf) || (exactlyHalf && cents % 2 === 1)) {
-      cents += 1;
+    if (first > '5' || (first === '5' && !exactlyHalf) || (exactlyHalf && cents % 2n === 1n)) {
+      cents += 1n;
     }
   }
-  return Number.isSafeInteger(cents) ? cents : null;
+  return cents <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(cents) : null;
 }
