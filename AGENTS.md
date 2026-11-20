@@ -139,6 +139,8 @@ The repository is a monorepo with two apps: `backend/` and `frontend/`.
 
 - Base package: `com.flexpol.backend`, with `entity/` and `repository/` subpackages.
 - The schema is recreated on every startup (`ddl-auto=create-drop`), and `src/main/resources/data.sql` seeds it.
+- Learning content tables: `chapter`, `subchapter` (lesson body in `lesson_markdown`), `quiz` (`CONTROL` per subchapter, `FINAL` per chapter), `question`, `answer_option`. Learner results: `quiz_attempt`, `attempt_answer`. Never send `answer_option.is_correct` to the frontend before the learner answers.
+- **`knowledge/` is the source of truth for content.** The block between the `GENERATED CONTENT` markers in `data.sql` is generated from it: after changing anything in `knowledge/`, run `node scripts/generate-content-sql.mjs` from the repository root and commit the updated `data.sql`. Don't edit that block by hand. The script fails if a question doesn't have options A–D with exactly one ✅.
 - The H2 console is at `http://localhost:8080/h2-console`.
 - H2 runs with `NON_KEYWORDS=USER` because `USER` is a reserved word there.
 - Commands: `./mvnw spring-boot:run` starts the app; `./mvnw test` runs the tests.
