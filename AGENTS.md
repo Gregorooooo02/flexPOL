@@ -182,6 +182,16 @@ The repository is a monorepo with two apps: `backend/` and `frontend/`.
 - `src/model/` holds TypeScript types that mirror the backend's response DTOs in `backend/.../dto/`. When a DTO changes, update the matching type in the same change. `src/config/axios.ts` holds the axios setup (base URL, timeout, error interceptor that turns failures into `ApiError`). `src/api/` holds only endpoint functions, one module per resource (`chapterApi`, `subchapterApi`, `quizApi`, `questionApi`), built on that client; components call these functions instead of using axios directly, and import `ApiError` from `@/config/axios` for error handling.
 - `src/demo/` holds the learning-path demo. `DemoToolbar.tsx` owns its course progress display and complete-chapter/reset controls, separate from the shared application header. `learningPath.ts` builds the path from `GET /api/chapters` (each chapter's subchapters, then its final quiz as a test node) and gives each chapter a colour theme and a sandbox in chapter order. `LessonModal.tsx` loads a lesson and its control quiz, or a final quiz, and checks answers through `questionApi`: control quizzes let the learner retry until correct, and final quizzes allow one answer per question and pass at `passMark`. Learner progress is kept in memory only, and the sandboxes (`SandboxModal.tsx`) are still frontend-only.
 
+## Testing policy
+
+Keep testing minimal unless the user asks for more.
+
+- **Default: test the service layer only.** When adding or changing backend behaviour, write JUnit tests for the affected `service/` classes. Do not add controller, repository, MockMvc/integration or frontend tests unless the user explicitly asks for them.
+- **Keep test cases few and focused.** Cover the happy path and the key edge cases of each changed method (for example a boundary value, a rejected input, or an invariant the code must keep). Do not write exhaustive matrices, many near-duplicate cases, or tests of trivial getters and mappings.
+- **The frontend has no test runner and gets no tests by default.** Verify frontend changes with `npm run build`, `npm run lint` and a manual check. Do not add a test dependency unless the user asks.
+- **When the user asks for more testing, do exactly what they specify** (for example more cases, a different layer, or a new tool), and update the Tech stack tables if a dependency is added.
+- Existing tests stay in place and must keep passing; this policy governs new work.
+
 ## Keeping this section up to date
 
 **Whenever the user asks you to add, remove, upgrade or replace a dependency, update this Tech stack chapter in the same change.** Follow these steps:
