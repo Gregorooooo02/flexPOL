@@ -1,8 +1,15 @@
 import { ChartLineData01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Link, NavLink, Outlet } from 'react-router';
+import { cn } from 'cn';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
+
+const NAV_ITEMS = [
+  { to: '/', label: 'Home', end: true },
+  { to: '/playground', label: 'Playground', end: false },
+  { to: '/demo', label: 'Demo', end: false },
+] as const;
 
 export function AppLayout() {
   return (
@@ -12,28 +19,24 @@ export function AppLayout() {
           <Link to="/" className="outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <Badge className="gap-1.5 bg-primary px-2.5 py-0.5 text-primary-foreground">
               <HugeiconsIcon icon={ChartLineData01Icon} strokeWidth={2.2} aria-hidden="true" />
-              flexPOL
+              {/* Icon only on narrow screens, so the three nav links fit */}
+              <span className="sr-only sm:not-sr-only">flexPOL</span>
             </Badge>
           </Link>
 
           <nav aria-label="Main navigation" className="flex items-center gap-2">
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) =>
-                buttonVariants({ variant: isActive ? 'secondary' : 'ghost', size: 'sm' })
-              }
-            >
-              Home
-            </NavLink>
-            <NavLink
-              to="/demo"
-              className={({ isActive }) =>
-                buttonVariants({ variant: isActive ? 'secondary' : 'ghost', size: 'sm' })
-              }
-            >
-              Demo
-            </NavLink>
+            {NAV_ITEMS.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  cn(buttonVariants({ variant: isActive ? 'secondary' : 'ghost', size: 'sm' }), 'px-3 sm:px-4')
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
           </nav>
         </div>
       </header>

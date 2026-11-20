@@ -180,7 +180,7 @@ All money is integer **cents**. State:
 
 ```ts
 interface Holding { units: number; costCents: number }
-interface Trade { dayIndex: number; instrumentId: number; cashDeltaCents: number; unitsDelta: number }
+   interface Trade { dayIndex: number; instrumentId: number; cashDeltaCents: number; unitsAfter: number }
 interface PortfolioState { budgetCents: number; cashCents: number; holdings: Record<number, Holding>; trades: Trade[] }
 ```
 
