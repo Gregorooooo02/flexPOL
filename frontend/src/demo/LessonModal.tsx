@@ -386,7 +386,7 @@ export function LessonPage({
       )}
       style={{ backgroundImage: topic.ambientGlow }}
     >
-      <header className="sticky top-[var(--app-header-height)] z-20 border-b border-border bg-card/90 backdrop-blur-sm">
+      <header className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-md flex-col gap-2.5 px-4 py-3 lg:max-w-3xl">
           <div className="flex items-center justify-between gap-2">
             <Button

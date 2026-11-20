@@ -4,7 +4,13 @@ import Markdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowUp02Icon, Delete02Icon, ViewIcon, WifiDisconnected01Icon } from '@hugeicons/core-free-icons';
+import {
+  ArrowUp02Icon,
+  Cancel01Icon,
+  Delete02Icon,
+  ViewIcon,
+  WifiDisconnected01Icon,
+} from '@hugeicons/core-free-icons';
 import { cn } from 'cn';
 import { Badge } from '@/components/ui/badge';
 import { Bubble, BubbleContent } from '@/components/ui/bubble';
@@ -58,6 +64,8 @@ export interface CoachPanelProps {
   readonly description?: string;
   /** Starter questions shown while the conversation is empty. */
   readonly suggestions?: readonly string[];
+  /** Optional dismiss action for sidebar or dialog layouts. */
+  readonly onClose?: () => void;
   /** Layout only, e.g. a height. The panel fills the height it is given. */
   readonly className?: string;
 }
@@ -80,6 +88,7 @@ export function CoachPanel({
   title = 'Ask Hedgie',
   description = 'Your learning coach. Ask about any concept; Hedgie explains, but never gives real investment advice.',
   suggestions = DEFAULT_SUGGESTIONS,
+  onClose,
   className,
 }: CoachPanelProps) {
   const ownChat = useCoachChat();
@@ -124,11 +133,17 @@ export function CoachPanel({
             <span className="truncate">Hedgie sees: {contextLabel}</span>
           </Badge>
         )}
-        <CardAction>
+        <CardAction className="flex items-center gap-1">
           <Button variant="ghost" size="icon-sm" onClick={clear} disabled={entries.length === 0 && !pending}>
             <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
             <span className="sr-only">Clear conversation</span>
           </Button>
+          {onClose && (
+            <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}>
+              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+              <span className="sr-only">Close chat</span>
+            </Button>
+          )}
         </CardAction>
       </CardHeader>
 

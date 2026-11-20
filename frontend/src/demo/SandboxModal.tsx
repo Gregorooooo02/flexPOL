@@ -536,7 +536,7 @@ export function SandboxPage({ topic, onBack }: SandboxPageProps) {
       className={`flex flex-1 flex-col justify-between ${topic.bandClassName}`}
       style={{ backgroundImage: topic.ambientGlow }}
     >
-      <header className="sticky top-[var(--app-header-height)] z-20 border-b border-border bg-card/90 backdrop-blur-sm">
+      <header className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-md items-center justify-between gap-2 px-4 py-3 lg:max-w-7xl">
           <Button
             type="button"

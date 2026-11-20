@@ -19,7 +19,7 @@ export function DemoToolbar({
   onReset,
 }: DemoToolbarProps) {
   return (
-    <header className="sticky top-[var(--app-header-height)] z-20 border-b border-border bg-card/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-20 border-b border-border bg-card/95 backdrop-blur-sm">
       <div className="mx-auto flex w-full max-w-md flex-col gap-2 px-4 py-3 lg:max-w-7xl lg:flex-row lg:items-center lg:gap-8">
         <div className="flex items-center justify-between gap-2 lg:flex-1">
           <h1 className="font-heading text-base font-semibold tracking-tight text-foreground">

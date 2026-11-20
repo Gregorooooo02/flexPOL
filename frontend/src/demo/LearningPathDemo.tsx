@@ -559,7 +559,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
 
         <div
           ref={pathTrackRef}
-          className="flex flex-col lg:min-h-[calc(100svh-var(--app-header-height)-8rem)] lg:flex-1 lg:flex-row lg:items-stretch lg:overflow-x-auto lg:overflow-y-hidden lg:overscroll-x-contain"
+          className="flex flex-col lg:[container-type:inline-size] lg:min-h-[calc(100svh-var(--app-header-height)-8rem)] lg:flex-1 lg:flex-row lg:items-stretch lg:overflow-x-auto lg:overflow-y-hidden lg:overscroll-x-contain"
           role="region"
           aria-label="Learning path"
           tabIndex={isDesktop ? 0 : undefined}
@@ -605,7 +605,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                 <div className="mx-auto flex w-full max-w-md flex-col items-center lg:mx-0 lg:max-w-none lg:items-center">
                   <Card
                     size="sm"
-                    className="w-full border border-border bg-card/85 py-3.5 backdrop-blur-xs lg:sticky lg:left-8 lg:self-start lg:max-w-[calc(100vw_-_4rem)]"
+                    className="w-full border border-border bg-card/85 py-3.5 backdrop-blur-xs lg:sticky lg:left-8 lg:self-start lg:max-w-[calc(100cqw_-_4rem)]"
                   >
                     <CardHeader className="min-w-0 px-4">
                       <div className="flex min-w-0 items-center justify-between gap-2">
