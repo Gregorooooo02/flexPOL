@@ -40,6 +40,8 @@ Across the broader product, scenarios can reflect different life stages, goals, 
 - Quizzes with explanations, not just correct/incorrect feedback.
 - Progress indicators, XP, and mastery badges.
 
+**Chapter plan and lesson content:** all learning content lives in the [knowledge/](knowledge/) folder. Start with the overview, [knowledge/learning-chapters.md](knowledge/learning-chapters.md), which lists chapters, subchapters and missions. Each chapter has its own folder with one file per subchapter, holding the lesson for the user and control questions with answers. Read these before working on lesson content, quizzes or missions.
+
 ### AI coach
 
 - Explains unfamiliar concepts in accessible language.
