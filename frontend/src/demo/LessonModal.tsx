@@ -28,6 +28,7 @@ import type { AnswerOption, AnswerResult, Question, Quiz } from '@/model';
 import type { LearningNode, TopicDefinition } from './learningPath';
 import { LessonMarkdown } from './LessonMarkdown';
 import { HedgieCelebration } from './hedgie/HedgieCelebration';
+import { HedgieWrongAnswer } from './hedgie/HedgieWrongAnswer';
 import { useHedgieScene } from './hedgie/useHedgieScene';
 
 interface LessonPageProps {
@@ -36,6 +37,7 @@ interface LessonPageProps {
   readonly isCompleted: boolean;
   readonly isTopicSandboxUnlocked: boolean;
   readonly nextNodeSummary: string | null;
+  readonly getNextWrongAnswerIndex: () => number;
   readonly onComplete: (nodeId: string) => void;
   readonly onBack: () => void;
   readonly onOpenSandbox: () => void;
@@ -67,6 +69,7 @@ interface AnswerState {
   readonly status: 'checking' | 'checked' | 'error';
   readonly result: AnswerResult | null;
   readonly errorMessage: string | null;
+  readonly wrongAnswerIndex?: number;
 }
 
 type AnswerMap = Readonly<Partial<Record<number, AnswerState>>>;
@@ -204,6 +207,7 @@ export function LessonPage({
   isCompleted,
   isTopicSandboxUnlocked,
   nextNodeSummary,
+  getNextWrongAnswerIndex,
   onComplete,
   onBack,
   onOpenSandbox,
@@ -215,7 +219,7 @@ export function LessonPage({
   const [flashKey, setFlashKey] = useState<{ optionId: number; seq: number } | null>(null);
   const answerAbortRef = useRef<AbortController | null>(null);
   const hasHedgie = node.kind === 'lesson';
-  const loadHedgie = useHedgieScene(hasHedgie);
+  const loadHedgie = useHedgieScene(hasHedgie || step.kind === 'question');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -253,6 +257,7 @@ export function LessonPage({
   const currentResult = currentAnswer?.status === 'checked' ? currentAnswer.result : null;
   const canAdvance = currentResult !== null && (isScored || currentResult.correct);
   const isLastQuestion = step.kind === 'question' && step.index + 1 >= questionCount;
+  const wrongAnswerIndex = currentAnswer?.wrongAnswerIndex;
 
   const stepLabel =
     step.kind === 'theory'
@@ -271,6 +276,7 @@ export function LessonPage({
         : Math.round(((step.kind === 'theory' ? 1 : step.index + 2) / (questionCount + 2)) * 100);
 
   const goToStep = (nextStep: LessonStep) => {
+    setFlashKey(null);
     setStep(nextStep);
     window.scrollTo({ top: 0 });
   };
@@ -309,19 +315,30 @@ export function LessonPage({
     const isStillPending = (prev: AnswerMap) =>
       prev[question.id]?.optionId === option.id && prev[question.id]?.status === 'checking';
 
-    submitAnswer(question.id, option.id, answerAbortRef.current?.signal)
+    const signal = answerAbortRef.current?.signal;
+    submitAnswer(question.id, option.id, signal)
       .then((result) => {
+        if (signal?.aborted) {
+          return;
+        }
+        const wrongAnswerIndex = result.correct ? undefined : getNextWrongAnswerIndex();
         setAnswers((prev) =>
           isStillPending(prev)
             ? {
                 ...prev,
-                [question.id]: { optionId: option.id, status: 'checked', result, errorMessage: null },
+                [question.id]: {
+                  optionId: option.id,
+                  status: 'checked',
+                  result,
+                  errorMessage: null,
+                  wrongAnswerIndex,
+                },
               }
             : prev,
         );
       })
       .catch((error: unknown) => {
-        if (answerAbortRef.current?.signal.aborted) {
+        if (signal?.aborted) {
           return;
         }
         setAnswers((prev) =>
@@ -355,6 +372,7 @@ export function LessonPage({
     if (step.kind !== 'question') {
       return;
     }
+    setFlashKey(null);
     setStep(step.index === 0 ? { kind: 'theory' } : { kind: 'question', index: step.index - 1 });
   };
 
@@ -752,6 +770,10 @@ export function LessonPage({
           </Card>
         )}
       </div>
+
+      {wrongAnswerIndex !== undefined && flashKey?.optionId === currentAnswer?.optionId && (
+        <HedgieWrongAnswer key={wrongAnswerIndex} reactionIndex={wrongAnswerIndex} loadScene={loadHedgie} />
+      )}
 
       <footer className="sticky bottom-0 z-20 border-t border-border bg-card/90 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-md flex-col gap-2 px-4 py-3">

@@ -291,6 +291,8 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
   const [burstNodeId, setBurstNodeId] = useState<string | null>(null);
   const [shakeNodeId, setShakeNodeId] = useState<string | null>(null);
   const timerRef = useRef<number | null>(null);
+  const wrongAnswerCount = useRef(0);
+  const getNextWrongAnswerIndex = useCallback(() => wrongAnswerCount.current++, []);
 
   useEffect(() => {
     return () => {
@@ -413,6 +415,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
           isCompleted={completedSet.has(entry.node.id)}
           isTopicSandboxUnlocked={isTopicSandboxUnlocked(entry.topic, completedSet)}
           nextNodeSummary={nextEntry ? `${nextEntry.node.code} (${nextEntry.node.title})` : null}
+          getNextWrongAnswerIndex={getNextWrongAnswerIndex}
           onComplete={handleCompleteLesson}
           onBack={() => goToView({ kind: 'path' })}
           onOpenSandbox={() => goToView({ kind: 'sandbox', topicId: entry.topic.id })}
