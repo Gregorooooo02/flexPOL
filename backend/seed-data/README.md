@@ -1,7 +1,9 @@
 # Historical source snapshots
 
-Part 1 of the investment simulation plan: offline source material only. Nothing
-here is loaded by the application yet; `data.sql` generation is Part 2.
+Part 1 supplies offline source snapshots; Part 2 defines the persistence model.
+Part 3 converts the snapshots into a generated section of
+`backend/src/main/resources/data.sql`, loaded after Hibernate creates the schema.
+The application needs neither Python nor network access to load the checked-in SQL.
 
 ## Contents
 
@@ -14,6 +16,9 @@ here is loaded by the application yet; `data.sql` generation is Part 2.
 - `manifest.json`: exact source URLs, UTC download times, provider names,
   exchanges, verified currencies, actual date ranges, row counts, omitted
   incomplete dates, adjustment conventions, and SHA-256 checksums for both files.
+- `seed-settings.json`: stable database IDs, curated educational risk labels,
+  descriptions, and editable expected-return assumptions, keyed by snapshot
+  `file_key`. This lookup key is not a database instrument code.
 
 The selection is representative, **not an authoritative top-20 popularity
 ranking**. Stooq returned a browser-verification page during source discovery;
@@ -58,6 +63,94 @@ missing OHLC or adjusted-close values are omitted and listed in the manifest.
 An absent provider bar is not proof of an exchange holiday: no official trading
 calendar completeness audit is performed.
 
+## Generate the database seed
+
+Run offline from the repository root with Python 3.10+ and no pip packages:
+
+```sh
+python3 backend/scripts/generate_seed.py
+```
+
+To inspect output without modifying the active seed:
+
+```sh
+python3 backend/scripts/generate_seed.py --output /tmp/opencode/flexpol-seed-preview.sql
+```
+
+Optional `--data-dir`, `--settings`, and `--seed-file` arguments select alternative
+local inputs. `--seed-file` defaults to the application's existing `data.sql` and
+supplies the content to preserve, even when `--output` is specified. The generated
+output must be outside the source snapshot directory to protect source inputs.
+
+The generator checks CSV checksums, sorts by instrument ID and original date,
+and replaces only the section between these markers:
+
+```sql
+-- BEGIN GENERATED INSTRUMENT SEED
+-- END GENERATED INSTRUMENT SEED
+```
+
+If absent, the section is appended; missing, reversed, or duplicate marker pairs
+cause failure without changing the seed. Existing users and all other SQL outside
+the section are preserved. Output is written atomically only after conversion
+succeeds. There are no generation timestamps, and identical inputs produce
+byte-identical SQL. The current seed contains 20 instruments, 20 configurations,
+and 15,258 observations, alongside the three existing users. It uses ordinary
+inserts, not upserts: Hibernate recreates the schema on every startup.
+
+### Stable identifiers
+
+- Instrument IDs `1001–1020` are explicitly assigned in `seed-settings.json` and
+  remain stable regardless of catalog ordering. Assign a new ID for a new instrument.
+- Configuration IDs reuse the corresponding instrument's ID in a separate table.
+- Observation IDs are `instrumentId * 1_000_000 + rowNumber`, starting at row 1.
+  Each instrument reserves 999,999 observation IDs; overflow is rejected.
+  Row IDs are deterministic for the same snapshot but change if earlier history
+  is inserted. Do not treat them as durable external identifiers.
+
+### Seed value and date semantics
+
+Each series uses `100 * adjusted_close / first_adjusted_close`, calculated with
+40-digit Decimal precision and round-half-even to eight fractional digits.
+`history_value_type` is `TOTAL_RETURN_INDEX`: an adjusted-close-based total-return
+proxy, not an independently audited total-return index. The starting level is
+`100.00000000`, **not EUR 100**. A future simulation scales relative index growth
+to the learner's EUR investment. Dividends must not be added again.
+
+Original dates are retained in `original_date`. Display dates use
+`DATEADD('DAY', offset, CURRENT_DATE)`, where `offset` is measured from the shared
+manifest `requested_end_date`, currently 19 November 2026. Thus that source date
+appears as the database initialization date. `history_rebased` is true, and each
+instrument explains that this is a historical demo replay, not actual current
+market data. Shifting does not preserve exchange weekdays. Raw files stay intact;
+no interpolation or currency conversion is performed.
+
+### Simulation assumptions
+
+All 20 configurations use `GBM`; the engine itself is implemented in Part 5.
+The parameter JSON includes:
+
+- Annual expected return, initially `0.06` for every instrument. This is a curated
+  illustrative **model drift**, not CAGR, a historical growth extrapolation,
+  or a forecast. Override it per instrument in `seed-settings.json`.
+- Annual volatility, derived from sample variance of original adjusted-close log
+  returns, annualized using 252 sessions per year and rounded to eight decimals.
+- Original calibration dates, included return count, excluded incomplete interval
+  count, and parameter/distribution provenance.
+
+Return intervals spanning dates explicitly recorded as incomplete in the manifest
+are excluded from calibration. Ordinary weekends and holidays are not excluded;
+unknown provider omissions are not identified by a complete exchange calendar.
+Historical rows themselves are retained, and calibration uses unrounded source
+values rather than rounded indices. All calculations are deterministic Decimal
+operations before serialization to numeric JSON values.
+
+Risk labels (`LOW`, `MEDIUM`, `HIGH`) are editable educational classifications,
+not official fund risk indicators or a calculated ranking. Asset-class and history
+type strings must match the Java enums in `model.enums`; model keys remain strings.
+Adding a new simulation behavior requires converter support as well as a future
+engine. Deposits are not fabricated from market-price snapshots.
+
 ## CSV fields and interpretation
 
 ```text
@@ -73,16 +166,16 @@ date,open,high,low,close,adjusted_close,volume
   See [Yahoo's adjustment explanation](https://help.yahoo.com/kb/SLN28256.html).
 - Do not add dividends again when using adjusted-close returns. For accumulating
   ETFs, reinvested fund income is already reflected in the fund value.
-- These values are not normalized index levels. A later seed generator may
-  normalize adjusted close to 100 and must then label it as an index, not EUR.
+- These raw values are not normalized index levels. The seed generator normalizes
+  adjusted close to 100 and labels the derived observations as an index, not EUR.
 - An ETF name containing “USD” can describe its fund/share-class currency even
   though this exchange listing trades in EUR. EUR quotation does **not** mean
   currency hedging or removal of underlying foreign-currency exposure.
 
 These are real historical source snapshots, **not synthetic market outcomes**.
 Do not present them as synthetic source history. The educational sandbox's future
-paths will be simulated. If the seed generator shifts dates, preserve the original
-date and label the result as a historical demo replay, not recent actual prices.
+paths will be simulated. The seed generator preserves original dates and labels
+the shifted series as a historical demo replay, not recent actual prices.
 
 ## Usage restrictions
 

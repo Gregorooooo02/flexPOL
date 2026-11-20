@@ -1,0 +1,22 @@
+{
+  "sap": {"instrumentId": 1001, "riskLevel": "HIGH", "annualExpectedReturn": "0.06", "description": "A concentrated investment in a single enterprise software company."},
+  "siemens": {"instrumentId": 1002, "riskLevel": "HIGH", "annualExpectedReturn": "0.06", "description": "A concentrated investment in a single industrial technology company."},
+  "allianz": {"instrumentId": 1003, "riskLevel": "HIGH", "annualExpectedReturn": "0.06", "description": "A concentrated investment in a single insurance and financial-services company."},
+  "deutsche-telekom": {"instrumentId": 1004, "riskLevel": "HIGH", "annualExpectedReturn": "0.06", "description": "A concentrated investment in a single telecommunications company."},
+  "airbus": {"instrumentId": 1005, "riskLevel": "HIGH", "annualExpectedReturn": "0.06", "description": "A concentrated investment in a single aerospace company."},
+  "schneider-electric": {"instrumentId": 1006, "riskLevel": "HIGH", "annualExpectedReturn": "0.06", "description": "A concentrated investment in a single energy-management and automation company."},
+  "totalenergies": {"instrumentId": 1007, "riskLevel": "HIGH", "annualExpectedReturn": "0.06", "description": "A concentrated investment in a single energy company, exposed to commodity-market conditions."},
+  "lvmh": {"instrumentId": 1008, "riskLevel": "HIGH", "annualExpectedReturn": "0.06", "description": "A concentrated investment in a single luxury-goods group."},
+  "loreal": {"instrumentId": 1009, "riskLevel": "HIGH", "annualExpectedReturn": "0.06", "description": "A concentrated investment in a single cosmetics and beauty company."},
+  "asml": {"instrumentId": 1010, "riskLevel": "HIGH", "annualExpectedReturn": "0.06", "description": "A concentrated investment in a single semiconductor-equipment company."},
+  "ing": {"instrumentId": 1011, "riskLevel": "HIGH", "annualExpectedReturn": "0.06", "description": "A concentrated investment in a single banking group."},
+  "santander": {"instrumentId": 1012, "riskLevel": "HIGH", "annualExpectedReturn": "0.06", "description": "A concentrated investment in a single international banking group."},
+  "vanguard-all-world": {"instrumentId": 1013, "riskLevel": "MEDIUM", "annualExpectedReturn": "0.06", "description": "A diversified basket of developed and emerging-market equities. Diversification does not prevent market losses."},
+  "ishares-world": {"instrumentId": 1014, "riskLevel": "MEDIUM", "annualExpectedReturn": "0.06", "description": "A diversified basket of developed-market equities. Emerging markets are not included."},
+  "ishares-sp500": {"instrumentId": 1015, "riskLevel": "MEDIUM", "annualExpectedReturn": "0.06", "description": "A basket of large US companies, with geographic and underlying currency exposure despite its EUR quotation."},
+  "ishares-nasdaq100": {"instrumentId": 1016, "riskLevel": "HIGH", "annualExpectedReturn": "0.06", "description": "A Nasdaq-100 equity basket with substantial technology and growth-company concentration."},
+  "ishares-eurostoxx50": {"instrumentId": 1017, "riskLevel": "MEDIUM", "annualExpectedReturn": "0.06", "description": "A basket of large eurozone companies. The historical performance proxy includes distribution adjustments."},
+  "ishares-emerging-markets": {"instrumentId": 1018, "riskLevel": "HIGH", "annualExpectedReturn": "0.06", "description": "An emerging-market equity basket exposed to market, political, liquidity, and currency risks."},
+  "ishares-world-small-cap": {"instrumentId": 1019, "riskLevel": "HIGH", "annualExpectedReturn": "0.06", "description": "A developed-market small-company equity basket, with smaller-company and liquidity risks."},
+  "vanguard-esg-global": {"instrumentId": 1020, "riskLevel": "MEDIUM", "annualExpectedReturn": "0.06", "description": "An ESG-screened global equity basket. Screening changes its exposures but does not remove investment risk."}
+}

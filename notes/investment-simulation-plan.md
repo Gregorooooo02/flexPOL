@@ -193,7 +193,13 @@ No new dependencies, migrations, profiles, or configuration changes should be ne
 
 The application compiles and starts with Hibernate-created instrument tables, functioning repository discovery, and the existing user seed intact. No instrument inserts or API/simulation behavior are introduced yet.
 
-## Part 3 — Generate and load data.sql
+## Part 3 — Generate and load data.sql (completed)
+
+### Status
+
+Completed: added the standard-library-only offline generator at `backend/scripts/generate_seed.py` and explicit settings/IDs at `backend/seed-data/seed-settings.json`. The generated section of `data.sql` contains 20 instruments, 20 GBM configurations, and 15,258 observations; the three existing user inserts are preserved. Source files remain unchanged.
+
+Manual verification confirmed byte-identical repeated generation, source checksums, preservation of unrelated SQL, malformed-marker rejection, successful packaging with tests skipped, and startup loading through the repositories. All series start at 100, enum names and CLOB JSON load correctly, original dates are retained, and all display dates use the shared startup-relative anchor. Fourteen return intervals spanning known omitted observations are excluded from volatility calibration. The seed-data README documents regeneration, assumptions, and unresolved third-party data permissions. No tests, dependencies, application classes, or configuration were changed. Part 4 (API skeletons) is next.
 
 ### Goal
 
