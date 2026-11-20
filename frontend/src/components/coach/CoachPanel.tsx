@@ -53,7 +53,8 @@ export interface CoachPanelProps {
 /**
  * Chat with the AI coach (Hedgie). Self-contained: it keeps its own conversation and calls
  * POST /api/coach/messages, so it can be dropped into a lesson, a sandbox or a side panel.
- * The backend answers each message on its own; earlier turns are not sent with it.
+ * The backend remembers the conversation: the panel only sends back the `conversationId` from
+ * the first reply. Clearing the chat drops the id, so the next message starts a new conversation.
  *
  * To start a fresh conversation when the lesson changes, render it with `key={subchapterId}`.
  */
@@ -67,6 +68,8 @@ export function CoachPanel({
   const [entries, setEntries] = useState<readonly ChatEntry[]>([]);
   const [draft, setDraft] = useState('');
   const [pending, setPending] = useState(false);
+  /** Server-side conversation; undefined until the first reply, and again after clearing. */
+  const [conversationId, setConversationId] = useState<string>();
   const nextId = useRef(0);
   const request = useRef<AbortController | null>(null);
 
@@ -85,7 +88,10 @@ export function CoachPanel({
 
     let reply: ChatEntry;
     try {
-      const response = await askCoach({ message, subchapterId }, controller.signal);
+      const response = await askCoach({ message, subchapterId, conversationId }, controller.signal);
+      if (!controller.signal.aborted) {
+        setConversationId(response.conversationId);
+      }
       reply = {
         id: nextId.current++,
         role: 'coach',
@@ -121,6 +127,7 @@ export function CoachPanel({
     request.current?.abort();
     setEntries([]);
     setPending(false);
+    setConversationId(undefined);
   }
 
   const isEmpty = entries.length === 0 && !pending;

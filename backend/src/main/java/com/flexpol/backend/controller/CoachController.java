@@ -20,6 +20,6 @@ public class CoachController {
 
 	@PostMapping("/messages")
 	public CoachResponse ask(@RequestBody CoachRequest request) {
-		return coachService.ask(request.message(), request.subchapterId());
+		return coachService.ask(request.message(), request.subchapterId(), request.conversationId());
 	}
 }
