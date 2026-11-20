@@ -137,7 +137,20 @@ The repository is a monorepo with two apps: `backend/` and `frontend/`.
 | Testing | Spring Boot test (Web MVC), JUnit | `spring-boot-starter-webmvc-test` |
 | Build | Maven, through the wrapper | `./mvnw` (`mvnw.cmd` on Windows) |
 
-- Base package: `com.flexpol.backend`, with `entity/` and `repository/` subpackages.
+- Base package: `com.flexpol.backend`. Layers: `controller/` (REST endpoints, no logic) → `service/` (read-only `@Transactional` business logic, maps entities to DTOs) → `repository/` (Spring Data JPA). Also `entity/` (JPA entities), `dto/` (response records with static `from(...)` mappers; controllers never return entities) and `exception/` (`ResourceNotFoundException`, mapped to a 404 RFC 9457 problem detail by `ApiExceptionHandler`).
+- REST API (all `GET`, JSON):
+
+  | Endpoint | Returns |
+  |---|---|
+  | `/api/chapters` | All chapters in order, each with subchapter summaries and `finalQuizId` |
+  | `/api/chapters/{chapterId}` | One chapter |
+  | `/api/chapters/{chapterId}/subchapters` | Subchapter summaries of a chapter (no lesson body) |
+  | `/api/chapters/{chapterId}/final-quiz` | The chapter's final quiz |
+  | `/api/subchapters/{subchapterId}` | One subchapter with `lessonMarkdown` and `controlQuizId` |
+  | `/api/subchapters/{subchapterId}/control-quiz` | The subchapter's control quiz |
+  | `/api/quizzes/{quizId}` | Any quiz by id |
+
+  Quiz responses contain questions and A–D options only. Correct answers and explanations are left out on purpose; they belong in a future answer-submission endpoint.
 - The schema is recreated on every startup (`ddl-auto=create-drop`), and `src/main/resources/data.sql` seeds it.
 - Learning content tables: `chapter`, `subchapter` (lesson body in `lesson_markdown`), `quiz` (`CONTROL` per subchapter, `FINAL` per chapter), `question`, `answer_option`. Learner results: `quiz_attempt`, `attempt_answer`. Never send `answer_option.is_correct` to the frontend before the learner answers.
 - **`knowledge/` is the source of truth for content.** The block between the `GENERATED CONTENT` markers in `data.sql` is generated from it: after changing anything in `knowledge/`, run `node scripts/generate-content-sql.mjs` from the repository root and commit the updated `data.sql`. Don't edit that block by hand. The script fails if a question doesn't have options A–D with exactly one ✅.
