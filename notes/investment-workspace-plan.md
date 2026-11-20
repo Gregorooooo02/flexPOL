@@ -244,6 +244,10 @@ Rough sizes are for one developer and are only a guide. M1 (backend) and M2 (fro
 
 Total: about 8.5 developer-days.
 
+**M1 status: done.** `SeedMixer`, `SimulationService.simulateBatch`, `POST /api/simulations/batch` and four service tests (`SimulationServiceTests`) are in, and `bash mvnw test` is green (32 tests). A smoke test against the running app confirmed a 20-instrument, 5-year batch returns 200 with 20 aligned results (1.27 MB, about 65 ms), distinct seeds below 2^53, an identical replay of an item through `POST /api/simulations`, and different markets on repeated calls. Two existing problems had to be fixed along the way, because the plan depends on 404 and 400 responses:
+- The old simulation error handler had been lost in a merge, so unknown instruments and invalid input returned 500. Unknown instruments now map to 404 in `ApiExceptionHandler`, and invalid simulation input maps to 400 through a handler scoped to `SimulationController`.
+- `InstrumentService.getSimulationDefinition` looked up the configuration before checking the instrument existed, so an unknown ID gave a 500 on POST while GET gave 404. It now checks the instrument first.
+
 ## Verification (no automated frontend tests)
 
 - `npm run build` and `npm run lint` pass. The three existing Fast Refresh warnings in `components/ui` are known.

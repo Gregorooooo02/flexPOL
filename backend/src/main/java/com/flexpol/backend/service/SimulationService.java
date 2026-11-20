@@ -4,13 +4,16 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.flexpol.backend.dto.SimulationRequest;
 import com.flexpol.backend.dto.SimulationResult;
 import com.flexpol.backend.model.SimulationContext;
+import com.flexpol.backend.simulation.SeedMixer;
 import com.flexpol.backend.simulation.SimulationEngine;
 
 import org.springframework.stereotype.Service;
@@ -19,6 +22,8 @@ import org.springframework.stereotype.Service;
 public class SimulationService {
 
 	private static final int MAX_DURATION_DAYS = 30 * 365;
+	private static final int MAX_BATCH_SIZE = 50;
+	private static final int MAX_BATCH_DURATION_DAYS = 10 * 365;
 	private static final BigDecimal MAX_INVESTMENT = new BigDecimal("1000000000000");
 	private static final long GENERATED_SEED_BOUND = 1L << 53;
 
@@ -71,5 +76,49 @@ public class SimulationService {
 		return new SimulationResult(definition.instrumentId(), definition.currency(), initialInvestment,
 				request.durationDays(), start, trajectory.effectiveEndDate(), seed,
 				finalValue, totalReturn, trajectory.points());
+	}
+
+	/**
+	 * Simulates several instruments over one shared timeline. An item without a seed gets an
+	 * independent seed derived from a generated master seed and its instrument ID; an explicit
+	 * seed is used as given. Results keep the request order and report the seed actually used.
+	 */
+	public List<SimulationResult> simulateBatch(List<SimulationRequest> requests) {
+		if (requests == null || requests.isEmpty() || requests.size() > MAX_BATCH_SIZE) {
+			throw new IllegalArgumentException("A batch must contain between 1 and " + MAX_BATCH_SIZE + " simulations");
+		}
+		Set<Long> instrumentIds = new HashSet<>();
+		Integer durationDays = null;
+		for (var request : requests) {
+			if (request == null || request.instrumentId() == null) {
+				throw new IllegalArgumentException("An instrument ID is required");
+			}
+			if (!instrumentIds.add(request.instrumentId())) {
+				throw new IllegalArgumentException("Each instrument may appear only once in a batch");
+			}
+			if (request.durationDays() == null || request.durationDays() < 1
+					|| request.durationDays() > MAX_BATCH_DURATION_DAYS) {
+				throw new IllegalArgumentException("Batch duration must be between 1 and " + MAX_BATCH_DURATION_DAYS + " days");
+			}
+			if (durationDays != null && !durationDays.equals(request.durationDays())) {
+				throw new IllegalArgumentException("All simulations in a batch must use the same duration");
+			}
+			durationDays = request.durationDays();
+		}
+
+		long masterSeed = ThreadLocalRandom.current().nextLong(GENERATED_SEED_BOUND);
+		var results = requests.stream()
+				.map(request -> simulate(request.randomSeed() != null ? request : new SimulationRequest(
+						request.instrumentId(), request.initialInvestment(), request.durationDays(),
+						SeedMixer.derive(masterSeed, request.instrumentId()))))
+				.toList();
+
+		var first = results.getFirst();
+		for (var result : results) {
+			if (!result.startDate().equals(first.startDate()) || !result.endDate().equals(first.endDate())) {
+				throw new IllegalStateException("Instruments in a batch must share one start and end date");
+			}
+		}
+		return results;
 	}
 }
