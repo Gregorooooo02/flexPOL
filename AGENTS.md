@@ -135,10 +135,10 @@ The repository is a monorepo with two apps: `backend/` and `frontend/`.
 | Testing | Spring Boot test (Web MVC), JUnit | `spring-boot-starter-webmvc-test` |
 | Build | Maven, through the wrapper | `./mvnw` (`mvnw.cmd` on Windows) |
 
-- Base package: `com.flexpol.backend`, with `entity/` and `repository/` subpackages.
+- Base package: `com.flexpol.backend`, with `model/`, `model/enums/`, `repository/`, `dto/`, `service/`, and `controller/` subpackages. There is no `entity/` package or user model.
+- `dto/` contains only records directly used as endpoint requests/responses; supporting records belong in `model/`.
 - The schema is recreated on every startup (`ddl-auto=create-drop`), and `src/main/resources/data.sql` seeds it.
 - The H2 console is at `http://localhost:8080/h2-console`.
-- H2 runs with `NON_KEYWORDS=USER` because `USER` is a reserved word there.
 - Commands: `./mvnw spring-boot:run` starts the app; `./mvnw test` runs the tests.
 
 ## Frontend (`frontend/`)

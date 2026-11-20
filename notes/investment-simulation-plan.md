@@ -10,7 +10,8 @@
 - Download historical files once; the application runs entirely offline.
 - New instruments using existing behavior should require only seed changes. New simulation behaviors belong in isolated engine implementations.
 - Distinguish real source history, rebased historical demo data, and synthetic future outcomes. Keep the project's educational-demo positioning explicit.
-- Preserve existing user entities, repositories, configuration, and seed records.
+- The obsolete user entity, repository, repository test, and seed rows have been removed. There is no `entity/` package; H2 uses `jdbc:h2:mem:flexpol` without a user-table keyword workaround. Earlier completion notes mentioning users describe checks before this cleanup.
+- Keep only records directly used as endpoint requests/responses under `dto/`; supporting records and future engine parameter records belong under `model/`.
 
 ## Part 1 — Download historical data for 20 instruments
 
@@ -75,7 +76,7 @@ Follow-up changes completed: `AssetClass`, `RiskLevel`, and `HistoryValueType` a
 
 ### Goal
 
-Create the Java persistence model first and let Hibernate create its empty tables. The existing user seed continues to load unchanged. Instrument data will be added in Part 3, after the schema exists.
+Create the Java persistence model first and let Hibernate create its empty tables. Instrument data is added in Part 3, after the schema exists.
 
 ### Classes
 
@@ -95,7 +96,7 @@ repository/
   SimulationConfigurationRepository
 ```
 
-Leave the existing `entity/User` untouched rather than reorganizing unrelated code.
+Persistence classes belong in `model/`; the obsolete `entity/User` and its package have since been removed.
 
 ### Entity mappings
 
@@ -154,7 +155,7 @@ Keep the JSON opaque in the persistence layer. Each future simulation engine wil
 - One configuration per instrument is enforced by uniqueness; an instrument can temporarily exist without a configuration until seeded.
 - Use Lombok getters, setters, and a no-argument constructor, consistent with the existing entity. Avoid `@Data` and relationship-based `equals`, `hashCode`, or `toString` methods.
 - Keep database nullability and relational constraints, but do not add Bean Validation, custom validators, or tests.
-- Preserve existing user code and unfamiliar changes; do not move `entity/User` into `model/`.
+- Preserve unrelated code and unfamiliar changes. Do not reintroduce the removed user model or `entity/` package.
 
 ### Repositories
 
@@ -176,7 +177,7 @@ spring.jpa.defer-datasource-initialization=true
 spring.sql.init.mode=always
 ```
 
-Preserve the current H2 URL and `NON_KEYWORDS=USER` setting.
+Use the H2 URL `jdbc:h2:mem:flexpol`; the obsolete `NON_KEYWORDS=USER` setting has been removed with the user model.
 
 No new dependencies, migrations, profiles, or configuration changes should be necessary. Leave the existing `data.sql` intact in this part.
 
@@ -187,11 +188,11 @@ No new dependencies, migrations, profiles, or configuration changes should be ne
 3. Add `SimulationConfiguration`, its unique instrument relationship, and JSON text storage.
 4. Add the three repositories and their lookup methods.
 5. Compile/package with tests skipped, then perform a manual application startup check.
-6. Confirm all three tables, foreign keys, and unique constraints exist, existing users still load, and the new tables are empty.
+6. Confirm all three tables, foreign keys, and unique constraints exist and the new tables are empty before Part 3.
 
 ### Completion criteria
 
-The application compiles and starts with Hibernate-created instrument tables, functioning repository discovery, and the existing user seed intact. No instrument inserts or API/simulation behavior are introduced yet.
+The application compiles and starts with Hibernate-created instrument tables and functioning repository discovery. No instrument inserts or API/simulation behavior are introduced yet.
 
 ## Part 3 — Generate and load data.sql (completed)
 
@@ -274,10 +275,18 @@ Keep the source date in `original_date`, set `history_rebased = true`, and descr
 - Two runs against identical inputs produce identical SQL.
 - The initial seed contains 20 instruments, 20 configurations, and 15,258 historical observations.
 - Every normalized series starts at 100 and retains its original dates.
-- The application starts with all generated records loaded, and the existing user records remain intact.
+- The application starts with all generated instrument records loaded. Unrelated SQL outside the generated section is preserved; obsolete user inserts have been deliberately removed.
 - No automated tests are added; use manual generation, count, determinism, and startup checks.
 
-## Part 4 — Add controllers, DTOs, and service skeletons
+## Part 4 — Add controllers, DTOs, and service skeletons (completed)
+
+### Status
+
+Completed: added seven Java record DTOs under `dto/`, two empty `@Service` components under `service/`, and constructor-wired instrument/simulation controllers under `controller/`. All four routes return empty HTTP 501 responses for syntactically valid requests; no repository retrieval or simulation behavior was added.
+
+Package cleanup: the four direct endpoint request/response records remain under `dto/`; `SimulationConfigurationResponse`, `SimulationAssumptions`, and `SimulationPoint` now live under `model/`. Their record fields and JSON contracts are unchanged. The obsolete user model, repository, repository test, and seed rows are removed.
+
+Packaging with tests skipped and a manual HTTP startup smoke check succeeded. Both simulation request forms (explicit seed and omitted seed) bind successfully, unknown numeric instrument IDs still receive the intended placeholder response, and Spring's default malformed JSON/path handling remains HTTP 400. Seed counts remain 3 users, 20 instruments, 20 configurations, and 15,258 observations. No tests, dependencies, entities, repositories, seed data, or configuration were changed. Part 5 (retrieval and simulation) is next.
 
 ### Goal
 
@@ -299,9 +308,59 @@ dto/
   HistoricalObservationResponse
   SimulationRequest
   SimulationResult
+
+model/
+  SimulationConfigurationResponse
   SimulationPoint
   SimulationAssumptions
 ```
+
+All classes belong under `com.flexpol.backend`. Keep the existing entities, repositories, generated seed, and database configuration unchanged. No new dependencies are needed.
+
+### Request/response and supporting record conventions
+
+- Use Java records for immutable request/response DTOs and supporting model records, without Lombok boilerplate. Only direct endpoint request/response records belong under `dto/`.
+- Reuse `AssetClass`, `RiskLevel`, and `HistoryValueType` from `model.enums`; JSON uses their names.
+- Use `BigDecimal` for monetary amounts, index levels, rates, and return fractions; `LocalDate` for ISO dates.
+- Use nullable `Long randomSeed` in the request so omission is distinguishable from seed zero. A completed simulation returns the actual seed used.
+- Do not expose JPA entities, lazy relationships, database observation IDs, or the raw JSON string stored in a CLOB.
+- Use a structured parameter map at the API boundary for model-specific configuration. Its numeric values are JSON numbers, not quoted percentages; map entries are decoded into model-specific typed parameter DTOs in Part 5.
+
+### Request/response and supporting record fields
+
+#### InstrumentResponse
+
+`id`, `name`, `description`, `assetClass`, `currency`, `riskLevel`, `historyValueType`, `historySource`, `historyDescription`, `historyRebased`, and `simulationConfiguration` (`SimulationConfigurationResponse`).
+
+Return the same instrument representation from catalog and detail endpoints initially. Do not embed historical observations in either response.
+
+#### SimulationConfigurationResponse (`model/`)
+
+`modelKey` and `parameters` (`Map<String, Object>`). Exposes the seeded assumptions and provenance as structured JSON, without revealing database configuration IDs. This preserves extensibility for future simulation models.
+
+#### HistoricalObservationResponse
+
+`date`, `originalDate`, and `value`. `date` is the rebased display date; `originalDate` is the retained source date; `value` is interpreted according to the instrument's history metadata. A normalized index value is not a EUR amount.
+
+#### SimulationRequest
+
+`Long instrumentId`, `BigDecimal initialInvestment`, `Integer durationMonths`, and nullable `Long randomSeed`. The initial contract has no currency selector, recurring contributions, path count, or output interval. Currency is determined by the instrument and is EUR for all seeded instruments.
+
+#### SimulationPoint (`model/`)
+
+`LocalDate date` and `BigDecimal investmentValue`. Unlike historical index levels, this value is the simulated investment amount in the result's currency. A completed result will begin with the initial investment at the start date.
+
+#### SimulationAssumptions (`model/`)
+
+`modelKey`, `modelVersion`, structured `parameters`, `includesTaxes`, `includesInflation`, `includesFees`, `distributionTreatment`, and `limitations` (`List<String>`). These describe what the engine actually computes; do not infer them from an asset category. Parameters retain original calibration dates and distinguish historical volatility from curated expected return.
+
+The initial simulation will exclude taxes and inflation. Fee treatment must be described carefully: ETF source returns can already reflect fund expenses even though the engine does not explicitly charge fees. Use the limitations field to explain this rather than promising completely fee-free performance.
+
+#### SimulationResult
+
+`instrumentId`, `currency`, `initialInvestment`, `durationMonths`, `startDate`, `endDate`, `randomSeed`, `assumptions`, `finalValue`, `totalReturn`, and `points` (`List<SimulationPoint>`).
+
+`totalReturn` is a fraction: `0.10` means 10%, not `10`. For the initial single-contribution engine, it will equal `finalValue / initialInvestment - 1`. There is one trajectory, no saved run ID, and no percentile bands.
 
 ### Routes
 
@@ -311,6 +370,17 @@ GET  /api/instruments/{id}
 GET  /api/instruments/{id}/history
 POST /api/simulations
 ```
+
+### Controller contracts
+
+- `InstrumentController`, rooted at `/api/instruments`:
+  - Listing: `ResponseEntity<List<InstrumentResponse>>`.
+  - Detail with a `Long id` path variable: `ResponseEntity<InstrumentResponse>`.
+  - History with a `Long id` path variable: `ResponseEntity<List<HistoricalObservationResponse>>`.
+- `SimulationController`, rooted at `/api/simulations`:
+  - POST with `@RequestBody SimulationRequest`: `ResponseEntity<SimulationResult>`.
+- Do not introduce history date filters or aggregation in this skeleton; ordered history retrieval is implemented in Part 5.
+- Do not add `@Valid`, Bean Validation dependencies, custom validators, or a general exception-handling layer. Spring's normal handling of malformed JSON and incompatible path-variable types remains in effect.
 
 ### Example simulation request
 
@@ -337,11 +407,25 @@ Include:
 
 ### Placeholder behavior
 
-Controllers and injected service classes compile and start. Unimplemented operations return HTTP `501 Not Implemented`, rather than fabricated successful results or ambiguous null responses.
+Register `InstrumentService` and `SimulationService` as empty `@Service` components. Do not inject repositories, parse parameter JSON, add transactions, or implement financial calculations yet.
+
+Controllers use constructor injection for their respective service components, establishing the intended wiring. For this skeleton only, each mapped method explicitly returns an empty `ResponseEntity` with HTTP `501 Not Implemented`. The empty service classes are intentionally not invoked until Part 5 introduces their operations. Keep HTTP-specific placeholder behavior in controllers, not in the service layer.
+
+Do not return fabricated successful payloads, dummy simulations, or empty lists with HTTP 200. No DTO instance is constructed as a fake successful result. Syntactically valid requests receive 501 regardless of whether an instrument ID exists; unknown-ID handling belongs to Part 5.
+
+### Implementation sequence
+
+1. Add the immutable DTO records and document date, index-value, monetary-value, and return-fraction semantics.
+2. Register the two empty service classes as Spring components.
+3. Add both controllers, their constructor wiring, route mappings, typed signatures, and explicit 501 responses.
+4. Package with tests skipped and start the application on a non-conflicting port.
+5. Manually request all four routes, using a seeded instrument ID and the example POST JSON, and confirm HTTP 501 rather than HTTP 200, 404, or 500.
+6. Confirm the application still loads 20 instruments, 20 configurations, and 15,258 observations. No instrument seed or schema changes are part of this work.
+7. Mark Part 4 complete only after compilation, startup, and HTTP smoke checks succeed. Do not add tests or implement Part 5 opportunistically.
 
 ### Completion criteria
 
-All routes are registered, request and response types exist, and the application starts successfully.
+All DTOs and empty service components compile, constructor wiring succeeds, all four routes return the intended 501 status for syntactically valid requests, the seeded database remains intact, and no repository retrieval or simulation behavior has been implemented.
 
 ## Part 5 — Implement retrieval and simulation
 
@@ -361,7 +445,7 @@ simulation/
   GbmSimulationEngine
   FixedRateSimulationEngine
 
-dto/
+model/
   GbmParameters
   FixedRateParameters
 ```

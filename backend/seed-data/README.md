@@ -91,11 +91,11 @@ and replaces only the section between these markers:
 ```
 
 If absent, the section is appended; missing, reversed, or duplicate marker pairs
-cause failure without changing the seed. Existing users and all other SQL outside
+cause failure without changing the seed. All unrelated SQL outside
 the section are preserved. Output is written atomically only after conversion
 succeeds. There are no generation timestamps, and identical inputs produce
 byte-identical SQL. The current seed contains 20 instruments, 20 configurations,
-and 15,258 observations, alongside the three existing users. It uses ordinary
+and 15,258 observations. The obsolete user seed has been removed. It uses ordinary
 inserts, not upserts: Hibernate recreates the schema on every startup.
 
 ### Stable identifiers
