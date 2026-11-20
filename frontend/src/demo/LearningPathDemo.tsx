@@ -348,6 +348,8 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
   const timerRef = useRef<number | null>(null);
   const pathPageRef = useRef<HTMLDivElement>(null);
   const pathTrackRef = useRef<HTMLDivElement>(null);
+  const wrongAnswerCount = useRef(0);
+  const getNextWrongAnswerIndex = useCallback(() => wrongAnswerCount.current++, []);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
@@ -506,6 +508,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
           isCompleted={completedSet.has(entry.node.id)}
           isTopicSandboxUnlocked={isTopicSandboxUnlocked(entry.topic, completedSet)}
           nextNodeSummary={nextEntry ? `${nextEntry.node.code} (${nextEntry.node.title})` : null}
+          getNextWrongAnswerIndex={getNextWrongAnswerIndex}
           onComplete={handleCompleteLesson}
           onBack={() => goToView({ kind: 'path' })}
           onOpenSandbox={() => goToView({ kind: 'sandbox', topicId: entry.topic.id })}
