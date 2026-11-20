@@ -2,3 +2,4 @@ export { getChapter, getChapterFinalQuiz, getChapters, getChapterSubchapters } f
 export { getSubchapter, getSubchapterControlQuiz } from './subchapterApi';
 export { getQuiz } from './quizApi';
 export { submitAnswer } from './questionApi';
+export { askCoach } from './coachApi';
