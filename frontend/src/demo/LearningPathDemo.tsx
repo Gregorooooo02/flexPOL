@@ -66,13 +66,14 @@ type LoadState =
 interface NodeLayoutSlot {
   readonly cx: number;
   readonly cy: number;
-  readonly labelSide: 'left' | 'right';
+  readonly labelSide: 'left' | 'right' | 'center';
   readonly labelLeft: number;
   readonly labelTop: number;
   readonly labelWidth: number;
 }
 
 interface StageLayout {
+  readonly width: number;
   readonly height: number;
   readonly nodeSlots: readonly NodeLayoutSlot[];
   readonly sandboxSlot: NodeLayoutSlot;
@@ -88,9 +89,32 @@ const CENTER_X = 170;
 const LEFT_X = 68;
 const RIGHT_X = 272;
 const PIPE_CORNER = 24;
+const DESKTOP_MEDIA_QUERY = '(min-width: 64rem)';
+const DESKTOP_FIRST_NODE_X = 96;
+const DESKTOP_NODE_SPACING = 220;
+const DESKTOP_TOP_NODE_Y = 64;
+const DESKTOP_BOTTOM_NODE_Y = 264;
+const DESKTOP_TOP_LABEL_TOP = 120;
+const DESKTOP_BOTTOM_LABEL_TOP = 142;
+const DESKTOP_LABEL_WIDTH = 180;
+const DESKTOP_STAGE_RIGHT_PADDING = 96;
+const DESKTOP_STAGE_HEIGHT = 330;
 
 /** The path zig-zags: first node and sandbox in the centre, the nodes between alternate left and right. */
-function slotAt(index: number, isSandbox: boolean): NodeLayoutSlot {
+function slotAt(index: number, isSandbox: boolean, isDesktop: boolean): NodeLayoutSlot {
+  if (isDesktop) {
+    const cx = DESKTOP_FIRST_NODE_X + index * DESKTOP_NODE_SPACING;
+    const isTopRow = index % 2 === 0;
+    return {
+      cx,
+      cy: isTopRow ? DESKTOP_TOP_NODE_Y : DESKTOP_BOTTOM_NODE_Y,
+      labelSide: 'center',
+      labelLeft: cx - DESKTOP_LABEL_WIDTH / 2,
+      labelTop: isTopRow ? DESKTOP_TOP_LABEL_TOP : DESKTOP_BOTTOM_LABEL_TOP,
+      labelWidth: DESKTOP_LABEL_WIDTH,
+    };
+  }
+
   const cy = FIRST_NODE_Y + index * NODE_SPACING;
   const labelTop = cy - 34;
   if (index === 0 || isSandbox) {
@@ -102,8 +126,23 @@ function slotAt(index: number, isSandbox: boolean): NodeLayoutSlot {
   return { cx: RIGHT_X, cy, labelSide: 'left', labelLeft: 12, labelTop, labelWidth: 204 };
 }
 
-function pipeBetween(from: NodeLayoutSlot, to: NodeLayoutSlot): string {
+function pipeBetween(from: NodeLayoutSlot, to: NodeLayoutSlot, isDesktop: boolean): string {
+  if (isDesktop) {
+    const midX = (from.cx + to.cx) / 2;
+    const verticalDirection = to.cy > from.cy ? 1 : -1;
+    return [
+      `M ${from.cx} ${from.cy}`,
+      `L ${midX - PIPE_CORNER} ${from.cy}`,
+      `Q ${midX} ${from.cy} ${midX} ${from.cy + verticalDirection * PIPE_CORNER}`,
+      `L ${midX} ${to.cy - verticalDirection * PIPE_CORNER}`,
+      `Q ${midX} ${to.cy} ${midX + PIPE_CORNER} ${to.cy}`,
+      `L ${to.cx} ${to.cy}`,
+    ].join(' ');
+  }
   if (from.cx === to.cx) {
+    return `M ${from.cx} ${from.cy} L ${to.cx} ${to.cy}`;
+  }
+  if (from.cy === to.cy) {
     return `M ${from.cx} ${from.cy} L ${to.cx} ${to.cy}`;
   }
   const midY = (from.cy + to.cy) / 2;
@@ -118,13 +157,26 @@ function pipeBetween(from: NodeLayoutSlot, to: NodeLayoutSlot): string {
   ].join(' ');
 }
 
-function buildStageLayout(nodeCount: number): StageLayout {
-  const nodeSlots = Array.from({ length: nodeCount }, (_, index) => slotAt(index, false));
-  const sandboxSlot = slotAt(nodeCount, true);
-  const pipeSegments = nodeSlots.map((slot, index) =>
-    pipeBetween(slot, nodeSlots[index + 1] ?? sandboxSlot),
+function buildStageLayout(nodeCount: number, isDesktop: boolean): StageLayout {
+  const nodeSlots = Array.from({ length: nodeCount }, (_, index) =>
+    slotAt(index, false, isDesktop),
   );
+  const sandboxSlot = slotAt(nodeCount, true, isDesktop);
+  const pipeSegments = nodeSlots.map((slot, index) =>
+    pipeBetween(slot, nodeSlots[index + 1] ?? sandboxSlot, isDesktop),
+  );
+  if (isDesktop) {
+    return {
+      width: sandboxSlot.cx + DESKTOP_STAGE_RIGHT_PADDING,
+      height: DESKTOP_STAGE_HEIGHT,
+      nodeSlots,
+      sandboxSlot,
+      pipeSegments,
+    };
+  }
+
   return {
+    width: STAGE_W,
     height: sandboxSlot.cy + STAGE_BOTTOM_PADDING,
     nodeSlots,
     sandboxSlot,
@@ -288,9 +340,50 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
     createInitialProgress,
   );
   const [activeView, setActiveView] = useState<ActiveView>({ kind: 'path' });
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(DESKTOP_MEDIA_QUERY).matches,
+  );
   const [burstNodeId, setBurstNodeId] = useState<string | null>(null);
   const [shakeNodeId, setShakeNodeId] = useState<string | null>(null);
   const timerRef = useRef<number | null>(null);
+  const pathPageRef = useRef<HTMLDivElement>(null);
+  const pathTrackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
+    const handleChange = (event: MediaQueryListEvent) => setIsDesktop(event.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (!isDesktop || activeView.kind !== 'path') {
+      return;
+    }
+
+    const pathPage = pathPageRef.current;
+    const pathTrack = pathTrackRef.current;
+    if (!pathPage || !pathTrack) {
+      return;
+    }
+
+    const handleWheel = (event: WheelEvent) => {
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
+        return;
+      }
+      event.preventDefault();
+      const verticalDelta =
+        event.deltaMode === WheelEvent.DOM_DELTA_LINE
+          ? event.deltaY * 40
+          : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+            ? event.deltaY * pathTrack.clientWidth
+            : event.deltaY;
+      pathTrack.scrollLeft += verticalDelta;
+    };
+
+    pathPage.addEventListener('wheel', handleWheel, { passive: false });
+    return () => pathPage.removeEventListener('wheel', handleWheel);
+  }, [activeView.kind, isDesktop]);
 
   useEffect(() => {
     return () => {
@@ -429,7 +522,10 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div
+      ref={pathPageRef}
+      className="flex flex-1 flex-col lg:h-[calc(100svh-var(--app-header-height))] lg:min-h-0"
+    >
       <DemoToolbar
         completedCount={completedList.length}
         totalCount={path.flatNodes.length}
@@ -438,9 +534,9 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
         onReset={handleReset}
       />
 
-      <div className="flex-1">
-        <div className="border-b border-border bg-card/60 px-4 py-3">
-          <div className="mx-auto max-w-md">
+      <div className="flex-1 lg:flex lg:min-h-0 lg:flex-col">
+        <div className="border-b border-border bg-card/60 px-4 py-3 lg:shrink-0">
+          <div className="mx-auto max-w-md lg:max-w-7xl lg:px-8">
             <Card
               size="sm"
               className={cn(
@@ -461,11 +557,21 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
           </div>
         </div>
 
-        <div className="flex flex-col">
+        <div
+          ref={pathTrackRef}
+          className="flex flex-col lg:min-h-[calc(100svh-var(--app-header-height)-8rem)] lg:flex-1 lg:flex-row lg:items-stretch lg:overflow-x-auto lg:overflow-y-hidden lg:overscroll-x-contain"
+          role="region"
+          aria-label="Learning path"
+          tabIndex={isDesktop ? 0 : undefined}
+        >
           {path.topics.map((topic, topicIndex) => {
-            const { height: stageHeight, nodeSlots, sandboxSlot, pipeSegments } = buildStageLayout(
-              topic.nodes.length,
-            );
+            const {
+              width: stageWidth,
+              height: stageHeight,
+              nodeSlots,
+              sandboxSlot,
+              pipeSegments,
+            } = buildStageLayout(topic.nodes.length, isDesktop);
             const doneCount = getTopicCompletedCount(topic, completedSet);
             const sandboxUnlocked = isTopicSandboxUnlocked(topic, completedSet);
             const progressPct = Math.round((doneCount / topic.nodes.length) * 100);
@@ -485,10 +591,18 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
               <section
                 key={topic.id}
                 aria-labelledby={`topic-heading-${topic.id}`}
-                className={cn('border-b border-border px-4 py-8', topic.bandClassName)}
-                style={{ backgroundImage: topic.ambientGlow }}
+                className={cn(
+                  'border-b border-border px-4 py-8 lg:flex lg:h-full lg:min-h-[calc(100svh-var(--app-header-height)-8rem)] lg:flex-none lg:flex-col lg:border-r lg:border-b-0 lg:px-8 lg:py-4',
+                  topic.bandClassName,
+                )}
+                style={{
+                  backgroundImage: topic.ambientGlow,
+                  backgroundSize: isDesktop ? '100% 100%' : undefined,
+                  backgroundRepeat: isDesktop ? 'no-repeat' : undefined,
+                  width: isDesktop ? `max(100vw, ${stageWidth + 65}px)` : undefined,
+                }}
               >
-                <div className="mx-auto flex w-full max-w-md flex-col items-center">
+                <div className="mx-auto flex w-full max-w-md flex-col items-center lg:mx-0 lg:max-w-none lg:items-center">
                   <Card
                     size="sm"
                     className="w-full border border-border bg-card/85 py-3.5 backdrop-blur-xs"
@@ -527,15 +641,15 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                   </Card>
 
                   <div
-                    className="relative mt-2 shrink-0"
-                    style={{ width: `${STAGE_W}px`, height: `${stageHeight}px` }}
+                    className="relative mt-2 shrink-0 lg:mx-auto lg:mt-16 lg:scale-95"
+                    style={{ width: `${stageWidth}px`, height: `${stageHeight}px` }}
                   >
                     <svg
                       className="pointer-events-none absolute inset-0 size-full"
-                      viewBox={`0 0 ${STAGE_W} ${stageHeight}`}
+                      viewBox={`0 0 ${stageWidth} ${stageHeight}`}
                       aria-hidden="true"
                     >
-                      {topicIndex > 0 && (
+                      {topicIndex > 0 && !isDesktop && (
                         <>
                           <line
                             x1={CENTER_X}
@@ -592,7 +706,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                         );
                       })}
 
-                      {nextTopic && (
+                      {nextTopic && !isDesktop && (
                         <>
                           <line
                             x1={sandboxSlot.cx}
@@ -707,9 +821,11 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                             <div
                               className={cn(
                                 'absolute flex flex-col gap-0.5',
-                                slot.labelSide === 'left'
-                                  ? 'items-end text-right'
-                                  : 'items-start text-left',
+                                slot.labelSide === 'center'
+                                  ? 'items-center text-center'
+                                  : slot.labelSide === 'left'
+                                    ? 'items-end text-right'
+                                    : 'items-start text-left',
                               )}
                               style={{
                                 left: `${slot.labelLeft}px`,
@@ -735,7 +851,11 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                                 onClick={() => handleOpenNode(node)}
                                 className={cn(
                                   'h-auto p-0 text-sm leading-snug font-normal tracking-normal whitespace-normal normal-case underline underline-offset-4 transition-transform active:scale-95',
-                                  slot.labelSide === 'left' ? 'text-right' : 'text-left',
+                                  slot.labelSide === 'left'
+                                    ? 'text-right'
+                                    : slot.labelSide === 'center'
+                                      ? 'text-center'
+                                      : 'text-left',
                                   status === 'locked'
                                     ? 'cursor-not-allowed text-muted-foreground no-underline hover:no-underline'
                                     : 'text-foreground',
@@ -807,7 +927,12 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                         </div>
 
                         <div
-                          className="absolute flex flex-col items-start gap-0.5 text-left"
+                          className={cn(
+                            'absolute flex flex-col gap-0.5',
+                            sandboxSlot.labelSide === 'center'
+                              ? 'items-center text-center'
+                              : 'items-start text-left',
+                          )}
                           style={{
                             left: `${sandboxSlot.labelLeft}px`,
                             top: `${sandboxSlot.labelTop}px`,
@@ -829,7 +954,8 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                             aria-disabled={!sandboxUnlocked ? 'true' : undefined}
                             onClick={() => handleOpenSandbox(topic)}
                             className={cn(
-                              'h-auto p-0 text-left text-sm leading-snug font-normal tracking-normal whitespace-normal normal-case underline underline-offset-4 transition-transform active:scale-95',
+                              'h-auto p-0 text-sm leading-snug font-normal tracking-normal whitespace-normal normal-case underline underline-offset-4 transition-transform active:scale-95',
+                              sandboxSlot.labelSide === 'center' ? 'text-center' : 'text-left',
                               sandboxUnlocked
                                 ? 'text-foreground'
                                 : 'cursor-not-allowed text-muted-foreground no-underline hover:no-underline',

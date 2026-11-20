@@ -66,7 +66,7 @@ export interface LearningPath {
 const TOPIC_THEMES: readonly TopicTheme[] = [
   {
     bandClassName: 'bg-[#07090a]',
-    ambientGlow: 'radial-gradient(circle at 50% 0%, rgba(255, 210, 46, 0.14), transparent 70%)',
+    ambientGlow: 'radial-gradient(ellipse at 50% 0%, rgba(255, 210, 46, 0.14), transparent 100%)',
     pipeColor: '#ffd22e',
     pipeSecondary: '#efb100',
     accentHex: '#ffd22e',
@@ -74,7 +74,7 @@ const TOPIC_THEMES: readonly TopicTheme[] = [
   },
   {
     bandClassName: 'bg-[#14100c]',
-    ambientGlow: 'radial-gradient(circle at 50% 0%, rgba(254, 153, 0, 0.16), transparent 70%)',
+    ambientGlow: 'radial-gradient(ellipse at 50% 0%, rgba(254, 153, 0, 0.16), transparent 100%)',
     pipeColor: '#fe9900',
     pipeSecondary: '#e17101',
     accentHex: '#fe9900',
@@ -82,7 +82,7 @@ const TOPIC_THEMES: readonly TopicTheme[] = [
   },
   {
     bandClassName: 'bg-[#131b1d]',
-    ambientGlow: 'radial-gradient(circle at 50% 0%, rgba(186, 77, 0, 0.22), transparent 70%)',
+    ambientGlow: 'radial-gradient(ellipse at 50% 0%, rgba(186, 77, 0, 0.22), transparent 100%)',
     pipeColor: '#ba4d00',
     pipeSecondary: '#973b00',
     accentHex: '#ff8a3d',

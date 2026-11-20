@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
+import { cn } from 'cn';
 import type { TopicDefinition } from './learningPath';
 
 interface SandboxPageProps {
@@ -176,15 +177,17 @@ function SandboxChart({
 
 function MetricCards({
   items,
+  className,
 }: {
   readonly items: readonly {
     readonly label: string;
     readonly value: string;
     readonly tone?: 'default' | 'amber' | 'gold';
   }[];
+  readonly className?: string;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+    <div className={cn('grid grid-cols-1 gap-2.5 sm:grid-cols-3 lg:grid-cols-1', className)}>
       {items.map((item) => (
         <Card
           key={item.label}
@@ -243,8 +246,8 @@ function EtfSandboxView() {
   }, [monthly, years, strategy.annualRate]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <Card size="sm" className="border border-border bg-card py-4">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.85fr)] lg:items-start">
+      <Card size="sm" className="border border-border bg-card py-4 lg:col-start-2 lg:row-start-1">
         <CardContent className="flex flex-col gap-4 px-4">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
@@ -295,14 +298,17 @@ function EtfSandboxView() {
         </CardContent>
       </Card>
 
-      <SandboxChart
-        points={points}
-        primaryLabel="Portfolio value"
-        secondaryLabel="Contributions"
-        ariaLabel={`ETF portfolio simulation over ${years} years: ${formatPln(finalContributed)} contributed, final value ${formatPln(finalTotal)}.`}
-      />
+      <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2">
+        <SandboxChart
+          points={points}
+          primaryLabel="Portfolio value"
+          secondaryLabel="Contributions"
+          ariaLabel={`ETF portfolio simulation over ${years} years: ${formatPln(finalContributed)} contributed, final value ${formatPln(finalTotal)}.`}
+        />
+      </div>
 
       <MetricCards
+        className="lg:col-start-2 lg:row-start-2"
         items={[
           { label: 'Contributed', value: formatPln(finalContributed) },
           { label: 'Gain', value: `+${formatPln(profit)}`, tone: 'amber' },
@@ -340,8 +346,8 @@ function IkeSandboxView() {
   }, [annualDeposit, years, ratePct]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <Card size="sm" className="border border-border bg-card py-4">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.85fr)] lg:items-start">
+      <Card size="sm" className="border border-border bg-card py-4 lg:col-start-2 lg:row-start-1">
         <CardContent className="flex flex-col gap-4 px-4">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
@@ -394,14 +400,17 @@ function IkeSandboxView() {
         </CardContent>
       </Card>
 
-      <SandboxChart
-        points={points}
-        primaryLabel="IKE (0% tax)"
-        secondaryLabel="Regular account (−19% tax)"
-        ariaLabel={`IKE vs a regular account after ${years} years: IKE ${formatPln(ikeFinal)}, regular account ${formatPln(regularNet)}.`}
-      />
+      <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2">
+        <SandboxChart
+          points={points}
+          primaryLabel="IKE (0% tax)"
+          secondaryLabel="Regular account (−19% tax)"
+          ariaLabel={`IKE vs a regular account after ${years} years: IKE ${formatPln(ikeFinal)}, regular account ${formatPln(regularNet)}.`}
+        />
+      </div>
 
       <MetricCards
+        className="lg:col-start-2 lg:row-start-2"
         items={[
           { label: 'Regular account, net', value: formatPln(regularNet) },
           { label: 'Tax saved', value: `+${formatPln(taxSaved)}`, tone: 'amber' },
@@ -442,8 +451,8 @@ function BondsSandboxView() {
   }, [capital, inflationPct, years]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <Card size="sm" className="border border-border bg-card py-4">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.85fr)] lg:items-start">
+      <Card size="sm" className="border border-border bg-card py-4 lg:col-start-2 lg:row-start-1">
         <CardContent className="flex flex-col gap-4 px-4">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
@@ -496,14 +505,17 @@ function BondsSandboxView() {
         </CardContent>
       </Card>
 
-      <SandboxChart
-        points={points}
-        primaryLabel="EDO bonds (inflation + 2%)"
-        secondaryLabel="Deposit 4% net"
-        ariaLabel={`EDO simulation over ${years} years at ${inflationPct}% inflation: EDO ${formatPln(edoNetFinal)}, deposit ${formatPln(depositNetFinal)}.`}
-      />
+      <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2">
+        <SandboxChart
+          points={points}
+          primaryLabel="EDO bonds (inflation + 2%)"
+          secondaryLabel="Deposit 4% net"
+          ariaLabel={`EDO simulation over ${years} years at ${inflationPct}% inflation: EDO ${formatPln(edoNetFinal)}, deposit ${formatPln(depositNetFinal)}.`}
+        />
+      </div>
 
       <MetricCards
+        className="lg:col-start-2 lg:row-start-2"
         items={[
           { label: 'Deposit 4% net', value: formatPln(depositNetFinal) },
           {
@@ -525,7 +537,7 @@ export function SandboxPage({ topic, onBack }: SandboxPageProps) {
       style={{ backgroundImage: topic.ambientGlow }}
     >
       <header className="sticky top-[var(--app-header-height)] z-20 border-b border-border bg-card/90 backdrop-blur-sm">
-        <div className="mx-auto flex w-full max-w-md items-center justify-between gap-2 px-4 py-3">
+        <div className="mx-auto flex w-full max-w-md items-center justify-between gap-2 px-4 py-3 lg:max-w-7xl">
           <Button
             type="button"
             variant="ghost"
@@ -547,7 +559,7 @@ export function SandboxPage({ topic, onBack }: SandboxPageProps) {
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-6">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-6 lg:max-w-7xl lg:gap-6 lg:px-8 lg:py-8">
         <div>
           <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
             {topic.sandboxTitle}
@@ -563,7 +575,7 @@ export function SandboxPage({ topic, onBack }: SandboxPageProps) {
       </div>
 
       <footer className="sticky bottom-0 z-20 border-t border-border bg-card/95 backdrop-blur-sm">
-        <div className="mx-auto w-full max-w-md px-4 py-3">
+        <div className="mx-auto w-full max-w-md px-4 py-3 lg:max-w-7xl lg:px-8">
           <Button type="button" size="lg" className="w-full" onClick={onBack}>
             Back to the path
           </Button>
