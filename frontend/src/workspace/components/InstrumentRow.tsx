@@ -1,4 +1,7 @@
 import { memo, useEffect, useRef } from 'react';
+import { Tick02Icon } from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { cn } from 'cn';
 import type { HistoricalObservation, Instrument } from '@/model';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -59,7 +62,12 @@ export const InstrumentRow = memo(function InstrumentRow({
   const available = instrument.currency === 'EUR' && instrument.simulationConfiguration !== null;
   return (
     <li ref={rowRef}>
-      <div className="flex flex-col gap-3 py-5">
+      <div
+        className={cn(
+          'flex flex-col gap-3 border-l-2 border-transparent px-3 py-5 transition-colors',
+          owned && 'border-primary bg-primary/5',
+        )}
+      >
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-col gap-2">
             <h3 className="font-heading font-semibold [overflow-wrap:anywhere]">
@@ -68,6 +76,12 @@ export const InstrumentRow = memo(function InstrumentRow({
             <div className="flex flex-wrap gap-x-3 gap-y-1">
               <Badge variant="secondary">{ASSET_LABELS[instrument.assetClass]}</Badge>
               <Badge variant="outline">{RISK_LABELS[instrument.riskLevel]} risk</Badge>
+              {owned && (
+                <Badge variant="outline">
+                  <HugeiconsIcon icon={Tick02Icon} aria-hidden="true" />
+                  In portfolio
+                </Badge>
+              )}
             </div>
           </div>
           <Button

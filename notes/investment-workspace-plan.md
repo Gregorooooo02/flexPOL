@@ -28,10 +28,11 @@ Do not build code for deferred modes (no rules module, no confirm-submit dialog,
 | 9 | **A "Start over" button after the simulation finishes** resets the page to a fresh run. |
 | 10 | **One batch endpoint simulates the whole catalogue.** `POST /api/simulations/batch` takes an array of the existing `SimulationRequest` and returns an array of the existing `SimulationResult`. No new DTOs. |
 | 11 | **Fixed-duration, uninterrupted playback (latest decision).** Start requires a non-empty portfolio. Every selected horizon completes in 10 real seconds, with no Pause/Resume, forward stepping or speed selector. Dialogs and tab hiding cannot stop it. Mid-run trading remains available at current values; the final deadline makes positions read-only. This supersedes the earlier pausable replay design. |
+| 12 | **Explicit modal removal.** Existing positions have a separate Remove button beside Cancel and Buy/Sell. Setting the draft amount or percentage to zero does not remove a holding: the primary confirmation is disabled, including Enter submission, and Cancel preserves the original allocation. Remove closes the position at its current simulated value and is unavailable after completion. |
 
 Further decisions made while planning:
 
-- **One position-sizing model.** The user sets a *target position size* (for example "SAP: €2,500"). The app derives the trade from the difference between the target and the current value, and the confirm button says what it will do ("Buy €500", "Sell €200", "Remove"). "Sell all" is a target of 0. This also works unchanged for a future single-decision mode, where the allocation is simply the target.
+- **One position-sizing model.** The user sets a *target position size* (for example "SAP: €2,500"). The app derives the trade from the difference between the target and the current value, and the primary confirm button says what it will do ("Buy €500", "Sell €200"). A separate Remove button closes an existing position. Internally removal still uses a target of 0, but entering 0 in the editor cannot implicitly remove it. This also works for a future single-decision mode, where the allocation is simply the target.
 - **The page builds a "market tape" from the batch results.** A tape is the simulated future of every instrument on a shared timeline: one `dates` array and one price series per instrument, normalised to a base of 10,000. The portfolio is valued as `units × tape price`, which supports trades at any replay date. The tape is a client-side structure, not a backend type.
 - **No new dependencies.** Charts are hand-written SVG, like the existing sandbox charts. Data fetching uses the repo's `useEffect` plus `AbortController` pattern.
 
@@ -199,7 +200,7 @@ Total value = `cash + Σ round(units × price)`, so displayed rows always sum to
 - `parseAmountInput` accepts `.` or `,` and spaces, rounds to cents (HALF_EVEN), and rejects negatives.
 - The slider is a percentage of the current total value. The displayed percentage is **derived** from cents, and the slider **never writes on render**. Only a user drag converts to cents, using `round(basis × pct / 100)`. This avoids feedback loops, and typing €333.33 shows 3.3% without changing the amount.
 - The upper limit is `currentValue + cash`. If it is below 100%, show "Limited by available cash".
-- The button text states the delta: "Buy €500", "Sell €200", "Update" or "Remove".
+- The primary button states the delta for a positive target: "Buy €500" or "Sell €200". Zero targets cannot be confirmed; use the separate Remove button to close an existing position. New instruments and read-only results do not show Remove.
 
 ### Replay
 

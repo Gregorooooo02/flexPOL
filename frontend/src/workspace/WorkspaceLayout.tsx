@@ -25,6 +25,7 @@ const SECTIONS: readonly { id: Section; label: string }[] = [
  * The shared workspace page shell: a sticky header, two columns (instruments and portfolio), and
  * a sticky action bar. On narrow screens only one column shows at a time. It knows nothing about
  * which mode it is used in.
+ * The content scroll pane starts below the app navigation, so its sticky header uses top: 0.
  */
 export function WorkspaceLayout({
   header,
@@ -37,7 +38,7 @@ export function WorkspaceLayout({
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="sticky top-[var(--app-header-height)] z-20 border-b border-border bg-card/95 backdrop-blur-sm [@media(max-height:650px)]:static">
+      <div className="sticky top-0 z-20 border-b border-border bg-card/95 backdrop-blur-sm [@media(max-height:650px)]:static">
         <div className="mx-auto w-full max-w-7xl px-4 py-3">{header}</div>
       </div>
 

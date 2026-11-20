@@ -14,9 +14,10 @@ export function App() {
         <Route element={<AppLayout />}>
           <Route index element={<HomePage />} />
           <Route path="demo" element={<DemoPage />} />
-	  <Route path="playground" element={<PlaygroundPage />} />
+          <Route path="playground" element={<PlaygroundPage />} />
         </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
     </Routes>
   );
 }

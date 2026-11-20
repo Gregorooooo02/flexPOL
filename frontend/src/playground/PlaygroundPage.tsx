@@ -339,14 +339,20 @@ export function PlaygroundPage() {
 
   function submitPosition() {
     const snapshot = synchroniseReplay();
-    if (snapshot.status === 'finished' || !selectedInstrument || draftCents === null) return;
+    if (
+      snapshot.status === 'finished' ||
+      !selectedInstrument ||
+      draftCents === null ||
+      draftCents <= 0
+    )
+      return;
     const price = tape ? tapePrice(tape, selectedInstrument.id, snapshot.dayIndex) : 1;
     const plan = planPosition(portfolio, {
       instrumentId: selectedInstrument.id,
       targetCents: draftCents,
       price,
     });
-    if (!plan.ok || plan.kind === 'none') return;
+    if (!plan.ok || plan.kind === 'none' || plan.kind === 'remove') return;
     dispatch({
       type: 'setPosition',
       instrumentId: selectedInstrument.id,
@@ -362,7 +368,7 @@ export function PlaygroundPage() {
 
   function removePosition(id: number) {
     const snapshot = synchroniseReplay();
-    if (snapshot.status === 'finished') return;
+    if (snapshot.status === 'finished' || !portfolio.holdings[id]) return;
     const instrument = instruments.find((item) => item.id === id);
     const price = tape ? tapePrice(tape, id, snapshot.dayIndex) : 1;
     const value = positionValueCents(portfolio.holdings[id], price);
@@ -376,7 +382,8 @@ export function PlaygroundPage() {
     setAnnouncement(
       `${instrument?.name ?? 'Position'} removed. Available cash ${formatMoney(portfolio.cashCents + value)}.`,
     );
-    portfolioTitleRef.current?.focus({ preventScroll: true });
+    if (selectedId === id) setSelectedId(null);
+    else portfolioTitleRef.current?.focus({ preventScroll: true });
   }
 
   function play() {
@@ -557,6 +564,7 @@ export function PlaygroundPage() {
       />
       <InstrumentPanel
         instrument={selectedInstrument}
+        owned={selectedId !== null && Object.hasOwn(portfolio.holdings, selectedId)}
         history={selectedId === null ? undefined : histories[selectedId]}
         range={historyRange}
         text={draftText}
@@ -578,6 +586,9 @@ export function PlaygroundPage() {
         onTextChange={setDraftText}
         onClose={() => setSelectedId(null)}
         onSubmit={submitPosition}
+        onRemove={() => {
+          if (selectedId !== null) removePosition(selectedId);
+        }}
         onRetryHistory={retryHistory}
         readOnly={finished}
         running={replay.status === 'playing'}

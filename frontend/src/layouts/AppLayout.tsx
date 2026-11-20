@@ -2,7 +2,6 @@ import { ChartLineData01Icon, Logout01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Link, NavLink, Outlet } from 'react-router';
 import { useAuth } from '@/auth/authContext';
-import { cn } from 'cn';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { CoachFocusProvider } from '@/components/coach/CoachFocusProvider';

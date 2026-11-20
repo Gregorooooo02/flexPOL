@@ -26,6 +26,7 @@ import { PriceChart } from './PriceChart';
 
 interface InstrumentPanelProps {
   instrument: Instrument | null;
+  owned: boolean;
   history?: LoadState<HistoricalObservation[]>;
   range: HistoryRange;
   text: string;
@@ -41,6 +42,7 @@ interface InstrumentPanelProps {
   onTextChange: (text: string) => void;
   onClose: () => void;
   onSubmit: () => void;
+  onRemove: () => void;
   onRetryHistory: (id: number) => void;
   readOnly?: boolean;
   running?: boolean;
@@ -51,6 +53,7 @@ interface InstrumentPanelProps {
 
 export function InstrumentPanel({
   instrument,
+  owned,
   history,
   range,
   text,
@@ -66,6 +69,7 @@ export function InstrumentPanel({
   onTextChange,
   onClose,
   onSubmit,
+  onRemove,
   onRetryHistory,
   readOnly = false,
   running = false,
@@ -79,7 +83,7 @@ export function InstrumentPanel({
       plan.kind === 'none'
         ? 'No changes'
         : plan.kind === 'remove'
-          ? 'Remove position'
+          ? 'Update allocation'
           : `${plan.kind === 'buy' ? 'Buy' : 'Sell'} ${formatMoney(Math.abs(plan.deltaCents))}`;
   }
   return (
@@ -230,12 +234,28 @@ export function InstrumentPanel({
                 onTextChange={onTextChange}
               />
             )}
+            {!readOnly && owned && cents === 0 && (
+              <p className="text-sm text-muted-foreground">Use Remove to close this position.</p>
+            )}
             <DialogFooter>
+              {!readOnly && owned && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="sm:mr-auto"
+                  onClick={onRemove}
+                >
+                  Remove
+                </Button>
+              )}
               <Button type="button" variant="outline" onClick={onClose}>
                 {readOnly ? 'Close' : 'Cancel'}
               </Button>
               {!readOnly && (
-                <Button type="submit" disabled={!plan?.ok || plan.kind === 'none'}>
+                <Button
+                  type="submit"
+                  disabled={!plan?.ok || plan.kind === 'none' || plan.kind === 'remove'}
+                >
                   {action}
                 </Button>
               )}
