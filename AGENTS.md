@@ -165,10 +165,13 @@ The repository is a monorepo with two apps: `backend/` and `frontend/`.
 | UI library | React + React DOM | ^19.3 |
 | Language | TypeScript | ~7.0 |
 | Build tool / dev server | Vite with `@vitejs/plugin-react` | Vite ^8.3, plugin ^6.1 |
+| HTTP client | axios | ^1.21, shared instance and `ApiError` in `src/config/axios.ts` |
 | Linting | oxlint | ^1.90, configured in `.oxlintrc.json` |
 | Package manager | npm | Keep `package-lock.json` committed |
 
 - Commands: `npm run dev`, `npm run build` (runs `tsc -b` then `vite build`), `npm run lint`, `npm run preview`.
+- Backend connection: the frontend calls relative `/api/...` URLs, and the Vite dev server proxies `/api` to the backend at `http://localhost:8080` (`server.proxy` in `vite.config.ts`), so no CORS setup is needed. Set `VITE_API_BASE_URL` to point at a different backend.
+- `src/model/` holds TypeScript types that mirror the backend's response DTOs in `backend/.../dto/`. When a DTO changes, update the matching type in the same change. `src/config/axios.ts` holds the axios setup (base URL, timeout, error interceptor that turns failures into `ApiError`). `src/api/` holds only endpoint functions, one module per resource (`chapterApi`, `subchapterApi`, `quizApi`), built on that client; components call these functions instead of using axios directly, and import `ApiError` from `@/config/axios` for error handling.
 
 ## Keeping this section up to date
 

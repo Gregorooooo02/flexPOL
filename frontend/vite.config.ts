@@ -11,4 +11,10 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
+  server: {
+    // Forward API calls to the Spring Boot backend, so the browser sees one origin (no CORS needed)
+    proxy: {
+      '/api': 'http://localhost:8080',
+    },
+  },
 })
