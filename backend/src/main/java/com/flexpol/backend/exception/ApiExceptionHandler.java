@@ -16,6 +16,13 @@ public class ApiExceptionHandler {
 		return problem;
 	}
 
+	@ExceptionHandler(UnauthorizedException.class)
+	public ProblemDetail handleUnauthorized(UnauthorizedException ex) {
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+		problem.setTitle("Unauthorized");
+		return problem;
+	}
+
 	@ExceptionHandler(BadRequestException.class)
 	public ProblemDetail handleBadRequest(BadRequestException ex) {
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());

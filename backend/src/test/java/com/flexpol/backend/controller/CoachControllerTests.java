@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 /**
  * Checks the coach endpoint against a stub chat model, so no request ever reaches OpenAI.
@@ -39,6 +39,10 @@ import org.springframework.test.web.servlet.RequestBuilder;
 @SpringBootTest(properties = "spring.ai.openai.api-key=test-key")
 @AutoConfigureMockMvc
 class CoachControllerTests {
+
+	/** Seeded users (data.sql). */
+	private static final String JAN = "jan.kowalski@example.com";
+	private static final String ANNA = "anna.nowak@example.com";
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -208,6 +212,32 @@ class CoachControllerTests {
 		assertThat(chatModel.lastPrompt.get()).isNull();
 	}
 
+	@Test
+	void onlyTheOwnerCanContinueTheirConversation() throws Exception {
+		String body = mockMvc.perform(ask("{\"message\": \"What is risk?\"}").header(UserHeader.NAME, JAN))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+		String conversationId = JsonPath.read(body, "$.conversationId");
+		assertThat(jdbcTemplate.queryForObject(
+				"SELECT u.email FROM coach_conversation c JOIN USER u ON u.id = c.user_id WHERE c.id = ?",
+				String.class, conversationId))
+				.isEqualTo(JAN);
+
+		String followUp = "{\"message\": \"And return?\", \"conversationId\": \"" + conversationId + "\"}";
+		mockMvc.perform(ask(followUp).header(UserHeader.NAME, ANNA)).andExpect(status().isNotFound());
+		mockMvc.perform(ask(followUp)).andExpect(status().isNotFound());
+		// The header is matched case-insensitively, like the login
+		mockMvc.perform(ask(followUp).header(UserHeader.NAME, JAN.toUpperCase()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.conversationId").value(conversationId));
+	}
+
+	@Test
+	void unknownUserMustLogInAgain() throws Exception {
+		mockMvc.perform(ask("{\"message\": \"Hi\"}").header(UserHeader.NAME, "nobody@example.com"))
+				.andExpect(status().isUnauthorized());
+	}
+
 	private String startConversation(String message) throws Exception {
 		String body = mockMvc.perform(ask("{\"message\": \"" + message + "\"}"))
 				.andExpect(status().isOk())
@@ -222,7 +252,7 @@ class CoachControllerTests {
 				.reduce("", String::concat);
 	}
 
-	private static RequestBuilder ask(String body) {
+	private static MockHttpServletRequestBuilder ask(String body) {
 		return post("/api/coach/messages").contentType(MediaType.APPLICATION_JSON).content(body);
 	}
 
