@@ -15,12 +15,13 @@ export function HedgieCelebration({ loadScene }: HedgieCelebrationProps) {
     if (!viewport) return;
 
     let cancelled = false;
+    let unmountScene: (() => void) | undefined;
     void loadScene()
       .then(async (scene) => {
         if (!scene || cancelled) return;
         await scene.ready;
         if (cancelled) return;
-        scene.mount(viewport);
+        unmountScene = scene.mount(viewport);
         sceneRef.current = scene;
         setStatus('ready');
       })
@@ -30,6 +31,7 @@ export function HedgieCelebration({ loadScene }: HedgieCelebrationProps) {
 
     return () => {
       cancelled = true;
+      unmountScene?.();
       sceneRef.current = null;
     };
   }, [loadScene]);

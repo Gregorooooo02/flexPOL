@@ -1,12 +1,18 @@
 import * as THREE from 'three';
 import { addLighting, createHedgehog, createMedal, createShadow } from './model.js';
+import {
+  isWrongAnswerSpeaking,
+  poseWrongAnswer,
+  WRONG_ANSWER_DURATION,
+  WRONG_ANSWER_STILL_FRAME,
+} from './wrongAnswerAnimation.js';
 
 const smooth = THREE.MathUtils.smoothstep;
 const arc = (t, start, end) => t > start && t < end ? Math.sin(Math.PI * (t - start) / (end - start)) : 0;
 const bump = (t, at, width) => 1 - smooth(Math.abs(t - at), 0, width);
 
-function poseHedgie(model, time, elapsed, gaze) {
-  const { root, body, head, arms, eyes, ears, feet, neutralMouth, openMouth } = model;
+function poseCelebration(model, time, elapsed, gaze) {
+  const { root, body, head, arms, eyes, ears, feet, neutralMouth, openMouth, frown } = model;
   const cheer = 1 - smooth(elapsed, 1.78, 2.35);
   const liftPaw = smooth(elapsed, 0, .45) * cheer;
   const jump = arc(elapsed, .32, 1.06);
@@ -32,11 +38,13 @@ function poseHedgie(model, time, elapsed, gaze) {
     eye.pupil.position.set(gaze.x * .022, -gaze.y * .014, 0);
     eye.brow.rotation.z = eye.side * .02;
     eye.brow.position.y = .37 + jump * .025;
+    eye.brow.scale.setScalar(1);
     ears[i].rotation.z = -eye.side * (.45 + jump * .17 + Math.sin(time * 2.1 + i) * .02);
     feet[i].rotation.x = jump * (i ? -.40 : .35);
   }
   neutralMouth.visible = cheer < .5;
   openMouth.visible = !neutralMouth.visible;
+  frown.visible = false;
 }
 
 function paperBurst(scene) {
@@ -69,19 +77,17 @@ export function prepareHedgieScene() {
   const confetti = paperBurst(scene);
   const gaze = new THREE.Vector2();
   const pointer = new THREE.Vector2();
+  let unmountViewport;
+  let reaction;
+  let reactionElapsed = 0;
+  let speaking = false;
+  let disposed = false;
   let onScreen = false;
   let time = 0;
   let elapsed = 0;
   let then = performance.now();
 
-  function draw(now) {
-    const dt = Math.max(0, (now - then) / 1000);
-    then = now;
-    time += dt;
-    elapsed += dt;
-    gaze.lerp(pointer, 1 - Math.exp(-dt * 8));
-    poseHedgie(hedgie, time, elapsed, gaze);
-    const lift = hedgie.root.position.y;
+  function frameHedgie(lift) {
     const zoom = 1 - lift * .205;
     if (camera.zoom !== zoom) {
       camera.zoom = zoom;
@@ -90,6 +96,16 @@ export function prepareHedgieScene() {
     }
     shadow.scale.setScalar(1 - lift * .23);
     shadow.material.opacity = .94 - lift * .63;
+  }
+
+  function drawCelebration(now) {
+    const dt = Math.max(0, (now - then) / 1000);
+    then = now;
+    time += dt;
+    elapsed += dt;
+    gaze.lerp(pointer, 1 - Math.exp(-dt * 8));
+    poseCelebration(hedgie, time, elapsed, gaze);
+    frameHedgie(hedgie.root.position.y);
     const toss = arc(elapsed, .43, 1.48);
     medal.position.set(-.015, -.52, .185);
     hedgie.arms[0].localToWorld(medal.position);
@@ -114,9 +130,37 @@ export function prepareHedgieScene() {
     renderer.render(scene, camera);
   }
 
+  function drawWrongAnswer() {
+    const poseTime = reaction.reducedMotion ? WRONG_ANSWER_STILL_FRAME : reactionElapsed;
+    poseWrongAnswer(hedgie, poseTime, camera.right, reaction.gesture);
+    renderer.render(scene, camera);
+  }
+
+  function finishWrongAnswer() {
+    reaction.onSpeech(false);
+    unmountViewport?.();
+  }
+
+  function advanceWrongAnswer(now) {
+    // Keep the short gestures visible when the device drops a frame.
+    reactionElapsed += Math.min(.1, Math.max(0, (now - then) / 1000));
+    then = now;
+    if (reactionElapsed >= WRONG_ANSWER_DURATION) {
+      finishWrongAnswer();
+      return;
+    }
+    drawWrongAnswer();
+    const showSpeech = isWrongAnswerSpeaking(reactionElapsed);
+    if (speaking !== showSpeech) {
+      speaking = showSpeech;
+      reaction.onSpeech(speaking);
+    }
+  }
+
   function updateLoop() {
     then = performance.now();
-    renderer.setAnimationLoop(onScreen && !document.hidden ? draw : null);
+    const draw = reaction ? advanceWrongAnswer : drawCelebration;
+    renderer.setAnimationLoop(onScreen && !document.hidden && !reaction?.reducedMotion ? draw : null);
   }
   function resize() {
     const viewport = canvas.parentElement;
@@ -124,15 +168,16 @@ export function prepareHedgieScene() {
     const { clientWidth: w, clientHeight: h } = viewport;
     if (!w || !h) return;
     const aspect = w / h;
-    const half = Math.max(3.72, 3.54 / aspect) / 2;
+    const framingHeight = reaction ? 3.85 : 3.72;
+    const half = Math.max(framingHeight, 3.54 / aspect) / 2;
     Object.assign(camera, { left: -half * aspect, right: half * aspect, top: half, bottom: -half });
     camera.updateProjectionMatrix();
     renderer.setSize(w, h, false);
+    if (reaction) drawWrongAnswer();
   }
-  const listeners = new AbortController();
-  const listenerOptions = { signal: listeners.signal };
   const resizeObserver = new ResizeObserver(resize);
   const visibilityObserver = new IntersectionObserver(([entry]) => {
+    if (entry?.target !== canvas.parentElement) return;
     onScreen = entry.isIntersecting;
     updateLoop();
   });
@@ -140,37 +185,76 @@ export function prepareHedgieScene() {
   const ready = Promise.resolve()
     .then(() => renderer.compileAsync(scene, camera))
     .then(() => {
-      if (listeners.signal.aborted) return;
+      if (disposed) return;
       then = performance.now();
-      draw(then);
+      drawCelebration(then);
     });
 
   return {
     ready,
-    mount(viewport) {
+    mount(viewport, nextReaction) {
+      unmountViewport?.();
+      reaction = nextReaction;
+      reactionElapsed = 0;
+      speaking = false;
+      renderer.shadowMap.enabled = !reaction;
+      shadow.visible = !reaction;
+      if (reaction) {
+        frameHedgie(0);
+        medal.visible = false;
+        for (const part of confetti) part.visible = false;
+      }
       viewport.append(canvas);
       resize();
       resizeObserver.observe(viewport);
+
+      const listeners = new AbortController();
+      const listenerOptions = { signal: listeners.signal };
       visibilityObserver.observe(viewport);
       document.addEventListener('visibilitychange', updateLoop, listenerOptions);
-      viewport.addEventListener('pointermove', (event) => {
-        if (event.pointerType === 'touch') return;
-        const rect = viewport.getBoundingClientRect();
-        pointer.set(
-          2 * (event.clientX - rect.left) / rect.width - 1,
-          2 * (event.clientY - rect.top) / rect.height - 1,
-        );
-      }, listenerOptions);
-      viewport.addEventListener('pointerleave', () => pointer.set(0, 0), listenerOptions);
+      let stillFrameTimer;
+      if (!reaction) {
+        elapsed = 0;
+        hedgie.root.position.x = 0;
+        gaze.set(0, 0);
+        pointer.set(0, 0);
+        then = performance.now();
+        drawCelebration(then);
+        viewport.addEventListener('pointermove', (event) => {
+          if (event.pointerType === 'touch') return;
+          const rect = viewport.getBoundingClientRect();
+          pointer.set(
+            2 * (event.clientX - rect.left) / rect.width - 1,
+            2 * (event.clientY - rect.top) / rect.height - 1,
+          );
+        }, listenerOptions);
+        viewport.addEventListener('pointerleave', () => pointer.set(0, 0), listenerOptions);
+      } else if (reaction.reducedMotion) {
+        reaction.onSpeech(true);
+        stillFrameTimer = window.setTimeout(finishWrongAnswer, WRONG_ANSWER_DURATION * 1000);
+      }
+
+      function unmount() {
+        if (unmountViewport !== unmount) return;
+        unmountViewport = undefined;
+        reaction = undefined;
+        window.clearTimeout(stillFrameTimer);
+        resizeObserver.disconnect();
+        visibilityObserver.disconnect();
+        listeners.abort();
+        onScreen = false;
+        renderer.setAnimationLoop(null);
+        canvas.remove();
+      }
+      unmountViewport = unmount;
+      return unmount;
     },
     celebrate() {
       elapsed = .16;
     },
     dispose() {
-      resizeObserver.disconnect();
-      visibilityObserver.disconnect();
-      listeners.abort();
-      renderer.setAnimationLoop(null);
+      disposed = true;
+      unmountViewport?.();
       const geometries = new Set();
       const materials = new Set();
       scene.traverse((object) => {
@@ -186,7 +270,6 @@ export function prepareHedgieScene() {
       shadow.material.map.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
-      canvas.remove();
     },
   };
 }

@@ -248,6 +248,8 @@ export function createHedgehog(scene) {
   const nose = mesh(head, noseGeometry, ink, [0, -.112, faceDepth(0, -.112) + .012]);
   nose.scale.set(.19, .125, .122);
   const neutralMouth = faceStroke(head, mouth, [[-.137,-.275],[-.082,-.312],[-.005,-.327],[.076,-.307],[.144,-.258]], .018);
+  const frown = faceStroke(head, mouth, [[-.196,-.365],[-.10,-.311],[0,-.288],[.10,-.311],[.196,-.365]], .026);
+  frown.visible = false;
   const grin = new THREE.Shape();
   grin.moveTo(-.166,-.271);
   grin.bezierCurveTo(-.073,-.318,.071,-.315,.166,-.254);
@@ -273,7 +275,7 @@ export function createHedgehog(scene) {
     }
     return foot;
   });
-  return { root, body, head, eyes, ears, arms, feet, neutralMouth, openMouth };
+  return { root, body, head, eyes, ears, arms, feet, neutralMouth, openMouth, frown };
 }
 
 export function addLighting(scene) {
