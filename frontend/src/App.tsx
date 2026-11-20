@@ -4,6 +4,7 @@ import { AppLayout } from './layouts/AppLayout';
 import { DemoPage } from './pages/DemoPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
+import { PlaygroundPage } from './playground/PlaygroundPage';
 
 export function App() {
   return (
@@ -13,8 +14,8 @@ export function App() {
         <Route element={<AppLayout />}>
           <Route index element={<HomePage />} />
           <Route path="demo" element={<DemoPage />} />
+	  <Route path="playground" element={<PlaygroundPage />} />
         </Route>
-      </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
