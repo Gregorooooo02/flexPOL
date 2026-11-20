@@ -112,6 +112,69 @@ class CoachControllerTests {
 		assertThat(text(prompt, MessageType.USER)).isEqualTo("Can you explain {this} part?");
 	}
 
+	// Question 1 is a practice (CONTROL) question: options 1-4, option 3 (C) is correct.
+	private static final String PRACTICE_CORRECT = "You have the same number of coins, but they buy less.";
+
+	@Test
+	void givesTheCurrentQuestionWithoutTheAnswerBeforeTheLearnerAnswers() throws Exception {
+		mockMvc.perform(ask("{\"message\": \"Can you help me with this question? I feel lost\", \"questionId\": 1}"))
+				.andExpect(status().isOk());
+
+		String system = text(chatModel.lastPrompt.get(), MessageType.SYSTEM);
+		assertThat(system).contains("practice question", "A) Nothing changes.", "C) " + PRACTICE_CORRECT)
+				.contains("They have not answered yet", "Do not say which option is correct")
+				.doesNotContain("which is correct", "Explanation:");
+	}
+
+	@Test
+	void keepsThePracticeAnswerHiddenAfterAWrongAnswer() throws Exception {
+		mockMvc.perform(ask("{\"message\": \"Why is that wrong?\", \"questionId\": 1, \"selectedOptionId\": 1}"))
+				.andExpect(status().isOk());
+
+		String system = text(chatModel.lastPrompt.get(), MessageType.SYSTEM);
+		assertThat(system).contains("They picked A) Nothing changes., which is not correct, and they can try again")
+				.doesNotContain("Explanation:", "correct answer");
+	}
+
+	@Test
+	void explainsAfterACorrectAnswer() throws Exception {
+		mockMvc.perform(ask("{\"message\": \"Why is that right?\", \"questionId\": 1, \"selectedOptionId\": 3}"))
+				.andExpect(status().isOk());
+
+		assertThat(text(chatModel.lastPrompt.get(), MessageType.SYSTEM))
+				.contains("They picked C) " + PRACTICE_CORRECT + ", which is correct.", "Explanation:");
+	}
+
+	@Test
+	void revealsTheAnswerOfAScoredTestOnlyAfterTheLearnerAnswered() throws Exception {
+		long questionId = 24; // in the Chapter 1 final quiz
+		long wrongOptionId = jdbcTemplate.queryForObject(
+				"SELECT MIN(id) FROM answer_option WHERE question_id = ? AND is_correct = FALSE", Long.class, questionId);
+		String correctText = jdbcTemplate.queryForObject(
+				"SELECT text FROM answer_option WHERE question_id = ? AND is_correct = TRUE", String.class, questionId);
+
+		mockMvc.perform(ask("{\"message\": \"Which one is it?\", \"questionId\": " + questionId + "}"))
+				.andExpect(status().isOk());
+		assertThat(text(chatModel.lastPrompt.get(), MessageType.SYSTEM))
+				.contains("scored chapter test", "give no hints about which option is right")
+				.doesNotContain("correct answer:", "Explanation:");
+
+		mockMvc.perform(ask("{\"message\": \"Why was I wrong?\", \"questionId\": " + questionId
+				+ ", \"selectedOptionId\": " + wrongOptionId + "}"))
+				.andExpect(status().isOk());
+		assertThat(text(chatModel.lastPrompt.get(), MessageType.SYSTEM))
+				.contains("which is not correct. Their answer is locked", correctText, "Explanation:");
+	}
+
+	@Test
+	void combinesLessonAndQuestionContext() throws Exception {
+		mockMvc.perform(ask("{\"message\": \"Help\", \"subchapterId\": 1, \"questionId\": 1}"))
+				.andExpect(status().isOk());
+
+		assertThat(text(chatModel.lastPrompt.get(), MessageType.SYSTEM))
+				.contains("currently studying this lesson", "1.1 ", "practice question");
+	}
+
 	@Test
 	void fallsBackWhenTheModelFails() throws Exception {
 		chatModel.fail = true;
@@ -134,6 +197,14 @@ class CoachControllerTests {
 		mockMvc.perform(ask("{\"message\": \"Hi\", \"conversationId\": \"not-a-uuid\"}"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.detail").value("conversationId must be a UUID returned by the coach"));
+		mockMvc.perform(ask("{\"message\": \"Hi\", \"selectedOptionId\": 1}"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.detail").value("selectedOptionId requires questionId"));
+		mockMvc.perform(ask("{\"message\": \"Hi\", \"questionId\": 9999}"))
+				.andExpect(status().isNotFound());
+		// Option 5 belongs to question 2
+		mockMvc.perform(ask("{\"message\": \"Hi\", \"questionId\": 1, \"selectedOptionId\": 5}"))
+				.andExpect(status().isNotFound());
 		assertThat(chatModel.lastPrompt.get()).isNull();
 	}
 
