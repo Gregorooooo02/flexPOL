@@ -51,13 +51,6 @@ public class FixedRateSimulationEngine implements SimulationEngine {
 					* Math.pow(1 + rate / parameters.compoundsPerYear(), exponent);
 			points.add(new SimulationPoint(day, SimulationValues.money(value)));
 		}
-		List<String> limitations = new ArrayList<>(List.of(
-				"Synthetic accrued values use nominal-rate compounding with ACT/365 fractional-year accrual.",
-				"Fractional exponents illustrate accrued value, not actual daily interest posting.",
-				"No rollover, early-withdrawal penalties, credit events, or changes in future available rates are modeled."));
-		if (end.isBefore(context.endDate())) {
-			limitations.add("The requested horizon was shortened to product maturity on " + maturity + ".");
-		}
-		return new SimulationTrajectory(end, List.copyOf(points), List.copyOf(limitations));
+		return new SimulationTrajectory(end, List.copyOf(points));
 	}
 }

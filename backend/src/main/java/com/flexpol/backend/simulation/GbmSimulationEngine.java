@@ -56,11 +56,6 @@ public class GbmSimulationEngine implements SimulationEngine {
 		if (!points.getLast().date().equals(context.endDate())) {
 			points.add(new SimulationPoint(context.endDate(), points.getLast().investmentValue()));
 		}
-		return new SimulationTrajectory(context.endDate(), List.copyOf(points), List.of(
-				"Synthetic GBM outcomes illustrate assumptions; they are not forecasts or guaranteed returns.",
-				"Weekdays approximate trading sessions; exchange holidays are not modeled. A model-year step is 1/"
-						+ parameters.periodsPerYear() + ", which does not exactly match calendar-year weekday counts.",
-				"Weekend endpoints carry the last value forward without a random step.",
-				"The model does not capture changing volatility, heavy-tailed crashes, or liquidity constraints."));
+		return new SimulationTrajectory(context.endDate(), List.copyOf(points));
 	}
 }
