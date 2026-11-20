@@ -1,258 +1,153 @@
 {
-  "version": 1,
-  "disclaimer": "All people, instruments, prices, rates and events are fictional and synthetic. They illustrate ideas from the lessons. They don't predict real returns and are not product recommendations.",
+  "version": 2,
+  "disclaimer": "All people, goals, amounts and events are fictional. Instruments come from the app's catalogue, but every price path is synthetic: each instrument is simulated independently with the same expected return and its own volatility. Outcomes illustrate ideas from the lessons. They don't predict real returns and are not product recommendations.",
   "defaults": {
     "currency": "EUR",
-    "inflationRate": 0.03,
     "shareStep": 0.05,
-    "pathCount": 200,
-    "storyPathSeedOffset": 0,
+    "cash": {
+      "key": "CASH",
+      "name": "Cash (not invested)",
+      "annualInterest": 0
+    },
     "rulePenaltyPoints": 15,
-    "withdrawalOrder": [
-      "SAVINGS",
-      "MATURED_DEPOSITS",
-      "BOND_FUNDS",
-      "MARKET_PRODUCTS_PRO_RATA",
-      "LOCKED_WITH_PENALTY"
-    ],
-    "depositEarlyWithdrawal": {
-      "forfeitAccruedInterest": true,
-      "penaltyRate": 0.01
+    "evaluation": {
+      "endpoint": "POST /api/simulations/batch",
+      "maxDurationDays": 3650,
+      "itemInitialInvestment": "budget × share, in cents, one item per invested instrument",
+      "itemSeed": "scenarioSeed + instrumentId",
+      "moneyNeedPoint": "FIRST_POINT_ON_OR_AFTER_DAY",
+      "withdrawalOrder": [
+        "CASH",
+        "HOLDINGS_PRO_RATA"
+      ],
+      "drawdownBasis": "PORTFOLIO_VALUE_PLUS_WITHDRAWN"
     },
     "acceptance": {
-      "referenceMinScore": 80,
-      "trapMaxScore": 50
+      "seeds": 1000,
+      "referenceMinMeanScore": 80,
+      "trapMaxMeanScore": 50
     }
   },
-  "instruments": [
+  "catalogue": [
     {
-      "key": "SAVINGS",
-      "name": "Easy Access Savings",
-      "group": "SAVINGS",
-      "riskLevel": "VERY_LOW",
-      "model": "FIXED_RATE",
-      "expectedReturn": 0.02,
-      "volatility": 0.0,
-      "marketCorrelation": 0.0,
-      "yearlyFee": 0.0,
-      "liquidity": "ANY_DAY",
-      "termMonths": null,
-      "description": "Safe and available any day at no cost. Grows slowly and can trail inflation."
+      "id": 1001,
+      "name": "SAP SE",
+      "assetClass": "STOCK",
+      "riskLevel": "HIGH"
     },
     {
-      "key": "DEPOSIT_1Y",
-      "name": "Locked Deposit 1 year",
-      "group": "DEPOSIT",
-      "riskLevel": "LOW",
-      "model": "FIXED_RATE",
-      "expectedReturn": 0.03,
-      "volatility": 0.0,
-      "marketCorrelation": 0.0,
-      "yearlyFee": 0.0,
-      "liquidity": "LOCKED_TERM",
-      "termMonths": 12,
-      "description": "Fixed interest for 12 months. Taking money out early loses the interest earned plus 1% of the amount. Stops growing at maturity."
+      "id": 1002,
+      "name": "Siemens AG",
+      "assetClass": "STOCK",
+      "riskLevel": "HIGH"
     },
     {
-      "key": "DEPOSIT_2Y",
-      "name": "Locked Deposit 2 years",
-      "group": "DEPOSIT",
-      "riskLevel": "LOW",
-      "model": "FIXED_RATE",
-      "expectedReturn": 0.033,
-      "volatility": 0.0,
-      "marketCorrelation": 0.0,
-      "yearlyFee": 0.0,
-      "liquidity": "LOCKED_TERM",
-      "termMonths": 24,
-      "description": "Fixed interest for 24 months. Taking money out early loses the interest earned plus 1% of the amount. Stops growing at maturity."
+      "id": 1003,
+      "name": "Allianz SE",
+      "assetClass": "STOCK",
+      "riskLevel": "HIGH"
     },
     {
-      "key": "DEPOSIT_3Y",
-      "name": "Locked Deposit 3 years",
-      "group": "DEPOSIT",
-      "riskLevel": "LOW",
-      "model": "FIXED_RATE",
-      "expectedReturn": 0.035,
-      "volatility": 0.0,
-      "marketCorrelation": 0.0,
-      "yearlyFee": 0.0,
-      "liquidity": "LOCKED_TERM",
-      "termMonths": 36,
-      "description": "Fixed interest for 36 months. Taking money out early loses the interest earned plus 1% of the amount. Stops growing at maturity."
+      "id": 1004,
+      "name": "Deutsche Telekom AG",
+      "assetClass": "STOCK",
+      "riskLevel": "HIGH"
     },
     {
-      "key": "DEPOSIT_5Y",
-      "name": "Locked Deposit 5 years",
-      "group": "DEPOSIT",
-      "riskLevel": "LOW",
-      "model": "FIXED_RATE",
-      "expectedReturn": 0.038,
-      "volatility": 0.0,
-      "marketCorrelation": 0.0,
-      "yearlyFee": 0.0,
-      "liquidity": "LOCKED_TERM",
-      "termMonths": 60,
-      "description": "Fixed interest for 60 months. Taking money out early loses the interest earned plus 1% of the amount. Stops growing at maturity."
+      "id": 1005,
+      "name": "Airbus SE",
+      "assetClass": "STOCK",
+      "riskLevel": "HIGH"
     },
     {
-      "key": "BOND_GOV",
-      "name": "Steady State Bond Fund",
-      "group": "BOND_FUND",
-      "riskLevel": "LOW",
-      "model": "GBM",
-      "expectedReturn": 0.03,
-      "volatility": 0.04,
-      "marketCorrelation": 0.0,
-      "yearlyFee": 0.0015,
-      "liquidity": "ANY_DAY",
-      "termMonths": null,
-      "description": "A fund of stable government bonds. Steady, but the price can dip, for example when interest rates rise."
+      "id": 1006,
+      "name": "Schneider Electric SE",
+      "assetClass": "STOCK",
+      "riskLevel": "HIGH"
     },
     {
-      "key": "BOND_HY",
-      "name": "Rocket Corp High-Yield Fund",
-      "group": "BOND_FUND",
-      "riskLevel": "MEDIUM",
-      "model": "GBM",
-      "expectedReturn": 0.055,
-      "volatility": 0.10,
-      "marketCorrelation": 0.5,
-      "yearlyFee": 0.005,
-      "liquidity": "ANY_DAY",
-      "termMonths": null,
-      "description": "Bonds of weaker companies. Higher interest makes up for credit risk: some borrowers may not pay back."
+      "id": 1007,
+      "name": "TotalEnergies SE",
+      "assetClass": "STOCK",
+      "riskLevel": "HIGH"
     },
     {
-      "key": "BASKET_WORLD",
-      "name": "World Market Basket",
-      "group": "MARKET",
-      "riskLevel": "MEDIUM",
-      "model": "GBM",
-      "expectedReturn": 0.07,
-      "volatility": 0.15,
-      "marketCorrelation": 1.0,
-      "yearlyFee": 0.002,
-      "liquidity": "ANY_DAY",
-      "termMonths": null,
-      "description": "A low-cost index basket of companies from around the world. Diversified, but it still falls when the whole market falls."
+      "id": 1008,
+      "name": "LVMH Moet Hennessy Louis Vuitton SE",
+      "assetClass": "STOCK",
+      "riskLevel": "HIGH"
     },
     {
-      "key": "FUND_ACTIVE",
-      "name": "Premium Star Active Fund",
-      "group": "MARKET",
-      "riskLevel": "MEDIUM",
-      "model": "GBM",
-      "expectedReturn": 0.07,
-      "volatility": 0.16,
-      "marketCorrelation": 0.98,
-      "yearlyFee": 0.018,
-      "liquidity": "ANY_DAY",
-      "termMonths": null,
-      "description": "An actively managed fund that aims to beat the market. Charges a much higher yearly fee."
+      "id": 1009,
+      "name": "L'Oreal SA",
+      "assetClass": "STOCK",
+      "riskLevel": "HIGH"
     },
     {
-      "key": "BASKET_TECH",
-      "name": "Tech Leaders Basket",
-      "group": "MARKET",
-      "riskLevel": "HIGH",
-      "model": "GBM",
-      "expectedReturn": 0.085,
-      "volatility": 0.22,
-      "marketCorrelation": 0.85,
-      "yearlyFee": 0.004,
-      "liquidity": "ANY_DAY",
-      "termMonths": null,
-      "description": "A basket of technology companies only. Many holdings, but one theme, so less diversified than it looks."
+      "id": 1010,
+      "name": "ASML Holding NV",
+      "assetClass": "STOCK",
+      "riskLevel": "HIGH"
     },
     {
-      "key": "STOCK_NOVA",
-      "name": "Nova Robotics",
-      "group": "MARKET",
-      "riskLevel": "HIGH",
-      "model": "GBM",
-      "expectedReturn": 0.09,
-      "volatility": 0.35,
-      "marketCorrelation": 0.6,
-      "yearlyFee": 0.0,
-      "liquidity": "ANY_DAY",
-      "termMonths": null,
-      "description": "A single fictional robotics company. Can grow fast or lose much of its value."
+      "id": 1011,
+      "name": "ING Groep NV",
+      "assetClass": "STOCK",
+      "riskLevel": "HIGH"
     },
     {
-      "key": "STOCK_HELIO",
-      "name": "Helio Foods",
-      "group": "MARKET",
-      "riskLevel": "HIGH",
-      "model": "GBM",
-      "expectedReturn": 0.06,
-      "volatility": 0.22,
-      "marketCorrelation": 0.6,
-      "yearlyFee": 0.0,
-      "liquidity": "ANY_DAY",
-      "termMonths": null,
-      "description": "A single fictional food company. Steadier than most single stocks, still concentrated."
+      "id": 1012,
+      "name": "Banco Santander SA",
+      "assetClass": "STOCK",
+      "riskLevel": "HIGH"
     },
     {
-      "key": "HYPE",
-      "name": "HypeCoin",
-      "group": "MARKET",
-      "riskLevel": "VERY_HIGH",
-      "model": "GBM",
-      "expectedReturn": 0.0,
-      "volatility": 0.90,
-      "marketCorrelation": 0.3,
-      "yearlyFee": 0.01,
-      "liquidity": "ANY_DAY",
-      "termMonths": null,
-      "description": "A fictional trending token with no underlying income. Its price is driven by mood and hype."
+      "id": 1013,
+      "name": "Vanguard FTSE All-World UCITS ETF (Acc)",
+      "assetClass": "EQUITY_ETF",
+      "riskLevel": "MEDIUM"
     },
     {
-      "key": "HYPE_2X",
-      "name": "HypeCoin 2× Leveraged",
-      "group": "MARKET",
-      "riskLevel": "VERY_HIGH",
-      "model": "GBM",
-      "expectedReturn": 0.0,
-      "volatility": 1.80,
-      "marketCorrelation": 0.3,
-      "yearlyFee": 0.03,
-      "liquidity": "ANY_DAY",
-      "termMonths": null,
-      "knockOutDrawdown": 0.5,
-      "description": "HypeCoin bought with borrowed money: gains and losses are doubled. It is worth 0 for good once it falls 50% from the start."
+      "id": 1014,
+      "name": "iShares Core MSCI World UCITS ETF (Acc)",
+      "assetClass": "EQUITY_ETF",
+      "riskLevel": "MEDIUM"
     },
     {
-      "key": "PENSION_WORLD",
-      "name": "Retirement Account: World Basket",
-      "group": "PENSION",
-      "riskLevel": "MEDIUM",
-      "model": "GBM",
-      "expectedReturn": 0.07,
-      "volatility": 0.15,
-      "marketCorrelation": 1.0,
-      "yearlyFee": 0.002,
-      "liquidity": "LOCKED_TO_END",
-      "termMonths": null,
-      "taxFree": true,
-      "earlyWithdrawal": { "penaltyRate": 0.10, "loseTaxBenefit": true },
-      "description": "The World Market Basket inside a retirement account. Growth is tax-free if the money stays until the end; taking it out early costs 10% plus the tax."
+      "id": 1015,
+      "name": "iShares Core S&P 500 UCITS ETF (Acc)",
+      "assetClass": "EQUITY_ETF",
+      "riskLevel": "MEDIUM"
     },
     {
-      "key": "PENSION_BOND",
-      "name": "Retirement Account: Bond Mix",
-      "group": "PENSION",
-      "riskLevel": "LOW",
-      "model": "GBM",
-      "expectedReturn": 0.03,
-      "volatility": 0.04,
-      "marketCorrelation": 0.0,
-      "yearlyFee": 0.0015,
-      "liquidity": "LOCKED_TO_END",
-      "termMonths": null,
-      "taxFree": true,
-      "earlyWithdrawal": { "penaltyRate": 0.10, "loseTaxBenefit": true },
-      "description": "Government bonds inside a retirement account. Tax-free growth if the money stays until the end; taking it out early costs 10% plus the tax."
+      "id": 1016,
+      "name": "iShares NASDAQ 100 UCITS ETF (Acc)",
+      "assetClass": "EQUITY_ETF",
+      "riskLevel": "HIGH"
+    },
+    {
+      "id": 1017,
+      "name": "iShares Core EURO STOXX 50 UCITS ETF (Dist)",
+      "assetClass": "EQUITY_ETF",
+      "riskLevel": "MEDIUM"
+    },
+    {
+      "id": 1018,
+      "name": "iShares Core MSCI EM IMI UCITS ETF (Acc)",
+      "assetClass": "EQUITY_ETF",
+      "riskLevel": "HIGH"
+    },
+    {
+      "id": 1019,
+      "name": "iShares MSCI World Small Cap UCITS ETF (Acc)",
+      "assetClass": "EQUITY_ETF",
+      "riskLevel": "HIGH"
+    },
+    {
+      "id": 1020,
+      "name": "Vanguard ESG Global All Cap UCITS ETF (Acc)",
+      "assetClass": "EQUITY_ETF",
+      "riskLevel": "MEDIUM"
     }
   ],
   "scenarios": [
@@ -260,47 +155,82 @@
       "id": "kuba-safety-cushion",
       "code": "2.1",
       "chapterId": 2,
-      "lessonCodes": ["2.1", "2.2"],
+      "lessonCodes": [
+        "2.1"
+      ],
       "title": "Kuba's Safety Cushion",
       "persona": {
         "name": "Kuba",
         "age": 24,
         "situation": "First job on a 6-month contract that may not be renewed. No savings cushion yet."
       },
-      "goal": "Pay the car repair without a loss and still have a cushion at the end.",
-      "startAmount": 6000.00,
+      "goal": "Pay the car repair in four months without a loss and still have a cushion at the end of the year.",
+      "budget": 6000,
       "durationDays": 365,
-      "taxOnGains": null,
-      "target": { "value": 3550.00, "unit": "NOMINAL" },
-      "floor": { "value": 3450.00, "unit": "NOMINAL" },
-      "weights": { "goal": 0.35, "safety": 0.50, "growth": 0.15 },
+      "target": 3500,
+      "floor": 3200,
+      "maxDrawdown": 0.04,
+      "weights": {
+        "growth": 0.5,
+        "stability": 0.5
+      },
       "moneyNeeds": [
-        { "day": 120, "amount": 2500.00, "kind": "WITHDRAWAL", "label": "Car repair" }
+        {
+          "day": 120,
+          "amount": 2500,
+          "label": "Car repair"
+        }
       ],
-      "events": [],
-      "instrumentKeys": ["SAVINGS", "DEPOSIT_1Y", "DEPOSIT_3Y", "BASKET_WORLD", "STOCK_NOVA", "HYPE"],
+      "instrumentIds": [
+        1013,
+        1015,
+        1001,
+        1010
+      ],
       "rules": [],
       "scenarioSeed": 210000,
-      "referenceAllocation": { "SAVINGS": 0.70, "DEPOSIT_1Y": 0.30 },
+      "referenceAllocation": {
+        "1013": 0.2,
+        "CASH": 0.8
+      },
       "alsoAcceptable": [
-        { "SAVINGS": 1.00 }
+        {
+          "CASH": 1
+        }
       ],
       "traps": [
-        { "label": "All in the basket", "allocation": { "BASKET_WORLD": 1.00 }, "why": "The repair may have to be paid by selling a falling basket." },
-        { "label": "Long lock-up", "allocation": { "DEPOSIT_3Y": 1.00 }, "why": "The repair triggers the early-withdrawal penalty, and the rest stays locked." }
+        {
+          "label": "All in the world fund",
+          "allocation": {
+            "1013": 1
+          },
+          "why": "The repair may have to be paid by selling the fund after a drop, and a year is too short to recover."
+        },
+        {
+          "label": "One exciting stock",
+          "allocation": {
+            "1010": 1
+          },
+          "why": "A single volatile stock can be far down exactly when the repair is due."
+        }
       ],
-      "resultExtras": [],
       "debriefPoints": [
-        "An emergency fund needs liquidity first.",
+        "An emergency fund needs to be available, and its value shouldn't swing.",
         "One year is too short to recover from a drop.",
-        "Here a forced sale is a bigger risk than inflation."
+        "Cash grows slowly, but here safety matters more than growth."
+      ],
+      "notSimulated": [
+        "Savings-account interest and inflation (cash earns 0% and prices don't rise in this sandbox)."
       ]
     },
     {
       "id": "lena-tom-wedding",
       "code": "2.2",
       "chapterId": 2,
-      "lessonCodes": ["2.2"],
+      "lessonCodes": [
+        "2.2",
+        "2.4"
+      ],
       "title": "Lena and Tom's Wedding",
       "persona": {
         "name": "Lena and Tom",
@@ -308,429 +238,850 @@
         "situation": "Wedding booked for a fixed date in 2 years. The venue is paid on that day."
       },
       "goal": "Have the full wedding budget on the day.",
-      "startAmount": 18000.00,
+      "budget": 18000,
       "durationDays": 730,
-      "taxOnGains": null,
-      "target": { "value": 19000.00, "unit": "NOMINAL" },
-      "floor": { "value": 18500.00, "unit": "NOMINAL" },
-      "weights": { "goal": 0.45, "safety": 0.45, "growth": 0.10 },
-      "moneyNeeds": [
-        { "day": 730, "amount": 18000.00, "kind": "AVAILABILITY_CHECK", "label": "Wedding venue" }
+      "target": 18000,
+      "floor": 17000,
+      "maxDrawdown": 0.04,
+      "weights": {
+        "growth": 0.5,
+        "stability": 0.5
+      },
+      "moneyNeeds": [],
+      "instrumentIds": [
+        1013,
+        1015,
+        1017,
+        1018
       ],
-      "events": [],
-      "instrumentKeys": ["SAVINGS", "DEPOSIT_2Y", "DEPOSIT_3Y", "BOND_GOV", "BOND_HY", "BASKET_WORLD"],
       "rules": [],
       "scenarioSeed": 220000,
-      "referenceAllocation": { "DEPOSIT_2Y": 0.70, "BOND_GOV": 0.20, "BASKET_WORLD": 0.10 },
-      "alsoAcceptable": [],
-      "traps": [
-        { "label": "Higher rate, wrong term", "allocation": { "DEPOSIT_3Y": 1.00 }, "why": "It matures after the wedding, so the money comes out early with a penalty." },
-        { "label": "Chasing interest", "allocation": { "BOND_HY": 0.60, "SAVINGS": 0.40 }, "why": "Credit risk: the fund's price can be down on the wedding day." }
+      "referenceAllocation": {
+        "1013": 0.15,
+        "CASH": 0.85
+      },
+      "alsoAcceptable": [
+        {
+          "CASH": 1
+        }
       ],
-      "resultExtras": [],
+      "traps": [
+        {
+          "label": "Spread across funds",
+          "allocation": {
+            "1015": 0.4,
+            "1017": 0.3,
+            "1018": 0.3
+          },
+          "why": "Diversified, but still all in shares: two years is too short to be sure of the full amount."
+        },
+        {
+          "label": "One region",
+          "allocation": {
+            "1017": 1
+          },
+          "why": "All the money in one market's ups and downs, right before a fixed date."
+        }
+      ],
       "debriefPoints": [
-        "Match the term to the date you need the money.",
-        "A higher rate usually means a riskier borrower or less access."
+        "A fixed date close ahead calls for money that keeps its value.",
+        "Diversification lowers risk but doesn't remove it.",
+        "Growth isn't needed when the goal is to keep what you have."
+      ],
+      "notSimulated": [
+        "Term deposits and bonds, which would usually fit a known date (no such instruments in the catalogue yet)."
       ]
     },
     {
       "id": "marek-favourite-company",
       "code": "2.3",
       "chapterId": 2,
-      "lessonCodes": ["2.3", "2.4"],
+      "lessonCodes": [
+        "2.3",
+        "2.4"
+      ],
       "title": "Marek's Favourite Company",
       "persona": {
         "name": "Marek",
         "age": 33,
-        "situation": "Engineer with a stable job and an emergency fund already in place. A big fan of Nova Robotics who wants to go all in."
+        "situation": "Engineer with a stable job and an emergency fund already in place. A big fan of one chip-equipment company who wants to go all in."
       },
-      "goal": "Long-term growth.",
-      "startAmount": 25000.00,
-      "durationDays": 3650,
-      "taxOnGains": null,
-      "target": { "value": 31000.00, "unit": "REAL" },
-      "floor": { "value": 20000.00, "unit": "REAL" },
-      "weights": { "goal": 0.35, "safety": 0.30, "growth": 0.35 },
+      "goal": "Grow the money over 6 years.",
+      "budget": 25000,
+      "durationDays": 2190,
+      "target": 31000,
+      "floor": 23000,
+      "maxDrawdown": 0.3,
+      "weights": {
+        "growth": 0.6,
+        "stability": 0.4
+      },
       "moneyNeeds": [],
-      "events": [
-        { "day": 1500, "type": "INSTRUMENT_SHOCK", "instrumentKeys": ["STOCK_NOVA"], "change": -0.50, "label": "Nova Robotics product recall" }
+      "instrumentIds": [
+        1013,
+        1015,
+        1016,
+        1017,
+        1018,
+        1001,
+        1006,
+        1010
       ],
-      "instrumentKeys": ["SAVINGS", "BOND_GOV", "BASKET_WORLD", "BASKET_TECH", "STOCK_NOVA", "STOCK_HELIO"],
       "rules": [
-        { "type": "MAX_TOTAL_SHARE", "instrumentKeys": ["STOCK_NOVA", "STOCK_HELIO"], "maxShare": 0.20, "label": "Single stocks above 20% in total" }
+        {
+          "type": "MAX_SHARE_EACH",
+          "instrumentIds": [
+            1001,
+            1006,
+            1010
+          ],
+          "maxShare": 0.1,
+          "label": "No single stock above 10%"
+        }
       ],
       "scenarioSeed": 230000,
-      "referenceAllocation": { "BASKET_WORLD": 0.75, "BOND_GOV": 0.10, "STOCK_NOVA": 0.10, "SAVINGS": 0.05 },
-      "alsoAcceptable": [],
-      "traps": [
-        { "label": "All in", "allocation": { "STOCK_NOVA": 1.00 }, "why": "One company's problems hit the whole portfolio." },
-        { "label": "One theme", "allocation": { "BASKET_TECH": 0.50, "STOCK_NOVA": 0.50 }, "why": "Looks spread out, but everything depends on the same industry." }
+      "referenceAllocation": {
+        "1010": 0.1,
+        "1015": 0.35,
+        "1017": 0.25,
+        "1018": 0.2,
+        "CASH": 0.1
+      },
+      "alsoAcceptable": [
+        {
+          "1010": 0.1,
+          "1013": 0.9
+        }
       ],
-      "resultExtras": [],
+      "traps": [
+        {
+          "label": "All in",
+          "allocation": {
+            "1010": 1
+          },
+          "why": "One company's problems hit the whole portfolio."
+        },
+        {
+          "label": "One theme",
+          "allocation": {
+            "1010": 0.5,
+            "1016": 0.5
+          },
+          "why": "Looks spread out, but it is all one volatile theme, half of it in one company."
+        }
+      ],
       "debriefPoints": [
         "A single stock carries the full damage of one company's problems.",
-        "A narrow basket is less diversified than it looks.",
-        "A stock fits as a small part of a long-term mix."
+        "A fund spreads the money across many companies.",
+        "A favourite stock fits as a small part of a long-term mix."
+      ],
+      "notSimulated": [
+        "Shares moving together: in this sandbox every instrument moves independently, which makes any mix look more diversified than it really is."
       ]
     },
     {
-      "id": "zofia-premium-fund",
+      "id": "zofia-home-markets",
       "code": "2.4",
       "chapterId": 2,
-      "lessonCodes": ["2.4", "2.5"],
-      "title": "Zofia and the Premium Fund",
+      "lessonCodes": [
+        "2.4",
+        "2.7"
+      ],
+      "title": "Zofia Only Buys What She Knows",
       "persona": {
         "name": "Zofia",
         "age": 45,
-        "situation": "Inherited money. An adviser recommends the Premium Star active fund with glossy marketing."
+        "situation": "Inherited money. A relative says to only buy big local European names you know."
       },
-      "goal": "Grow the inheritance for later life.",
-      "startAmount": 80000.00,
-      "durationDays": 7300,
-      "taxOnGains": null,
-      "target": { "value": 120000.00, "unit": "REAL" },
-      "floor": { "value": 70000.00, "unit": "REAL" },
-      "weights": { "goal": 0.35, "safety": 0.25, "growth": 0.40 },
+      "goal": "Grow the inheritance over 8 years.",
+      "budget": 80000,
+      "durationDays": 2920,
+      "target": 105000,
+      "floor": 80000,
+      "maxDrawdown": 0.25,
+      "weights": {
+        "growth": 0.75,
+        "stability": 0.25
+      },
       "moneyNeeds": [],
-      "events": [],
-      "instrumentKeys": ["SAVINGS", "BOND_GOV", "BASKET_WORLD", "FUND_ACTIVE", "STOCK_HELIO"],
-      "rules": [],
+      "instrumentIds": [
+        1013,
+        1015,
+        1017,
+        1018,
+        1003,
+        1004
+      ],
+      "rules": [
+        {
+          "type": "MAX_SHARE_EACH",
+          "instrumentIds": [
+            1003,
+            1004
+          ],
+          "maxShare": 0.1,
+          "label": "No single stock above 10%"
+        }
+      ],
       "scenarioSeed": 240000,
-      "referenceAllocation": { "BASKET_WORLD": 0.75, "BOND_GOV": 0.20, "SAVINGS": 0.05 },
+      "referenceAllocation": {
+        "1015": 0.4,
+        "1017": 0.25,
+        "1018": 0.25,
+        "CASH": 0.1
+      },
       "alsoAcceptable": [],
       "traps": [
-        { "label": "The premium fund", "allocation": { "FUND_ACTIVE": 0.80, "BOND_GOV": 0.20 }, "why": "Same market as the basket, about 1.6% a year more in fees." },
-        { "label": "Keep it in savings", "allocation": { "SAVINGS": 1.00 }, "why": "Inflation eats the value over 20 years." }
+        {
+          "label": "One familiar name",
+          "allocation": {
+            "1004": 1
+          },
+          "why": "Familiar isn't the same as safe: one company decides the result."
+        },
+        {
+          "label": "Home only, mostly cash",
+          "allocation": {
+            "1017": 0.1,
+            "CASH": 0.9
+          },
+          "why": "Far too cautious for 8 years, and the small invested part depends on one region."
+        }
       ],
-      "resultExtras": ["FEES_PAID"],
       "debriefPoints": [
-        "Fees are charged every year and compound against you.",
-        "The active fund moves like the basket but keeps less of the growth.",
-        "Ask what the extra cost actually buys."
+        "Diversify across companies and regions, not only within one market.",
+        "Knowing a company's name doesn't lower its risk.",
+        "Compare instruments on risk, return, liquidity, cost and horizon."
+      ],
+      "notSimulated": [
+        "Fund fees (no fees in this sandbox), so the cost difference between funds isn't visible here."
       ]
     },
     {
       "id": "olek-group-chat-tip",
       "code": "2.5",
       "chapterId": 2,
-      "lessonCodes": ["2.6"],
+      "lessonCodes": [
+        "2.6"
+      ],
       "title": "Olek's Group-Chat Tip",
       "persona": {
         "name": "Olek",
         "age": 21,
-        "situation": "Student with savings from a summer job. A group chat says HypeCoin can't lose and will 10x by spring. Next semester's tuition comes out of this money."
+        "situation": "Student with savings from a summer job. A group chat says one tech stock can't lose. Next semester's tuition comes out of this money in 6 months."
       },
       "goal": "Pay the tuition and keep the rest.",
-      "startAmount": 4000.00,
-      "durationDays": 548,
-      "taxOnGains": null,
-      "target": { "value": 2050.00, "unit": "NOMINAL" },
-      "floor": { "value": 1950.00, "unit": "NOMINAL" },
-      "weights": { "goal": 0.35, "safety": 0.50, "growth": 0.15 },
+      "budget": 4000,
+      "durationDays": 274,
+      "target": 2000,
+      "floor": 1800,
+      "maxDrawdown": 0.05,
+      "weights": {
+        "growth": 0.5,
+        "stability": 0.5
+      },
       "moneyNeeds": [
-        { "day": 270, "amount": 2000.00, "kind": "WITHDRAWAL", "label": "Tuition" }
-      ],
-      "events": [
         {
-          "type": "HYPE_CYCLE",
-          "instrumentKeys": ["HYPE", "HYPE_2X"],
-          "phases": [
-            { "fromDay": 30, "toDay": 150, "change": 1.20, "label": "Hype: everyone is buying" },
-            { "fromDay": 151, "toDay": 240, "change": -0.80, "label": "Crash: early buyers sell" }
-          ]
+          "day": 180,
+          "amount": 2000,
+          "label": "Tuition"
         }
       ],
-      "instrumentKeys": ["SAVINGS", "DEPOSIT_1Y", "BASKET_WORLD", "HYPE", "HYPE_2X"],
+      "instrumentIds": [
+        1013,
+        1001,
+        1006,
+        1010
+      ],
       "rules": [
-        { "type": "MAX_TOTAL_SHARE", "instrumentKeys": ["HYPE"], "maxShare": 0.05, "label": "HypeCoin above 5%" },
-        { "type": "MAX_TOTAL_SHARE", "instrumentKeys": ["HYPE_2X"], "maxShare": 0.0, "label": "Any leveraged HypeCoin" }
+        {
+          "type": "MAX_SHARE_EACH",
+          "instrumentIds": [
+            1001,
+            1006,
+            1010
+          ],
+          "maxShare": 0.05,
+          "label": "No single stock above 5% of money needed soon"
+        }
       ],
       "scenarioSeed": 250000,
-      "referenceAllocation": { "SAVINGS": 0.65, "DEPOSIT_1Y": 0.30, "HYPE": 0.05 },
+      "referenceAllocation": {
+        "1010": 0.05,
+        "CASH": 0.95
+      },
       "alsoAcceptable": [
-        { "SAVINGS": 0.70, "DEPOSIT_1Y": 0.30 }
+        {
+          "CASH": 1
+        }
       ],
       "traps": [
-        { "label": "Trust the chat", "allocation": { "HYPE": 1.00 }, "why": "The tuition is due after the crash." },
-        { "label": "Double the bet", "allocation": { "HYPE_2X": 0.50, "SAVINGS": 0.50 }, "why": "Leverage doubles losses; the position can be wiped out." }
+        {
+          "label": "Trust the chat",
+          "allocation": {
+            "1010": 1
+          },
+          "why": "Tuition is due in 6 months, and the tip can be down a lot by then."
+        },
+        {
+          "label": "Half on the tip",
+          "allocation": {
+            "1010": 0.5,
+            "CASH": 0.5
+          },
+          "why": "Half of the tuition money rides on one stock."
+        }
       ],
-      "resultExtras": [],
       "debriefPoints": [
-        "Speculation is a bet on price, not a plan built on value.",
-        "Never speculate with money you need soon.",
-        "Leverage multiplies losses as well as gains.",
-        "Hype peaks before the crash, and late buyers lose the most."
+        "A tip is a bet on price, not a plan.",
+        "Never bet money you need soon.",
+        "If you speculate at all, keep it small and separate from important goals."
+      ],
+      "notSimulated": [
+        "Crypto, leverage and a hype-then-crash price pattern (no such instruments or scripted events in this sandbox)."
       ]
     },
     {
       "id": "nina-home-deposit",
       "code": "2.6",
       "chapterId": 2,
-      "lessonCodes": ["2.7"],
+      "lessonCodes": [
+        "2.7"
+      ],
       "title": "Nina's Home Deposit",
       "persona": {
         "name": "Nina",
         "age": 40,
-        "situation": "Renting, steady job, emergency fund in place. Plans to buy a flat in 5 years."
+        "situation": "Renting, steady job, emergency fund in place. Plans to buy a flat in 4 years."
       },
-      "goal": "Have the home deposit ready in 5 years.",
-      "startAmount": 40000.00,
-      "durationDays": 1826,
-      "taxOnGains": null,
-      "target": { "value": 46000.00, "unit": "NOMINAL" },
-      "floor": { "value": 40000.00, "unit": "NOMINAL" },
-      "weights": { "goal": 0.40, "safety": 0.35, "growth": 0.25 },
-      "moneyNeeds": [
-        { "day": 1826, "amount": 46000.00, "kind": "AVAILABILITY_CHECK", "label": "Home deposit" }
+      "goal": "Grow the home deposit a little without risking the purchase.",
+      "budget": 40000,
+      "durationDays": 1461,
+      "target": 43000,
+      "floor": 40000,
+      "maxDrawdown": 0.1,
+      "weights": {
+        "growth": 0.5,
+        "stability": 0.5
+      },
+      "moneyNeeds": [],
+      "instrumentIds": [
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007,
+        1008,
+        1009,
+        1010,
+        1011,
+        1012,
+        1013,
+        1014,
+        1015,
+        1016,
+        1017,
+        1018,
+        1019,
+        1020
       ],
-      "events": [],
-      "instrumentKeys": ["SAVINGS", "DEPOSIT_1Y", "DEPOSIT_2Y", "DEPOSIT_3Y", "DEPOSIT_5Y", "BOND_GOV", "BOND_HY", "BASKET_WORLD", "FUND_ACTIVE", "BASKET_TECH", "STOCK_NOVA", "STOCK_HELIO", "HYPE"],
       "rules": [
-        { "type": "MAX_TOTAL_SHARE", "instrumentKeys": ["HYPE"], "maxShare": 0.05, "label": "HypeCoin above 5%" }
+        {
+          "type": "MAX_SHARE_EACH",
+          "instrumentIds": [
+            1001,
+            1002,
+            1003,
+            1004,
+            1005,
+            1006,
+            1007,
+            1008,
+            1009,
+            1010,
+            1011,
+            1012
+          ],
+          "maxShare": 0.1,
+          "label": "No single stock above 10%"
+        }
       ],
       "scenarioSeed": 260000,
-      "referenceAllocation": { "BOND_GOV": 0.40, "BASKET_WORLD": 0.35, "DEPOSIT_5Y": 0.25 },
+      "referenceAllocation": {
+        "1015": 0.2,
+        "1017": 0.15,
+        "1018": 0.15,
+        "CASH": 0.5
+      },
       "alsoAcceptable": [],
       "traps": [
-        { "label": "Only savings", "allocation": { "SAVINGS": 1.00 }, "why": "Too little growth to reach the target." },
-        { "label": "Only the basket", "allocation": { "BASKET_WORLD": 1.00 }, "why": "A drop just before the purchase can push it below the floor." }
+        {
+          "label": "Only cash",
+          "allocation": {
+            "CASH": 1
+          },
+          "why": "Safe, but no growth at all over 4 years."
+        },
+        {
+          "label": "All in shares",
+          "allocation": {
+            "1013": 1
+          },
+          "why": "A drop just before the purchase can shrink the deposit."
+        }
       ],
-      "resultExtras": [],
       "debriefPoints": [
         "A medium horizon needs a balance of growth and safety.",
         "Ask the five questions for each pick: risk, return, liquidity, cost and horizon."
+      ],
+      "notSimulated": [
+        "Bonds and deposits, the usual middle ground (only cash and shares in this sandbox)."
       ]
     },
     {
       "id": "paula-uneven-income",
       "code": "3.1",
       "chapterId": 3,
-      "lessonCodes": ["3.1"],
+      "lessonCodes": [
+        "3.1"
+      ],
       "title": "Paula's Uneven Income",
       "persona": {
         "name": "Paula",
         "age": 31,
-        "situation": "Single parent and freelance designer with irregular income. Saving for a child's school costs."
+        "situation": "Single parent and freelance designer with irregular income. Saving for a child's school costs. A quiet spell with no clients is likely."
       },
       "goal": "A school fund that survives a bad year.",
-      "startAmount": 12000.00,
-      "durationDays": 2557,
-      "taxOnGains": null,
-      "target": { "value": 9800.00, "unit": "REAL" },
-      "floor": { "value": 8000.00, "unit": "REAL" },
-      "weights": { "goal": 0.35, "safety": 0.45, "growth": 0.20 },
+      "budget": 12000,
+      "durationDays": 1825,
+      "target": 10000,
+      "floor": 8800,
+      "maxDrawdown": 0.12,
+      "weights": {
+        "growth": 0.3,
+        "stability": 0.7
+      },
       "moneyNeeds": [
-        { "day": 900, "amount": 3000.00, "kind": "WITHDRAWAL", "label": "Two quiet months with no clients" }
+        {
+          "day": 900,
+          "amount": 3000,
+          "label": "Two quiet months with no clients"
+        }
       ],
-      "events": [],
-      "instrumentKeys": ["SAVINGS", "DEPOSIT_3Y", "BOND_GOV", "BASKET_WORLD", "STOCK_NOVA"],
-      "rules": [],
+      "instrumentIds": [
+        1013,
+        1015,
+        1017,
+        1018,
+        1008
+      ],
+      "rules": [
+        {
+          "type": "MAX_SHARE_EACH",
+          "instrumentIds": [
+            1008
+          ],
+          "maxShare": 0.1,
+          "label": "No single stock above 10%"
+        }
+      ],
       "scenarioSeed": 310000,
-      "referenceAllocation": { "SAVINGS": 0.15, "BOND_GOV": 0.50, "BASKET_WORLD": 0.35 },
+      "referenceAllocation": {
+        "1015": 0.25,
+        "1017": 0.2,
+        "1018": 0.2,
+        "CASH": 0.35
+      },
       "alsoAcceptable": [],
       "traps": [
-        { "label": "7 years is long", "allocation": { "BASKET_WORLD": 1.00 }, "why": "The income gap can force a sale during a drop." },
-        { "label": "Lock it all", "allocation": { "DEPOSIT_3Y": 1.00 }, "why": "The day-900 need breaks the deposit with a penalty." }
+        {
+          "label": "5 years is long",
+          "allocation": {
+            "1013": 1
+          },
+          "why": "The income gap can force a sale during a drop."
+        },
+        {
+          "label": "Luxury bet",
+          "allocation": {
+            "1008": 0.5,
+            "1013": 0.5
+          },
+          "why": "Half on one company, with dependents and an uneven income."
+        }
       ],
-      "resultExtras": [],
       "debriefPoints": [
         "Age and horizon aren't the whole picture.",
-        "Unstable income and dependents lower risk capacity."
-      ]
+        "Unstable income and dependents lower risk capacity, so more stays in cash."
+      ],
+      "notSimulated": []
     },
     {
       "id": "ewa-first-salary",
       "code": "3.2",
       "chapterId": 3,
-      "lessonCodes": ["3.2"],
+      "lessonCodes": [
+        "3.2"
+      ],
       "title": "Ewa's First Salary",
       "persona": {
         "name": "Ewa",
         "age": 23,
-        "situation": "First full-time job, no expensive debt, emergency fund already built. Investing the first savings for retirement."
+        "situation": "First full-time job, no expensive debt, emergency fund already built. Investing the first savings for the long run."
       },
-      "goal": "Grow as much as possible for retirement.",
-      "startAmount": 5000.00,
-      "durationDays": 10950,
-      "taxOnGains": null,
-      "target": { "value": 11000.00, "unit": "REAL" },
-      "floor": { "value": 2500.00, "unit": "REAL" },
-      "weights": { "goal": 0.35, "safety": 0.15, "growth": 0.50 },
+      "goal": "Grow as much as possible over the first 10 years.",
+      "budget": 5000,
+      "durationDays": 3650,
+      "target": 7500,
+      "floor": 5000,
+      "maxDrawdown": 0.4,
+      "weights": {
+        "growth": 0.8,
+        "stability": 0.2
+      },
       "moneyNeeds": [],
-      "events": [
-        { "day": 1100, "type": "MARKET_SHOCK", "change": -0.30, "label": "Markets fall 30%" }
+      "instrumentIds": [
+        1013,
+        1015,
+        1016,
+        1018,
+        1019,
+        1010
       ],
-      "instrumentKeys": ["SAVINGS", "DEPOSIT_5Y", "BOND_GOV", "BASKET_WORLD", "FUND_ACTIVE", "HYPE"],
       "rules": [
-        { "type": "MAX_TOTAL_SHARE", "instrumentKeys": ["HYPE"], "maxShare": 0.05, "label": "HypeCoin above 5%" }
+        {
+          "type": "MAX_SHARE_EACH",
+          "instrumentIds": [
+            1010
+          ],
+          "maxShare": 0.1,
+          "label": "No single stock above 10%"
+        }
       ],
       "scenarioSeed": 320000,
-      "referenceAllocation": { "BASKET_WORLD": 0.90, "BOND_GOV": 0.10 },
-      "alsoAcceptable": [],
-      "traps": [
-        { "label": "Play it safe", "allocation": { "SAVINGS": 1.00 }, "why": "Loses about a quarter of its real value over 30 years." },
-        { "label": "Pay for a manager", "allocation": { "FUND_ACTIVE": 1.00 }, "why": "The fee drag compounds for 30 years." }
+      "referenceAllocation": {
+        "1013": 0.2,
+        "1015": 0.3,
+        "1018": 0.25,
+        "1019": 0.25
+      },
+      "alsoAcceptable": [
+        {
+          "1013": 1
+        }
       ],
-      "resultExtras": [],
+      "traps": [
+        {
+          "label": "Play it safe",
+          "allocation": {
+            "CASH": 1
+          },
+          "why": "No growth at all in 10 years of compounding time."
+        },
+        {
+          "label": "All on one star",
+          "allocation": {
+            "1010": 1
+          },
+          "why": "A long horizon doesn't make one company safe."
+        }
+      ],
       "debriefPoints": [
         "A long horizon and future income allow a growth-oriented mix.",
-        "The crash in year 3 has decades to recover.",
-        "Starting early is the biggest advantage."
+        "Starting early gives compounding the most time."
+      ],
+      "notSimulated": [
+        "Monthly contributions and the 'start at 25 vs 35' comparison (one starting amount only, horizon at most 10 years)."
       ]
     },
     {
       "id": "sam-university-fund",
       "code": "3.3",
       "chapterId": 3,
-      "lessonCodes": ["3.3"],
+      "lessonCodes": [
+        "3.3"
+      ],
       "title": "Sam's University Fund",
       "persona": {
         "name": "Sam",
         "age": 38,
-        "situation": "Steady income and two children. Saving for the eldest's university."
+        "situation": "Steady income and two children. Saving for the eldest's university, with an older house that may need repairs."
       },
-      "goal": "Have the university fund ready when the eldest starts.",
-      "startAmount": 60000.00,
-      "durationDays": 5475,
-      "taxOnGains": null,
-      "target": { "value": 75000.00, "unit": "REAL" },
-      "floor": { "value": 50000.00, "unit": "REAL" },
-      "weights": { "goal": 0.40, "safety": 0.25, "growth": 0.35 },
+      "goal": "Have the university fund ready in 7 years.",
+      "budget": 60000,
+      "durationDays": 2555,
+      "target": 68000,
+      "floor": 55000,
+      "maxDrawdown": 0.25,
+      "weights": {
+        "growth": 0.6,
+        "stability": 0.4
+      },
       "moneyNeeds": [
-        { "day": 2190, "amount": 5000.00, "kind": "WITHDRAWAL", "label": "House repair" }
+        {
+          "day": 1000,
+          "amount": 5000,
+          "label": "House repair"
+        }
       ],
-      "events": [],
-      "instrumentKeys": ["SAVINGS", "DEPOSIT_5Y", "BOND_GOV", "BOND_HY", "BASKET_WORLD", "BASKET_TECH", "STOCK_NOVA", "STOCK_HELIO"],
+      "instrumentIds": [
+        1013,
+        1015,
+        1017,
+        1018,
+        1002,
+        1012
+      ],
       "rules": [
-        { "type": "MAX_TOTAL_SHARE", "instrumentKeys": ["STOCK_NOVA", "STOCK_HELIO"], "maxShare": 0.20, "label": "Single stocks above 20% in total" }
+        {
+          "type": "MAX_TOTAL_SHARE",
+          "instrumentIds": [
+            1002,
+            1012
+          ],
+          "maxShare": 0.2,
+          "label": "Single stocks above 20% in total"
+        }
       ],
       "scenarioSeed": 330000,
-      "referenceAllocation": { "BASKET_WORLD": 0.65, "BOND_GOV": 0.30, "SAVINGS": 0.05 },
+      "referenceAllocation": {
+        "1015": 0.35,
+        "1017": 0.25,
+        "1018": 0.25,
+        "CASH": 0.15
+      },
       "alsoAcceptable": [],
       "traps": [
-        { "label": "Two favourite stocks", "allocation": { "STOCK_NOVA": 0.40, "STOCK_HELIO": 0.40, "SAVINGS": 0.20 }, "why": "Concentrated: two companies decide the child's education." },
-        { "label": "Lock and forget", "allocation": { "DEPOSIT_5Y": 1.00 }, "why": "Stops growing after year 5 and stays flat for 10 years." }
+        {
+          "label": "Two favourite stocks",
+          "allocation": {
+            "1002": 0.5,
+            "1012": 0.5
+          },
+          "why": "Two companies decide the child's education."
+        },
+        {
+          "label": "Park it in cash",
+          "allocation": {
+            "CASH": 1
+          },
+          "why": "Safe, but 7 years without any growth."
+        }
       ],
-      "resultExtras": [],
       "debriefPoints": [
         "Each goal gets its own horizon and mix.",
-        "A small cash part covers surprises so the investments can stay put."
+        "A cash part covers surprises so the investments can stay put."
+      ],
+      "notSimulated": [
+        "Several goals in separate buckets (one portfolio per scenario)."
       ]
     },
     {
       "id": "danuta-glide-path",
       "code": "3.4",
       "chapterId": 3,
-      "lessonCodes": ["3.4"],
+      "lessonCodes": [
+        "3.4"
+      ],
       "title": "Danuta's Glide Path",
       "persona": {
         "name": "Danuta",
-        "age": 55,
-        "situation": "Savings at their largest, plans to retire at 67. Has been 100% in the market basket for 20 years."
+        "age": 58,
+        "situation": "Savings at their largest, retiring at 67. Has kept everything in a tech fund for years because it has done well."
       },
-      "goal": "Protect what's been built and keep growing with inflation.",
-      "startAmount": 250000.00,
-      "durationDays": 4383,
-      "taxOnGains": null,
-      "target": { "value": 260000.00, "unit": "REAL" },
-      "floor": { "value": 200000.00, "unit": "REAL" },
-      "weights": { "goal": 0.35, "safety": 0.45, "growth": 0.20 },
+      "goal": "Protect what's been built over the last 9 years before retirement, while still growing.",
+      "budget": 250000,
+      "durationDays": 3285,
+      "target": 290000,
+      "floor": 250000,
+      "maxDrawdown": 0.15,
+      "weights": {
+        "growth": 0.5,
+        "stability": 0.5
+      },
       "moneyNeeds": [],
-      "events": [
-        { "day": 3650, "type": "MARKET_SHOCK", "change": -0.35, "label": "Markets fall 35% at age 65" }
+      "instrumentIds": [
+        1013,
+        1015,
+        1016,
+        1017,
+        1018
       ],
-      "instrumentKeys": ["SAVINGS", "DEPOSIT_5Y", "BOND_GOV", "BOND_HY", "BASKET_WORLD", "BASKET_TECH"],
       "rules": [],
       "scenarioSeed": 340000,
-      "referenceAllocation": { "BASKET_WORLD": 0.55, "BOND_GOV": 0.40, "SAVINGS": 0.05 },
+      "referenceAllocation": {
+        "1015": 0.25,
+        "1017": 0.2,
+        "1018": 0.15,
+        "CASH": 0.4
+      },
       "alsoAcceptable": [],
       "traps": [
-        { "label": "It worked so far", "allocation": { "BASKET_WORLD": 1.00 }, "why": "The crash at 65 hits the largest balance just before retirement." },
-        { "label": "All to cash", "allocation": { "SAVINGS": 1.00 }, "why": "Inflation over 12 years, with retirement still ahead." }
+        {
+          "label": "It worked so far",
+          "allocation": {
+            "1016": 1
+          },
+          "why": "A big drop near retirement hits the largest balance."
+        },
+        {
+          "label": "All to cash",
+          "allocation": {
+            "CASH": 1
+          },
+          "why": "No growth at all for 9 years, with a long retirement still ahead."
+        }
       ],
-      "resultExtras": [],
       "debriefPoints": [
         "Shift from growing to protecting gradually.",
         "Even near retirement, part of the money stays invested for growth."
+      ],
+      "notSimulated": [
+        "A glide path that changes the mix year by year (one decision at the start), and bonds as the steadier part."
       ]
     },
     {
       "id": "henryk-retires-next-year",
       "code": "3.5",
       "chapterId": 3,
-      "lessonCodes": ["3.4"],
+      "lessonCodes": [
+        "3.4"
+      ],
       "title": "Henryk Retires Next Year",
       "persona": {
         "name": "Henryk",
         "age": 64,
         "situation": "Retires in a year and will live on these savings for the first years of retirement."
       },
-      "goal": "Fund both years of spending and keep the rest for later retirement.",
-      "startAmount": 400000.00,
+      "goal": "Pay two years of spending and keep the rest for later retirement.",
+      "budget": 400000,
       "durationDays": 1095,
-      "taxOnGains": null,
-      "target": { "value": 340000.00, "unit": "NOMINAL" },
-      "floor": { "value": 300000.00, "unit": "NOMINAL" },
-      "weights": { "goal": 0.35, "safety": 0.50, "growth": 0.15 },
+      "target": 340000,
+      "floor": 310000,
+      "maxDrawdown": 0.08,
+      "weights": {
+        "growth": 0.3,
+        "stability": 0.7
+      },
       "moneyNeeds": [
-        { "day": 365, "amount": 32000.00, "kind": "WITHDRAWAL", "label": "First year of spending" },
-        { "day": 730, "amount": 32000.00, "kind": "WITHDRAWAL", "label": "Second year of spending" }
+        {
+          "day": 365,
+          "amount": 32000,
+          "label": "First year of spending"
+        },
+        {
+          "day": 730,
+          "amount": 32000,
+          "label": "Second year of spending"
+        }
       ],
-      "events": [
-        { "day": 200, "type": "MARKET_SHOCK", "change": -0.30, "label": "Markets fall 30%" }
+      "instrumentIds": [
+        1013,
+        1015,
+        1017,
+        1018
       ],
-      "instrumentKeys": ["SAVINGS", "DEPOSIT_1Y", "DEPOSIT_2Y", "BOND_GOV", "BOND_HY", "BASKET_WORLD"],
       "rules": [],
       "scenarioSeed": 350000,
-      "referenceAllocation": { "SAVINGS": 0.10, "DEPOSIT_1Y": 0.10, "BOND_GOV": 0.40, "BASKET_WORLD": 0.40 },
+      "referenceAllocation": {
+        "1015": 0.25,
+        "1017": 0.2,
+        "1018": 0.15,
+        "CASH": 0.4
+      },
       "alsoAcceptable": [],
       "traps": [
-        { "label": "Stay fully invested", "allocation": { "BASKET_WORLD": 1.00 }, "why": "Both withdrawals are paid by selling after the crash." },
-        { "label": "Lock it all", "allocation": { "DEPOSIT_2Y": 1.00 }, "why": "The day-365 withdrawal pays the early-withdrawal penalty." }
+        {
+          "label": "Stay fully invested",
+          "allocation": {
+            "1013": 1
+          },
+          "why": "Spending is paid by selling shares, even right after a drop."
+        },
+        {
+          "label": "Two funds, no buffer",
+          "allocation": {
+            "1015": 0.5,
+            "1018": 0.5
+          },
+          "why": "No cash buffer: every withdrawal is a sale at that day's price."
+        }
       ],
-      "resultExtras": [],
       "debriefPoints": [
         "Sequence risk: the same drop hurts more when withdrawals start.",
         "A cash buffer of 1-3 years of spending avoids selling at the bottom."
+      ],
+      "notSimulated": [
+        "A scripted crash: the market path is random, so some runs show sequence risk more clearly than others."
       ]
     },
     {
       "id": "ola-minds-the-gap",
       "code": "3.6",
       "chapterId": 3,
-      "lessonCodes": ["3.5", "3.6"],
+      "lessonCodes": [
+        "3.5"
+      ],
       "title": "Ola Minds the Gap",
       "persona": {
         "name": "Ola",
-        "age": 40,
-        "situation": "Expects a public pension of 1,800 a month against 3,000 needed: a gap of about 288,000 over 20 years of retirement. Has no separate emergency fund."
+        "age": 45,
+        "situation": "Expects a public pension of 1,800 a month against 3,000 needed: a gap of about 288,000 over 20 years of retirement. This money is the start of Ola's own retirement savings."
       },
-      "goal": "Close as much of the retirement gap as possible.",
-      "startAmount": 30000.00,
-      "durationDays": 9131,
-      "taxOnGains": 0.20,
-      "retirementGap": 288000.00,
-      "target": { "value": 70000.00, "unit": "REAL" },
-      "floor": { "value": 30000.00, "unit": "REAL" },
-      "weights": { "goal": 0.35, "safety": 0.20, "growth": 0.45 },
-      "moneyNeeds": [
-        { "day": 1000, "amount": 4000.00, "kind": "WITHDRAWAL", "label": "An emergency" }
+      "goal": "Grow the retirement savings as much as sensible over 9½ years.",
+      "budget": 30000,
+      "durationDays": 3468,
+      "target": 45000,
+      "floor": 30000,
+      "maxDrawdown": 0.35,
+      "weights": {
+        "growth": 0.8,
+        "stability": 0.2
+      },
+      "moneyNeeds": [],
+      "instrumentIds": [
+        1013,
+        1015,
+        1018,
+        1019,
+        1020
       ],
-      "events": [],
-      "instrumentKeys": ["SAVINGS", "BOND_GOV", "BASKET_WORLD", "PENSION_WORLD", "PENSION_BOND"],
       "rules": [],
       "scenarioSeed": 360000,
-      "referenceAllocation": { "SAVINGS": 0.15, "PENSION_WORLD": 0.70, "PENSION_BOND": 0.15 },
+      "retirementGap": 288000,
+      "referenceAllocation": {
+        "1015": 0.3,
+        "1018": 0.2,
+        "1019": 0.2,
+        "1020": 0.2,
+        "CASH": 0.1
+      },
       "alsoAcceptable": [],
       "traps": [
-        { "label": "Everything in the pension", "allocation": { "PENSION_WORLD": 1.00 }, "why": "The emergency breaks the account: penalty plus tax." },
-        { "label": "Only savings", "allocation": { "SAVINGS": 1.00 }, "why": "The gap barely moves." }
+        {
+          "label": "Only savings",
+          "allocation": {
+            "CASH": 1
+          },
+          "why": "The gap doesn't shrink at all."
+        },
+        {
+          "label": "Too cautious",
+          "allocation": {
+            "1013": 0.2,
+            "CASH": 0.8
+          },
+          "why": "Most of the money does no work for almost 10 years."
+        }
       ],
-      "resultExtras": ["GAP_COVERED"],
       "debriefPoints": [
-        "Tax advantages come with lock-up rules.",
-        "The emergency fund stays outside the pension account.",
-        "Time and compounding shrink the gap."
+        "Public pensions often cover only part of what's needed.",
+        "Cash alone can't close a large gap; time and compounding do most of the work."
+      ],
+      "notSimulated": [
+        "Pension accounts: tax advantages, employer contributions and lock-up rules (no taxes or locked accounts in this sandbox)."
       ]
     }
   ]

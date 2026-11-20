@@ -2,432 +2,390 @@
 
 **Status:** draft spec, not implemented yet. Chapter 1 keeps its own mission, "The Two-Year Goal" (see [learning-chapters.md](learning-chapters.md)), and is out of scope here.
 
-> All people, instruments, prices, rates and events in this file are fictional and synthetic. They illustrate ideas from the lessons. They don't predict real returns and are not product recommendations.
+> People, goals, amounts and events are fictional. Instruments come from the app's catalogue, but every price path is synthetic. Outcomes illustrate ideas from the lessons. They don't predict real returns and are not product recommendations.
 
-**Structured data:** the machine-readable version of everything below (defaults, the instrument catalog and all 12 scenarios) is [sandbox-scenarios.json](sandbox-scenarios.json). That file is the source of truth for values. This file explains them for people. When you change a value, change both in the same commit. If they disagree, the JSON wins.
+**Structured data:** the machine-readable version of everything below is [sandbox-scenarios.json](sandbox-scenarios.json). That file is the source of truth for values; this file explains them for people. When you change a value, change both in the same commit. If they disagree, the JSON wins. After any change, run the checker (§4): `node scripts/check-sandbox-scenarios.mjs`.
 
 ## 1. What a scenario is
 
-A scenario is a "real-life" test. The learner meets a fictional person with a goal, a sum of money, a time horizon and a life situation. They choose instruments and the share of each one in the portfolio. The simulation runs, and the result is calculated from how the portfolio grew.
+A scenario is a "real-life" test in the **Sandbox mode** of the investing workspace, the same workspace the `/playground` uses (`frontend/src/workspace/`, plan in `notes/investment-workspace-plan.md`). The learner meets a fictional person with a goal, a budget, a fixed horizon and a life situation. They split the budget between cash and instruments from the catalogue, then submit. The server simulates the portfolio, and the result is calculated from how the portfolio grew.
 
-Every scenario has its **own horizon, its own starting amount and its own life situation**. No two scenarios share any of them.
+Every scenario has its **own horizon, its own budget and its own life situation**. No two scenarios share any of them.
 
 ### Flow
 
-1. **Brief:** the person, their situation, the goal, the horizon and the known money needs along the way.
-2. **Allocate:** pick instruments from the scenario's list and set the shares in 5% steps, adding up to 100%.
-3. **Run:** the backend simulates the portfolio on a fixed set of market paths (see §4).
-4. **Result:** growth (nominal and after inflation), whether the goal was reached, the bad-case outcome, and the score.
-5. **Debrief:** Hedgie explains the result from the numbers the backend returns. It never invents outcomes or scoring rules.
-6. **Retry:** the learner changes the allocation and compares the new result with the previous one.
+1. **Brief:** the person, their situation, the goal and any money needed along the way (amount and day).
+2. **Allocate:** set an amount (or percentage) for each allowed instrument; whatever isn't allocated stays as cash. The rules checklist shows which advisory rules are met.
+3. **Submit:** one decision. The allocation is locked; there's no trading during the run.
+4. **Run:** the server calls the batch simulation (§4) and evaluates the result.
+5. **Result:** the replay of the portfolio's value, final value, growth, largest drop, money needs paid, and the score with its parts.
+6. **Debrief:** Hedgie explains the result from the returned numbers only.
+7. **Retry:** the learner changes the allocation and compares the new result with the previous one.
 
-### What the learner sees before allocating
+## 2. What the sandbox can and can't do
 
-- The person, their situation and their goal (target value and horizon)
-- Any money needs along the way (amount and day)
-- Each available instrument's properties: risk level, expected yearly return range, liquidity, lock term, early-withdrawal penalty and yearly fee
+The first draft of this spec assumed a new portfolio engine. These scenarios are adjusted to what the existing tools already do:
 
-The learner doesn't see the reference allocation, the floor value or the scoring weights. These are used by the score and by Hedgie's debrief after the run.
+| Capability | Today (`/playground` + `POST /api/simulations/batch`) | How the scenarios use it |
+|---|---|---|
+| Instruments | The real catalogue: 12 single stocks and 8 equity ETFs, all EUR, all GBM | Each scenario allows a subset by `instrumentId` |
+| Expected return and risk | Every instrument has the same 6% expected return; only the volatility differs (≈13% for broad ETFs, up to ≈41% for single stocks) | Taking more risk isn't rewarded with more expected return here, so concentration is clearly punished |
+| Safe asset | Uninvested cash, which earns 0% | Cash is the only safe and liquid option (emergency funds, near dates) |
+| Budget | Fixed €10,000 in `/playground` | Sandbox mode uses the scenario's budget (planned as "Scenario budget and allowed instruments" in the workspace plan). The batch endpoint accepts any amount |
+| Horizon | Picker with 1, 3, 5 or 10 years; the batch endpoint accepts 1–3,650 days | The scenario fixes `durationDays` (≤ 3,650) and the picker isn't shown |
+| Path | One path per instrument, with seeds that can be set; weekday points | The server sets each item's seed from the scenario, so every learner gets the same market |
+| Correlation | None: instruments move independently | Mixes look more diversified than in reality (see §6) |
+| Fees, taxes, inflation, interest | None | Not part of any scenario's result |
+| Events, deposits, bonds, pension accounts | None | Removed from the scenarios; listed as `notSimulated` for the coach |
+| Withdrawals | None in the engine | Applied by the evaluator to the returned path (cash first, then holdings pro rata) |
 
-## 2. Shared rules
+### Changes from the first draft
+
+- The fictional instruments (savings, deposits, bond funds, the active fund, HypeCoin, pension accounts) are replaced by catalogue instruments plus cash.
+- Horizons longer than 10 years (Sam 15, Danuta 12, Zofia 20, Ola 25, Ewa 30) are shortened. Every horizon is still unique.
+- Inflation, fees, tax, scripted shocks, the hype cycle and the multi-path score are removed. The score now uses the one server-seeded path the learner sees.
+- Scenario 2.4 changes theme from fees (not simulated) to regional diversification. Scenario 3.6 keeps the retirement gap but drops pension-account rules.
+
+## 3. Shared rules
 
 | Rule | Value |
 |---|---|
-| Currency | EUR (fictional amounts) |
-| Shares | 5% steps, total exactly 100%, at least one instrument |
-| Start date | The date the run starts. Horizon end = `startDate.plusDays(durationDays)`, as in the current simulation API |
-| Inflation | Fictional, fixed 3.0% a year, used for "real value" (in today's euros) |
-| Fees | Each instrument's yearly fee, charged daily on its value |
-| Tax | Off, except in scenario 3.6 (see there) |
-| Money needs | Paid on the stated day, following the withdrawal order below |
-| Rebalancing | None. Each holding grows on its own after day 0 (rebalancing is a later two-step scenario, see §8) |
-
-### Withdrawal order for a money need
-
-When a scenario needs money on a given day, the simulation takes it in this order until the amount is covered:
-
-1. Savings account
-2. Deposits that have already matured
-3. Bond funds, at that day's price
-4. Baskets, funds, stocks and HypeCoin, in proportion to their value, at that day's price (this is how a crash can force selling at a loss)
-5. Deposits that haven't matured and the retirement account, with their early-withdrawal penalty
-
-If the whole portfolio can't cover the need, the shortfall is recorded, and the goal counts as **not reached** on that path.
-
-## 3. Instrument catalog (fictional)
-
-These instruments replace the real ETFs and company stocks currently in `data.sql` for sandbox scenarios. Their parameters are illustrative starting values. They can be calibrated from the volatility and drift of the seeded instruments, but the names shown to learners stay fictional.
-
-| Key | Name | Model | Expected yearly return | Volatility (σ) | Market correlation (ρ) | Yearly fee | Liquidity | Notes |
-|---|---|---|---|---|---|---|---|---|
-| `SAVINGS` | Easy Access Savings | FIXED_RATE | 2.0% | 0 | 0 | 0% | Any day, free | |
-| `DEPOSIT_1Y` | Locked Deposit 1 year | FIXED_RATE | 3.0% | 0 | 0 | 0% | Locked 12 months | Penalty* |
-| `DEPOSIT_2Y` | Locked Deposit 2 years | FIXED_RATE | 3.3% | 0 | 0 | 0% | Locked 24 months | Penalty* |
-| `DEPOSIT_3Y` | Locked Deposit 3 years | FIXED_RATE | 3.5% | 0 | 0 | 0% | Locked 36 months | Penalty* |
-| `DEPOSIT_5Y` | Locked Deposit 5 years | FIXED_RATE | 3.8% | 0 | 0 | 0% | Locked 60 months | Penalty* |
-| `BOND_GOV` | Steady State Bond Fund | GBM | 3.0% | 4% | 0.0 | 0.15% | Any day, market price | Government bonds |
-| `BOND_HY` | Rocket Corp High-Yield Fund | GBM | 5.5% | 10% | 0.5 | 0.5% | Any day, market price | Weaker borrowers, credit risk |
-| `BASKET_WORLD` | World Market Basket | GBM | 7.0% | 15% | 1.0 | 0.2% | Any day, market price | Broad index basket; it *is* the market factor |
-| `FUND_ACTIVE` | Premium Star Active Fund | GBM | 7.0% | 16% | 0.98 | 1.8% | Any day, market price | Same market as the basket, much higher fee |
-| `BASKET_TECH` | Tech Leaders Basket | GBM | 8.5% | 22% | 0.85 | 0.4% | Any day, market price | Narrow theme, less diversified than it looks |
-| `STOCK_NOVA` | Nova Robotics (single stock) | GBM | 9.0% | 35% | 0.6 | 0% | Any day, market price | Concentrated |
-| `STOCK_HELIO` | Helio Foods (single stock) | GBM | 6.0% | 22% | 0.6 | 0% | Any day, market price | Concentrated |
-| `HYPE` | HypeCoin | GBM | 0% | 90% | 0.3 | 1.0% | Any day, market price | Speculative, no underlying income |
-| `HYPE_2X` | HypeCoin 2× Leveraged | GBM, knock-out | 0% | 180% | 0.3 | 3.0% | Any day, market price | Value is 0 for good once it falls 50% from start |
-| `PENSION_WORLD` | Retirement Account: World Basket | GBM (as `BASKET_WORLD`) | 7.0% | 15% | 1.0 | 0.2% | Locked to scenario end | Tax-free growth; early withdrawal: 10% penalty and tax |
-| `PENSION_BOND` | Retirement Account: Bond Mix | GBM (as `BOND_GOV`) | 3.0% | 4% | 0.0 | 0.15% | Locked to scenario end | Same wrapper rules |
-
-\* **Deposit early-withdrawal penalty:** the withdrawn amount loses all interest it has earned so far, plus 1% of the amount. The rest of the deposit keeps running. After maturity a deposit stops growing (the FIXED_RATE engine's existing STOP-at-maturity behavior), so choosing a term much shorter than the horizon also has a cost.
-
-**Correlated moves.** Each GBM instrument's daily log return uses one shared market draw `Zm` and its own draw `Zi`:
-
-```
-r_i = (μ_i − σ_i²/2)·dt + σ_i·(ρ_i·Zm + √(1 − ρ_i²)·Zi)·√dt
-```
-
-Without this, separate simulations would make instruments move independently and overstate diversification.
-
-**Scripted shocks.** Some scenarios add a one-day shock on a given day, such as "markets −35%". It moves each GBM instrument by `shock × ρ_i` on top of its random path, and is the same on every path. An instrument-specific shock, such as Nova Robotics −50%, applies to that instrument only.
+| Currency | EUR |
+| Allocation | Amounts in cents; for checks and reference allocations, shares in 5% steps; unallocated money is cash |
+| Cash | Earns 0%, never moves |
+| Decision | One allocation at the start, held to the end (no mid-run trades) |
+| Horizon | `durationDays` from the scenario, end date = `startDate.plusDays(durationDays)` |
+| Money needs | Paid at the first simulated point on or after the stated day: cash first, then holdings sold pro rata at that point's value |
+| Rules | Advisory: shown as a checklist, each broken rule costs 15 points |
 
 ## 4. How the result is calculated
 
-Growth is the result. Growth on a single random path would reward luck, and "100% stocks" would win almost every time. So each run is measured on many paths, and the outcome is read against the scenario's goal.
+### Running the simulation
 
-### Paths
+The server builds one `POST /api/simulations/batch` request per submission:
 
-- Each scenario has a fixed `scenarioSeed`. A run uses **N = 200 paths** with seeds `scenarioSeed + 0 … scenarioSeed + 199`, so every learner and every retry faces the same markets. This makes Quest Arena fair.
-- One fixed path, the **story path** (seed `scenarioSeed + 0`), is returned with daily points so the frontend can draw a chart. The other 199 paths only return their final values.
+- one item per invested instrument, with `initialInvestment` = the allocated amount and the scenario's `durationDays`;
+- `randomSeed` = `scenarioSeed + instrumentId`, so the market is the same for everyone and for every retry, and different instruments get different shocks.
 
-### Metrics (all in the scenario's target unit: nominal or real)
+The seeds and results stay on the server until the learner has submitted, as the workspace plan requires for scored modes.
 
-| Metric | Meaning |
-|---|---|
-| `medianFinal` | Median final value across the 200 paths |
-| `p5Final` / `p95Final` | Bad case / good case (5th and 95th percentile) |
-| `medianGrowth` | `medianFinal / startAmount − 1`, after money needs are paid |
-| `goalProbability` | Share of paths where final value ≥ `target` and no money need had a shortfall |
-| `safetyProbability` | Share of paths where final value ≥ `floor` |
+### Evaluating the path
+
+From the returned points (all items share the same dates):
+
+1. **Portfolio value** at each point = cash + the sum of the item values, after money needs paid so far. Paying a need from holdings scales every holding down by the same fraction.
+2. **Money needs:** if cash plus holdings can't cover a need, it's a shortfall.
+3. **Final value** = the portfolio value at the last point.
+4. **Largest drop** (max drawdown) is measured on portfolio value plus the money already withdrawn, so paying a planned bill doesn't count as a loss.
 
 ### Score (0–100)
 
 ```
-GoalScore   = 100 × goalProbability
-SafetyScore = 100 × safetyProbability
-GrowthScore = 100 × clamp((medianFinal − floor) / (target − floor), 0, 1)
+GrowthScore    = 100 × clamp((finalValue − floor) / (target − floor), 0, 1)    (0 after a shortfall)
+StabilityScore = 100 × clamp(1 − max(0, largestDrop − maxDrawdown) / maxDrawdown, 0, 1)
 
-Score = wGoal × GoalScore + wSafety × SafetyScore + wGrowth × GrowthScore − rulePenalties
-        (clamped to 0–100; the three weights add up to 1)
+Score = wGrowth × GrowthScore + wStability × StabilityScore − 15 × brokenRules    (clamped to 0–100)
 ```
 
-- **Weights** differ by scenario. Short horizons and fragile situations weight safety more, and long horizons weight growth more.
-- **Rule penalties:** −15 points for each broken rule (for example HypeCoin above 5%). Rules are listed per scenario. Money costs, such as deposit penalties and forced sales, are not rule penalties: they already reduce the simulated value.
-- **Calibration acceptance test:** for each scenario, the reference allocation must score **≥ 80**, and each listed trap must score **≤ 50**. If not, adjust `target` and `floor` (not the instruments) until it holds.
+- `target`: the final value that fully meets the goal. `floor`: the value at which the growth score is 0. For cash-only allocations without money needs, `floor` is usually the budget, so doing nothing earns no growth points.
+- `maxDrawdown`: the largest drop the person can live with. Up to it, stability is 100; at twice that drop, stability is 0.
+- The weights add up to 1. Short horizons and fragile situations weight stability more; long horizons weight growth more.
 
-The targets and floors below are first estimates from the parameters in §3. Recheck them with the acceptance test once the engine exists.
+### Checker (acceptance test)
 
-## 5. Chapter 2 scenarios — Know Your Instruments
+One path means luck plays a part: an all-in single stock can win a single run. Scenarios are therefore calibrated on average over many seeds. `scripts/check-sandbox-scenarios.mjs`:
 
-### 2.1 "Kuba's Safety Cushion"
+- validates the JSON (unique ids, budgets, horizons, people and seeds; horizons within 1–3,650 days; known instrument ids; shares in 5% steps adding up to 1; weights adding up to 1; floor below or equal to target, and so on);
+- reimplements the GBM engine's math (same parameters from `data.sql`, one step per weekday, `dt = 1/periodsPerYear`) and the evaluation above, then checks that over 1,000 seeds each scenario's **reference allocation scores ≥ 80 on average** and **each trap scores ≤ 50**.
+
+It uses JavaScript's random numbers, not Java's, so it checks the statistics, not exact results. Current results (2,000 seeds):
+
+| Scenario | Reference | Best trap |
+|---|---|---|
+| 2.1 Kuba | 92 | 44 |
+| 2.2 Lena and Tom | 95 | 47 |
+| 2.3 Marek | 91 | 44 |
+| 2.4 Zofia | 88 | 41 |
+| 2.5 Olek | 94 | 19 |
+| 2.6 Nina | 87 | 50 |
+| 3.1 Paula | 91 | 48 |
+| 3.2 Ewa | 93 | 26 |
+| 3.3 Sam | 92 | 40 |
+| 3.4 Danuta | 94 | 50 |
+| 3.5 Henryk | 87 | 45 |
+| 3.6 Ola | 89 | 44 |
+
+## 5. Scenarios
+
+Instruments are listed by catalogue id. Cash is always available. Percentages are shares of the budget.
+
+| Id | Instrument | Volatility in the simulation |
+|---|---|---|
+| 1013 | Vanguard FTSE All-World | ≈13% |
+| 1014 | iShares Core MSCI World | ≈13% |
+| 1015 | iShares Core S&P 500 | ≈14% |
+| 1016 | iShares NASDAQ 100 | ≈19% |
+| 1017 | iShares Core EURO STOXX 50 | ≈15% |
+| 1018 | iShares Core MSCI EM IMI | ≈18% |
+| 1019 | iShares MSCI World Small Cap | ≈15% |
+| 1020 | Vanguard ESG Global All Cap | ≈14% |
+| 1001–1012 | Single stocks (SAP, Siemens, Allianz, Deutsche Telekom, Airbus, Schneider Electric, TotalEnergies, LVMH, L'Oréal, ASML, ING, Santander) | ≈18% (Allianz) to ≈41% (ASML) |
+
+### Chapter 2 — Know Your Instruments
+
+#### 2.1 "Kuba's Safety Cushion"
 
 | Field | Value |
 |---|---|
-| Lessons | 2.1 Cash and savings, 2.2 Deposits |
+| Lessons | 2.1 Cash and savings accounts |
 | Person | Kuba, 24, first job on a 6-month contract that may not be renewed, no savings cushion |
-| Amount | €6,000 |
-| Horizon | 1 year (365 days) |
+| Budget / horizon | €6,000 / 1 year (365 days) |
 | Money needs | €2,500 car repair on day 120 |
-| Goal | Pay the repair without a loss and still have the cushion at the end |
-| Target / floor | ≥ €3,550 nominal / €3,450 nominal |
-| Weights | goal 0.35, safety 0.50, growth 0.15 |
-| Instruments | `SAVINGS`, `DEPOSIT_1Y`, `DEPOSIT_3Y`, `BASKET_WORLD`, `STOCK_NOVA`, `HYPE` |
+| Target / floor / max drop | €3,500 / €3,200 / 4% |
+| Weights | growth 0.5, stability 0.5 |
+| Instruments | 1013, 1015, 1001, 1010 |
 | Rules | None |
-| Reference allocation | 70% `SAVINGS`, 30% `DEPOSIT_1Y` (100% `SAVINGS` also passes) |
-| Traps | 100% `BASKET_WORLD` ("it grows more"): the repair may be paid from a falling basket. 100% `DEPOSIT_3Y`: penalty on the repair, and the rest still locked |
-| Debrief points | An emergency fund needs liquidity first; a year is too short to recover from a drop; inflation is a smaller risk than a forced sale here |
+| Reference | 80% cash, 20% 1013 (100% cash also passes) |
+| Traps | 100% 1013 (the repair may be paid by selling after a drop). 100% 1010 (one volatile stock) |
+| Debrief | An emergency fund needs to be available and stable; one year is too short to recover; here safety matters more than growth |
 
-### 2.2 "Lena and Tom's Wedding"
+#### 2.2 "Lena and Tom's Wedding"
 
 | Field | Value |
 |---|---|
-| Lessons | 2.2 Deposits and bonds |
-| Person | Lena and Tom, both 29, wedding booked for a fixed date in 2 years, venue paid on that day |
-| Amount | €18,000 |
-| Horizon | 2 years (730 days) |
-| Money needs | The whole amount on day 730 (end of horizon) |
-| Goal | Have the full wedding budget on the day |
-| Target / floor | ≥ €19,000 nominal / €18,500 nominal |
-| Weights | goal 0.45, safety 0.45, growth 0.10 |
-| Instruments | `SAVINGS`, `DEPOSIT_2Y`, `DEPOSIT_3Y`, `BOND_GOV`, `BOND_HY`, `BASKET_WORLD` |
+| Lessons | 2.2 Deposits and bonds (matching money to a date), 2.4 Funds |
+| Person | Lena and Tom, both 29, wedding on a fixed date in 2 years, venue paid on that day |
+| Budget / horizon | €18,000 / 2 years (730 days) |
+| Money needs | None (the target is the budget on the day) |
+| Target / floor / max drop | €18,000 / €17,000 / 4% |
+| Weights | growth 0.5, stability 0.5 |
+| Instruments | 1013, 1015, 1017, 1018 |
 | Rules | None |
-| Reference allocation | 70% `DEPOSIT_2Y`, 20% `BOND_GOV`, 10% `BASKET_WORLD` |
-| Traps | 100% `DEPOSIT_3Y` (higher rate, but it matures after the wedding: penalty). 60% `BOND_HY` ("higher interest"): credit risk, with prices that can be down on the day |
-| Debrief points | Match the term to the date; a higher rate usually means a riskier borrower or less access |
+| Reference | 85% cash, 15% 1013 (100% cash also passes) |
+| Traps | 40% 1015 + 30% 1017 + 30% 1018 (diversified, but all shares, two years ahead of a fixed date). 100% 1017 (one region) |
+| Debrief | A fixed date close ahead needs money that keeps its value; diversification lowers risk but doesn't remove it |
+| Not simulated | Term deposits and bonds |
 
-### 2.3 "Marek's Favourite Company"
+#### 2.3 "Marek's Favourite Company"
 
 | Field | Value |
 |---|---|
 | Lessons | 2.3 Stocks, 2.4 Funds and ETFs |
-| Person | Marek, 33, engineer with a stable job and an emergency fund already in place. A big fan of Nova Robotics and wants to "go all in" |
-| Amount | €25,000 |
-| Horizon | 10 years (3,650 days) |
-| Events | Day 1,500: Nova Robotics −50% (product recall, Nova only) |
-| Goal | Long-term growth |
-| Target / floor | ≥ €31,000 real / €20,000 real |
-| Weights | goal 0.35, safety 0.30, growth 0.35 |
-| Instruments | `SAVINGS`, `BOND_GOV`, `BASKET_WORLD`, `BASKET_TECH`, `STOCK_NOVA`, `STOCK_HELIO` |
-| Rules | Single stocks above 20% in total: −15 |
-| Reference allocation | 75% `BASKET_WORLD`, 10% `BOND_GOV`, 10% `STOCK_NOVA`, 5% `SAVINGS` |
-| Traps | 100% `STOCK_NOVA`. 50% `BASKET_TECH` + 50% `STOCK_NOVA` (looks spread, but it is one theme) |
-| Debrief points | A single stock carries the full damage of one company's problems; a narrow basket is less diversified than it looks; a stock fits as a small part of a long-term mix |
+| Person | Marek, 33, stable job, emergency fund in place, a big fan of one chip-equipment company |
+| Budget / horizon | €25,000 / 6 years (2,190 days) |
+| Money needs | None |
+| Target / floor / max drop | €31,000 / €23,000 / 30% |
+| Weights | growth 0.6, stability 0.4 |
+| Instruments | 1013, 1015, 1016, 1017, 1018, 1001, 1006, 1010 |
+| Rules | No single stock above 10% |
+| Reference | 35% 1015, 25% 1017, 20% 1018, 10% 1010, 10% cash (also passes: 90% 1013, 10% 1010) |
+| Traps | 100% 1010. 50% 1016 + 50% 1010 (one theme) |
+| Debrief | A single stock carries one company's full damage; a fund spreads it; a favourite stock fits as a small part |
 
-### 2.4 "Zofia and the Premium Fund"
+#### 2.4 "Zofia Only Buys What She Knows"
 
 | Field | Value |
 |---|---|
-| Lessons | 2.4 Funds, 2.5 Costs and fees |
-| Person | Zofia, 45, inherited money. An adviser recommends the "Premium Star" active fund with glossy marketing |
-| Amount | €80,000 |
-| Horizon | 20 years (7,300 days) |
+| Lessons | 2.4 Funds and ETFs, 2.7 Comparing instruments |
+| Person | Zofia, 45, inherited money; a relative says to only buy big local European names |
+| Budget / horizon | €80,000 / 8 years (2,920 days) |
 | Money needs | None |
-| Goal | Grow the inheritance for later life |
-| Target / floor | ≥ €120,000 real / €70,000 real |
-| Weights | goal 0.35, safety 0.25, growth 0.40 |
-| Instruments | `SAVINGS`, `BOND_GOV`, `BASKET_WORLD`, `FUND_ACTIVE`, `STOCK_HELIO` |
-| Rules | None |
-| Reference allocation | 75% `BASKET_WORLD`, 20% `BOND_GOV`, 5% `SAVINGS` |
-| Traps | 80% `FUND_ACTIVE` + 20% `BOND_GOV` (same market, about 1.6% a year more in fees). 100% `SAVINGS` (inflation) |
-| Result extra | Show the total fees paid on the story path, per instrument |
-| Debrief points | Fees compound against you; the active fund moves like the basket but keeps less; ask what the extra cost buys |
+| Target / floor / max drop | €105,000 / €80,000 / 25% |
+| Weights | growth 0.75, stability 0.25 |
+| Instruments | 1013, 1015, 1017, 1018, 1003, 1004 |
+| Rules | No single stock above 10% |
+| Reference | 40% 1015, 25% 1017, 25% 1018, 10% cash |
+| Traps | 100% 1004 (one familiar name). 90% cash + 10% 1017 (too cautious, one region) |
+| Debrief | Diversify across companies and regions; a familiar name isn't a lower risk |
+| Not simulated | Fund fees |
 
-### 2.5 "Olek's Group-Chat Tip"
+#### 2.5 "Olek's Group-Chat Tip"
 
 | Field | Value |
 |---|---|
 | Lessons | 2.6 High-risk and speculative assets |
-| Person | Olek, 21, student with savings from a summer job. A group chat says HypeCoin "can't lose" and "will 10× by spring". Next semester's tuition comes out of this money |
-| Amount | €4,000 |
-| Horizon | 18 months (548 days) |
-| Money needs | €2,000 tuition on day 270 |
-| Goal | Pay the tuition and keep the rest |
-| Target / floor | ≥ €2,050 nominal / €1,950 nominal |
-| Weights | goal 0.35, safety 0.50, growth 0.15 |
-| Instruments | `SAVINGS`, `DEPOSIT_1Y`, `BASKET_WORLD`, `HYPE`, `HYPE_2X` |
-| Events | Hype cycle on `HYPE` and `HYPE_2X` only: +120% spread over days 30–150, then −80% over days 151–240 (on every path, on top of the random moves) |
-| Rules | `HYPE` above 5%: −15. Any `HYPE_2X`: −15 |
-| Reference allocation | 65% `SAVINGS`, 30% `DEPOSIT_1Y`, 5% `HYPE` (0% `HYPE` also passes) |
-| Traps | 100% `HYPE`. 50% `HYPE_2X` + 50% `SAVINGS` |
-| Debrief points | Speculation is a bet on price; never with money needed soon; leverage multiplies losses; the hype cycle peaks before the crash, and late buyers lose most |
+| Person | Olek, 21, student; a group chat says one tech stock can't lose; tuition is paid from this money in 6 months |
+| Budget / horizon | €4,000 / 9 months (274 days) |
+| Money needs | €2,000 tuition on day 180 |
+| Target / floor / max drop | €2,000 / €1,800 / 5% |
+| Weights | growth 0.5, stability 0.5 |
+| Instruments | 1013, 1001, 1006, 1010 |
+| Rules | No single stock above 5% |
+| Reference | 95% cash, 5% 1010 (100% cash also passes) |
+| Traps | 100% 1010. 50% 1010 + 50% cash |
+| Debrief | A tip is a bet on price; never with money needed soon; if at all, keep it small |
+| Not simulated | Crypto, leverage, a hype-then-crash pattern |
 
-### 2.6 "Nina's Home Deposit"
+#### 2.6 "Nina's Home Deposit"
 
 | Field | Value |
 |---|---|
 | Lessons | 2.7 Comparing instruments (chapter wrap-up) |
-| Person | Nina, 40, renting, steady job, emergency fund in place, plans to buy a flat in 5 years |
-| Amount | €40,000 |
-| Horizon | 5 years (1,826 days) |
-| Money needs | The whole amount at the end of the horizon |
-| Goal | €46,000 for the home deposit |
-| Target / floor | ≥ €46,000 nominal / €40,000 nominal |
-| Weights | goal 0.40, safety 0.35, growth 0.25 |
-| Instruments | All chapter 2 instruments: `SAVINGS`, `DEPOSIT_1Y`, `DEPOSIT_2Y`, `DEPOSIT_3Y`, `DEPOSIT_5Y`, `BOND_GOV`, `BOND_HY`, `BASKET_WORLD`, `FUND_ACTIVE`, `BASKET_TECH`, `STOCK_NOVA`, `STOCK_HELIO`, `HYPE` |
-| Rules | `HYPE` above 5%: −15 |
-| Reference allocation | 40% `BOND_GOV`, 35% `BASKET_WORLD`, 25% `DEPOSIT_5Y` |
-| Traps | 100% `SAVINGS` (misses the target). 100% `BASKET_WORLD` (a drawdown just before the purchase can break the floor) |
-| Debrief points | A medium horizon needs a balance of growth and safety; use the five questions (risk, return, liquidity, cost, horizon) on each pick |
+| Person | Nina, 40, renting, steady job, emergency fund in place, buying a flat in 4 years |
+| Budget / horizon | €40,000 / 4 years (1,461 days) |
+| Money needs | None |
+| Target / floor / max drop | €43,000 / €40,000 / 10% |
+| Weights | growth 0.5, stability 0.5 |
+| Instruments | The whole catalogue (1001–1020) |
+| Rules | No single stock above 10% |
+| Reference | 50% cash, 20% 1015, 15% 1017, 15% 1018 |
+| Traps | 100% cash (no growth). 100% 1013 (a drop before the purchase) |
+| Debrief | A medium horizon needs a balance of growth and safety; use the five questions on each pick |
+| Not simulated | Bonds and deposits |
 
-## 6. Chapter 3 scenarios — Investing Through Life
+### Chapter 3 — Investing Through Life
 
-### 3.1 "Paula's Uneven Income"
+#### 3.1 "Paula's Uneven Income"
 
 | Field | Value |
 |---|---|
 | Lessons | 3.1 Your life stage changes your plan |
-| Person | Paula, 31, single parent, freelance designer with irregular income. Saving for a child's school costs |
-| Amount | €12,000 |
-| Horizon | 7 years (2,557 days) |
+| Person | Paula, 31, single parent, freelance designer with irregular income, saving for a child's school costs |
+| Budget / horizon | €12,000 / 5 years (1,825 days) |
 | Money needs | €3,000 on day 900 (two quiet months with no clients) |
-| Goal | A school fund that survives a bad year |
-| Target / floor | ≥ €9,800 real / €8,000 real |
-| Weights | goal 0.35, safety 0.45, growth 0.20 |
-| Instruments | `SAVINGS`, `DEPOSIT_3Y`, `BOND_GOV`, `BASKET_WORLD`, `STOCK_NOVA` |
-| Rules | None |
-| Reference allocation | 15% `SAVINGS`, 50% `BOND_GOV`, 35% `BASKET_WORLD` |
-| Traps | 100% `BASKET_WORLD` ("7 years is long"): the income gap can force a sale in a drop. 100% `DEPOSIT_3Y`: penalty on day 900 |
-| Debrief points | Age and horizon aren't the whole picture: unstable income and dependents lower risk capacity |
+| Target / floor / max drop | €10,000 / €8,800 / 12% |
+| Weights | growth 0.3, stability 0.7 |
+| Instruments | 1013, 1015, 1017, 1018, 1008 |
+| Rules | No single stock above 10% |
+| Reference | 35% cash, 25% 1015, 20% 1017, 20% 1018 |
+| Traps | 100% 1013 ("5 years is long"). 50% 1008 + 50% 1013 |
+| Debrief | Age and horizon aren't everything; unstable income and dependents lower risk capacity |
 
-### 3.2 "Ewa's First Salary"
+#### 3.2 "Ewa's First Salary"
 
 | Field | Value |
 |---|---|
 | Lessons | 3.2 Starting out (18–30) |
-| Person | Ewa, 23, first full-time job, no expensive debt, emergency fund already built. Investing the first savings for retirement |
-| Amount | €5,000 |
-| Horizon | 30 years (10,950 days, the API maximum) |
-| Events | Day 1,100: markets −30% |
-| Goal | Grow as much as possible for retirement |
-| Target / floor | ≥ €11,000 real / €2,500 real |
-| Weights | goal 0.35, safety 0.15, growth 0.50 |
-| Instruments | `SAVINGS`, `DEPOSIT_5Y`, `BOND_GOV`, `BASKET_WORLD`, `FUND_ACTIVE`, `HYPE` |
-| Rules | `HYPE` above 5%: −15 |
-| Reference allocation | 90% `BASKET_WORLD`, 10% `BOND_GOV` |
-| Traps | 100% `SAVINGS` ("safe"): loses about a quarter of its real value. 100% `FUND_ACTIVE` (the fee drag over 30 years) |
-| Debrief points | A long horizon and human capital allow growth; the year-3 crash is recovered; starting early is the biggest advantage |
+| Person | Ewa, 23, first full-time job, no expensive debt, emergency fund built |
+| Budget / horizon | €5,000 / 10 years (3,650 days, the batch maximum) |
+| Money needs | None |
+| Target / floor / max drop | €7,500 / €5,000 / 40% |
+| Weights | growth 0.8, stability 0.2 |
+| Instruments | 1013, 1015, 1016, 1018, 1019, 1010 |
+| Rules | No single stock above 10% |
+| Reference | 30% 1015, 25% 1018, 25% 1019, 20% 1013 (also passes: 100% 1013) |
+| Traps | 100% cash. 100% 1010 |
+| Debrief | A long horizon allows a growth mix; starting early gives compounding the most time |
+| Not simulated | Monthly contributions, horizons over 10 years |
 
-### 3.3 "Sam's University Fund"
+#### 3.3 "Sam's University Fund"
 
 | Field | Value |
 |---|---|
 | Lessons | 3.3 Building up (30–50) |
-| Person | Sam, 38, steady income, two children. Saving for the eldest's university |
-| Amount | €60,000 |
-| Horizon | 15 years (5,475 days) |
-| Money needs | €5,000 on day 2,190 (house repair) |
-| Goal | €75,000 in today's euros when the eldest starts university |
-| Target / floor | ≥ €75,000 real / €50,000 real |
-| Weights | goal 0.40, safety 0.25, growth 0.35 |
-| Instruments | `SAVINGS`, `DEPOSIT_5Y`, `BOND_GOV`, `BOND_HY`, `BASKET_WORLD`, `BASKET_TECH`, `STOCK_NOVA`, `STOCK_HELIO` |
-| Rules | Single stocks above 20% in total: −15 |
-| Reference allocation | 65% `BASKET_WORLD`, 30% `BOND_GOV`, 5% `SAVINGS` |
-| Traps | 40% `STOCK_NOVA` + 40% `STOCK_HELIO` + 20% `SAVINGS` (concentrated). 100% `DEPOSIT_5Y` (stops at year 5, then flat for 10 years) |
-| Debrief points | Each goal gets its own horizon and mix; a small cash part covers surprises so the investments can stay put |
+| Person | Sam, 38, steady income, two children, an older house that may need repairs |
+| Budget / horizon | €60,000 / 7 years (2,555 days) |
+| Money needs | €5,000 house repair on day 1,000 |
+| Target / floor / max drop | €68,000 / €55,000 / 25% |
+| Weights | growth 0.6, stability 0.4 |
+| Instruments | 1013, 1015, 1017, 1018, 1002, 1012 |
+| Rules | Single stocks above 20% in total |
+| Reference | 15% cash, 35% 1015, 25% 1017, 25% 1018 |
+| Traps | 50% 1002 + 50% 1012. 100% cash |
+| Debrief | Each goal gets its own horizon and mix; a cash part covers surprises |
+| Not simulated | Several goals in separate buckets |
 
-### 3.4 "Danuta's Glide Path"
+#### 3.4 "Danuta's Glide Path"
 
 | Field | Value |
 |---|---|
 | Lessons | 3.4 Approaching retirement (50+) |
-| Person | Danuta, 55, savings at their largest, plans to retire at 67. Has been 100% in the market basket for 20 years |
-| Amount | €250,000 |
-| Horizon | 12 years (4,383 days) |
-| Events | Day 3,650 (age 65): markets −35% |
-| Goal | Protect what's been built and keep growing with inflation |
-| Target / floor | ≥ €260,000 real / €200,000 real |
-| Weights | goal 0.35, safety 0.45, growth 0.20 |
-| Instruments | `SAVINGS`, `DEPOSIT_5Y`, `BOND_GOV`, `BOND_HY`, `BASKET_WORLD`, `BASKET_TECH` |
+| Person | Danuta, 58, savings at their largest, retiring at 67, everything in a tech fund for years |
+| Budget / horizon | €250,000 / 9 years (3,285 days) |
+| Money needs | None |
+| Target / floor / max drop | €290,000 / €250,000 / 15% |
+| Weights | growth 0.5, stability 0.5 |
+| Instruments | 1013, 1015, 1016, 1017, 1018 |
 | Rules | None |
-| Reference allocation | 55% `BASKET_WORLD`, 40% `BOND_GOV`, 5% `SAVINGS` (the lesson's glide path at 55, rounded to 5% steps) |
-| Traps | 100% `BASKET_WORLD` ("it worked so far"): the age-65 crash hits the largest balance. 100% `SAVINGS`: inflation over 12 years |
-| Debrief points | Shift from growing to protecting gradually; even near retirement part of the money stays invested for growth |
+| Reference | 40% cash, 25% 1015, 20% 1017, 15% 1018 |
+| Traps | 100% 1016 ("it worked so far"). 100% cash |
+| Debrief | Shift from growing to protecting gradually; part of the money stays invested |
+| Not simulated | A year-by-year glide path and bonds |
 
-### 3.5 "Henryk Retires Next Year"
+#### 3.5 "Henryk Retires Next Year"
 
 | Field | Value |
 |---|---|
 | Lessons | 3.4 Approaching retirement (sequence risk) |
-| Person | Henryk, 64, retires in a year and will live on these savings for the first years |
-| Amount | €400,000 |
-| Horizon | 3 years (1,095 days) |
-| Money needs | €32,000 on day 365 and €32,000 on day 730 (yearly spending) |
-| Events | Day 200: markets −30% |
-| Goal | Fund both years of spending and keep the rest for later retirement |
-| Target / floor | ≥ €340,000 nominal / €300,000 nominal |
-| Weights | goal 0.35, safety 0.50, growth 0.15 |
-| Instruments | `SAVINGS`, `DEPOSIT_1Y`, `DEPOSIT_2Y`, `BOND_GOV`, `BOND_HY`, `BASKET_WORLD` |
+| Person | Henryk, 64, retires in a year and lives on these savings at first |
+| Budget / horizon | €400,000 / 3 years (1,095 days) |
+| Money needs | €32,000 on day 365 and €32,000 on day 730 |
+| Target / floor / max drop | €340,000 / €310,000 / 8% |
+| Weights | growth 0.3, stability 0.7 |
+| Instruments | 1013, 1015, 1017, 1018 |
 | Rules | None |
-| Reference allocation | 10% `SAVINGS`, 10% `DEPOSIT_1Y`, 40% `BOND_GOV`, 40% `BASKET_WORLD` (about two years of spending kept safe) |
-| Traps | 100% `BASKET_WORLD`: both withdrawals are paid by selling after the crash. 100% `DEPOSIT_2Y`: the day-365 withdrawal pays a penalty |
-| Debrief points | Sequence risk: the same drop hurts more when withdrawals start; a 1–3 year cash buffer avoids selling at the bottom |
+| Reference | 40% cash, 25% 1015, 20% 1017, 15% 1018 |
+| Traps | 100% 1013. 50% 1015 + 50% 1018 (no cash buffer) |
+| Debrief | The same drop hurts more when withdrawals start; a cash buffer avoids selling at the bottom |
+| Not simulated | A scripted crash (paths are random) |
 
-### 3.6 "Ola Minds the Gap"
+#### 3.6 "Ola Minds the Gap"
 
 | Field | Value |
 |---|---|
-| Lessons | 3.5 Why invest for a pension, 3.6 Pension vehicles |
-| Person | Ola, 40, expects a public pension of €1,800 a month against €3,000 needed: a gap of about €288,000 over 20 years of retirement. Has no separate emergency fund |
-| Amount | €30,000 |
-| Horizon | 25 years (9,131 days) |
-| Money needs | €4,000 on day 1,000 (an emergency) |
-| Tax | On: a fictional 20% tax on gains when the money leaves a non-pension instrument at the end. `PENSION_*` growth is tax-free if the money stays in until the end |
-| Goal | Close as much of the retirement gap as possible |
-| Target / floor | ≥ €70,000 real (after tax) / €30,000 real |
-| Weights | goal 0.35, safety 0.20, growth 0.45 |
-| Instruments | `SAVINGS`, `BOND_GOV`, `BASKET_WORLD`, `PENSION_WORLD`, `PENSION_BOND` |
+| Lessons | 3.5 Why invest for a pension |
+| Person | Ola, 45, expects 1,800 a month of public pension against 3,000 needed: a gap of about 288,000 over 20 years |
+| Budget / horizon | €30,000 / 9½ years (3,468 days) |
+| Money needs | None |
+| Target / floor / max drop | €45,000 / €30,000 / 35% |
+| Weights | growth 0.8, stability 0.2 |
+| Instruments | 1013, 1015, 1018, 1019, 1020 |
 | Rules | None |
-| Reference allocation | 15% `SAVINGS`, 70% `PENSION_WORLD`, 15% `PENSION_BOND` |
-| Traps | 100% `PENSION_WORLD` (the day-1,000 emergency breaks the account: penalty and tax). 100% `SAVINGS` (the gap barely moves) |
-| Result extra | Show how much of the €288,000 gap the median result covers, in today's euros |
-| Debrief points | Tax advantages come with lock-up rules; the emergency fund stays outside the pension account; time and compounding shrink the gap |
+| Reference | 10% cash, 30% 1015, 20% 1018, 20% 1019, 20% 1020 |
+| Traps | 100% cash. 80% cash + 20% 1013 |
+| Result extra | The part of the €288,000 gap that the final value covers |
+| Debrief | Public pensions often cover only part; cash alone can't close a large gap |
+| Not simulated | Pension accounts (lesson 3.6): tax advantages, employer contributions, lock-up rules |
 
-## 7. Data contract (proposal)
+## 6. Known limits of these results
 
-### Scenario definition
+- **Independent instruments exaggerate diversification.** Two funds that overlap heavily in reality (for example 1013 All-World and 1014 MSCI World) move independently here, so a mix of several ETFs looks safer than one broad fund. The reference allocations spread across regions that overlap little in reality (US, eurozone, emerging markets, small caps) so they stay sensible advice. One broad world fund is a good real-world choice, even if it scores a little lower here. Hedgie should say so when it comes up.
+- **One path per run.** A single result can be lucky or unlucky; the score's stability part and the retry help, and the checker makes sure the scenario rewards the right idea on average.
+- **Real names.** The catalogue uses real company and fund names with synthetic prices. AGENTS.md asks for fictional instruments in the sandbox. Either show fictional display names in Sandbox mode, or keep the disclaimer prominent and make sure Hedgie never frames a pick as a recommendation.
+- **Lessons not covered** (each scenario's `notSimulated` lists them for Hedgie): inflation and interest, fees, deposits and bonds, taxes and pension accounts, crypto and leverage, monthly contributions, rebalancing.
 
-The definitions live in [sandbox-scenarios.json](sandbox-scenarios.json), which has three top-level parts:
+## 7. Data contract
+
+### Scenario file
+
+[sandbox-scenarios.json](sandbox-scenarios.json) has four top-level parts:
 
 | Part | Contents |
 |---|---|
-| `defaults` | Currency, inflation, share step, path count, rule penalty points, withdrawal order, deposit early-withdrawal penalty, calibration thresholds |
-| `instruments` | The §3 catalog: `key`, `name`, `group` (`SAVINGS`, `DEPOSIT`, `BOND_FUND`, `MARKET`, `PENSION`; used by the withdrawal order), `riskLevel`, `model`, `expectedReturn`, `volatility`, `marketCorrelation`, `yearlyFee`, `liquidity` (`ANY_DAY`, `LOCKED_TERM`, `LOCKED_TO_END`), `termMonths`, learner-facing `description`, and optional `knockOutDrawdown`, `taxFree`, `earlyWithdrawal` |
-| `scenarios` | One object per scenario, with the fields below |
+| `defaults` | Currency, share step, `cash` (key `CASH`, 0% interest), rule penalty points, `evaluation` (endpoint, seed rule, money-need point, withdrawal order, drawdown basis) and `acceptance` thresholds |
+| `catalogue` | The catalogue ids the scenarios may use, with name, asset class and risk level (copied from `data.sql`, for validation and for people reading the file) |
+| `scenarios` | One object per scenario |
+| `version`, `disclaimer` | File version (2) and the learner-facing disclaimer |
 
 Scenario fields:
 
-- `id` (stable slug, for example `lena-tom-wedding`), `code` (the number used in this file, `2.2`), `chapterId`, `lessonCodes`, `title`
+- `id` (stable slug), `code` (the number used in this file), `chapterId`, `lessonCodes`, `title`
 - `persona` (`name`, `age`, `situation`) and `goal`
-- `startAmount`, `durationDays`, `taxOnGains` (`null` = off), optional `retirementGap`
-- `target` and `floor`, each `{ "value", "unit" }` with `unit` `NOMINAL` or `REAL`
-- `weights` (`goal`, `safety`, `growth`; they add up to 1)
-- `moneyNeeds`: `{ "day", "amount", "kind", "label" }`. `kind` is `WITHDRAWAL` (taken out on that day, following the withdrawal order) or `AVAILABILITY_CHECK` (the money must be there and accessible on that day, without a penalty; nothing is taken out, so the final value is the portfolio at the end)
-- `events`: `MARKET_SHOCK` (`day`, `change`; scaled by each instrument's `marketCorrelation`), `INSTRUMENT_SHOCK` (`day`, `instrumentKeys`, `change`) or `HYPE_CYCLE` (`instrumentKeys`, `phases` with `fromDay`, `toDay`, `change`)
-- `instrumentKeys`: the instruments the learner may pick
-- `rules`: `MAX_TOTAL_SHARE` (`instrumentKeys`, `maxShare`, `label`); each broken rule costs `defaults.rulePenaltyPoints`
-- `scenarioSeed`, `referenceAllocation`, `alsoAcceptable`, `traps` (`label`, `allocation`, `why`), `resultExtras` (`FEES_PAID`, `GAP_COVERED`) and `debriefPoints`
+- `budget`, `durationDays` (1–3,650)
+- `target`, `floor`, `maxDrawdown`, `weights` (`growth`, `stability`)
+- `moneyNeeds`: `{ "day", "amount", "label" }`
+- `instrumentIds`: catalogue ids the learner may pick (cash is always available)
+- `rules`: `MAX_SHARE_EACH` (no listed instrument above `maxShare`) or `MAX_TOTAL_SHARE` (the listed instruments together at most `maxShare`), each with `instrumentIds` and `label`
+- `scenarioSeed`, `referenceAllocation`, `alsoAcceptable`, `traps` (`label`, `allocation`, `why`), `debriefPoints`, `notSimulated`, optional `retirementGap`
 
-`floor`, `weights`, `scenarioSeed`, `referenceAllocation`, `alsoAcceptable`, `traps` and `debriefPoints` are not sent to the frontend before the run, like the correct quiz answers. After the run, the traps and debrief points go to the AI coach as context.
+Allocations are maps from `"CASH"` or a catalogue id (as a string) to a share. `scenarioSeed`, `referenceAllocation`, `alsoAcceptable`, `traps` and `debriefPoints` aren't sent to the frontend before submission, like the correct quiz answers. After the run they go to the AI coach as context.
 
-### Endpoints
+### Endpoints (proposal)
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /api/scenarios?chapterId=2` | Scenario briefs: persona, amount, horizon, goal, money needs, available instruments with their properties |
-| `GET /api/scenarios/{scenarioId}` | One scenario brief |
-| `POST /api/scenarios/{scenarioId}/runs` | Runs an allocation and returns the result. With `X-User-Email` the run is saved, so retries can be compared and Quest Arena can rank them |
+| `GET /api/scenarios?chapterId=2` | Scenario briefs: persona, goal, budget, horizon, money needs, target, max drop, rules, allowed instruments |
+| `GET /api/scenarios/{scenarioId}` | One brief |
+| `POST /api/scenarios/{scenarioId}/runs` | Body `{ "allocations": [ { "instrumentId": 1015, "amount": 7000.00 } ] }`; the rest is cash. Runs the batch and returns the evaluation. With `X-User-Email` the run is saved, so retries can be compared and Quest Arena can rank them |
 
-Run request:
+400 if the amounts exceed the budget or use an instrument the scenario doesn't allow. The response contains the score and its parts, broken rules, final value, growth, largest drop, money needs (paid from cash / from holdings, shortfall), the weekday value path for the replay chart, each instrument's contribution, and the previous run's score.
 
-```json
-{ "allocations": [ { "instrumentKey": "DEPOSIT_2Y", "share": 0.70 }, { "instrumentKey": "BOND_GOV", "share": 0.20 }, { "instrumentKey": "BASKET_WORLD", "share": 0.10 } ] }
-```
+## 8. What's needed to build it
 
-400 if shares are not in 5% steps, don't add up to 100%, or use an instrument outside the scenario.
-
-Run response:
-
-```json
-{
-  "runId": 12,
-  "score": 86,
-  "scoreParts": { "goal": 93.0, "safety": 97.5, "growth": 68.0, "rulePenalties": 0 },
-  "brokenRules": [],
-  "metrics": {
-    "medianFinal": 19180.40, "p5Final": 18720.10, "p95Final": 19650.80,
-    "medianGrowth": 0.0656, "medianRealGrowth": 0.0045,
-    "goalProbability": 0.93, "safetyProbability": 0.975,
-    "shortfallProbability": 0.0
-  },
-  "storyPath": {
-    "points": [ { "date": "2026-11-21", "total": 18000.00, "byInstrument": { "DEPOSIT_2Y": 12600.00, "BOND_GOV": 3600.00, "BASKET_WORLD": 1800.00 } } ],
-    "moneyNeeds": [ { "day": 730, "amount": 18000.00, "covered": true, "paidFrom": null, "penalties": 0.00 } ],
-    "feesPaid": { "BOND_GOV": 11.20, "BASKET_WORLD": 7.30 }
-  },
-  "previousRun": { "runId": 11, "score": 41 }
-}
-```
-
-The AI coach gets the scenario brief, the learner's allocation and this response as context. It explains the result from these numbers only.
-
-## 8. Backend changes needed
-
-1. **Fictional instruments:** seed the §3 catalog. Deposits use the existing FIXED_RATE engine (with `termMonths`); they must become selectable through the API, which they aren't yet.
-2. **Portfolio engine:** one simulation over all holdings with the shared market draw (§3), daily fees, scripted shocks, money needs with the withdrawal order and penalties (§2), knock-out for `HYPE_2X`, and tax for 3.6.
-3. **Multi-path runs and scoring:** 200 seeded paths, metrics and score (§4). Only the story path returns daily points; to keep responses small, it can return weekly points.
-4. **Scenarios and runs:** tables for instruments, scenario definitions and saved runs, plus the endpoints in §7. Seed them from `sandbox-scenarios.json` by extending `scripts/generate-content-sql.mjs`, so the generated block in `data.sql` gets the scenario rows too, the same way lessons are generated from the Markdown. The script should fail on invalid data (see the checks in §7's field list: 5% steps, shares and weights adding up to 1, unknown instrument keys).
-5. **Tests:** the calibration acceptance test from §4 for every scenario (reference ≥ 80, each trap ≤ 50), and exact results for fixed seeds.
+1. **Backend:** scenario and run tables, seeded from the JSON by extending `scripts/generate-content-sql.mjs`; the evaluator (§4) on top of `SimulationService`'s batch; the endpoints in §7. No engine changes are needed.
+2. **Frontend:** a Sandbox mode for the workspace, as described in the workspace plan's extension points: scenario budget and allowed instruments, rules checklist, briefing, "Review and submit", and a result page that replays the returned path (the Playground's `ValueChart` and `ReplaySummary` can be reused).
+3. **Tests:** the checker runs in CI or before each content change; the backend gets exact-result tests for fixed seeds.
 
 ## 9. Later
 
-- **Rebalancing (lesson 3.7):** a two-step scenario. The run pauses at a set day (for example after the portfolio drifts to 70/30), the learner rebalances or holds, then the run continues. A "Sell everything" button during a −20% drop would test panic selling.
-- **Monthly contributions** (lessons 3.2 "Start at 25 vs 35" and 3.3 "Don't pause retirement"): add a `monthlyContribution` to scenarios once the engine supports it.
-- **Quest Arena:** rank saved runs per scenario by score, with safety as the tie-breaker. Label demo users as fictional.
+When the engine gains a cash or deposit instrument with interest, fees, inflation, correlation or scripted events, scenarios can return to the first draft's richer versions (bond and deposit choices, the fee trap, the hype cycle, pension accounts). Mid-run decisions (the Playground already supports trading during a replay) would allow rebalancing and panic-selling scenarios for lesson 3.7.
