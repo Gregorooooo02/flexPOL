@@ -14,21 +14,29 @@ interface ChoiceFieldProps {
   value: string;
   options: { value: string; label: string }[];
   onChange: (value: string) => void;
+  disabled?: boolean;
 }
 
-export function ChoiceField({ label, value, options, onChange }: ChoiceFieldProps) {
+export function ChoiceField({
+  label,
+  value,
+  options,
+  onChange,
+  disabled = false,
+}: ChoiceFieldProps) {
   const id = useId();
   return (
-    <Field className="min-w-0 gap-1">
+    <Field className="min-w-0 gap-1" data-disabled={disabled}>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
       <Select
+        disabled={disabled}
         items={options}
         value={value}
         onValueChange={(next) => {
           if (next !== null) onChange(next);
         }}
       >
-        <SelectTrigger id={id} className="w-full">
+        <SelectTrigger id={id} className="w-full" disabled={disabled}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent alignItemWithTrigger={false}>

@@ -15,6 +15,8 @@ import { Sparkline } from './Sparkline';
 interface InstrumentRowProps {
   instrument: Instrument;
   allocatedCents: number;
+  owned: boolean;
+  readOnly?: boolean;
   history?: LoadState<HistoricalObservation[]>;
   onRequestHistory: (id: number) => void;
   onRetryHistory: (id: number) => void;
@@ -24,6 +26,8 @@ interface InstrumentRowProps {
 export const InstrumentRow = memo(function InstrumentRow({
   instrument,
   allocatedCents,
+  owned,
+  readOnly = false,
   history,
   onRequestHistory,
   onRetryHistory,
@@ -58,7 +62,9 @@ export const InstrumentRow = memo(function InstrumentRow({
       <div className="flex flex-col gap-3 py-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-col gap-2">
-            <h3 className="font-heading font-semibold break-words">{instrument.name}</h3>
+            <h3 className="font-heading font-semibold [overflow-wrap:anywhere]">
+              {instrument.name}
+            </h3>
             <div className="flex flex-wrap gap-x-3 gap-y-1">
               <Badge variant="secondary">{ASSET_LABELS[instrument.assetClass]}</Badge>
               <Badge variant="outline">{RISK_LABELS[instrument.riskLevel]} risk</Badge>
@@ -67,12 +73,12 @@ export const InstrumentRow = memo(function InstrumentRow({
           <Button
             type="button"
             size="sm"
-            variant={allocatedCents > 0 ? 'outline' : 'secondary'}
+            variant={owned || readOnly ? 'outline' : 'secondary'}
             disabled={!available}
-            aria-label={`${allocatedCents > 0 ? 'Edit' : 'Add'} position: ${instrument.name}`}
+            aria-label={`${readOnly ? 'View' : owned ? 'Edit' : 'Add'} position: ${instrument.name}`}
             onClick={(event) => onOpen(instrument.id, event.currentTarget)}
           >
-            {allocatedCents > 0 ? 'Edit' : 'Add'}
+            {readOnly ? 'View' : owned ? 'Edit' : 'Add'}
           </Button>
         </div>
         <div className="flex flex-wrap items-end justify-between gap-3 text-xs">
@@ -99,7 +105,7 @@ export const InstrumentRow = memo(function InstrumentRow({
           </div>
           {points.length > 1 && <Sparkline points={historyForRange(points, '1Y')} />}
           <div className="flex flex-col gap-1 text-right">
-            {allocatedCents > 0 ? (
+            {owned ? (
               <>
                 <span className="text-muted-foreground">Your allocation</span>
                 <MoneyValue cents={allocatedCents} />

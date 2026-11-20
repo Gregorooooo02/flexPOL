@@ -26,12 +26,18 @@ const SECTIONS: readonly { id: Section; label: string }[] = [
  * a sticky action bar. On narrow screens only one column shows at a time. It knows nothing about
  * which mode it is used in.
  */
-export function WorkspaceLayout({ header, notice, instruments, portfolio, actionBar }: WorkspaceLayoutProps) {
+export function WorkspaceLayout({
+  header,
+  notice,
+  instruments,
+  portfolio,
+  actionBar,
+}: WorkspaceLayoutProps) {
   const [visibleSection, setVisibleSection] = useState<Section>('instruments');
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="sticky top-[var(--app-header-height)] z-20 border-b border-border bg-card/95 backdrop-blur-sm">
+      <div className="sticky top-[var(--app-header-height)] z-20 border-b border-border bg-card/95 backdrop-blur-sm [@media(max-height:650px)]:static">
         <div className="mx-auto w-full max-w-7xl px-4 py-3">{header}</div>
       </div>
 

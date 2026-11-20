@@ -33,7 +33,13 @@ export interface PortfolioState {
 }
 
 export type PortfolioAction =
-  | { type: 'setPosition'; instrumentId: number; targetCents: Cents; price: number; dayIndex: number }
+  | {
+      type: 'setPosition';
+      instrumentId: number;
+      targetCents: Cents;
+      price: number;
+      dayIndex: number;
+    }
   | { type: 'reset' };
 
 /** Current price of an instrument, relative to its starting value. */
@@ -76,7 +82,11 @@ export function totalValueCents(state: PortfolioState, priceOf: PriceLookup): Ce
 }
 
 /** The largest target a position can be set to: what it is worth now plus the cash available. */
-export function maxPositionCents(state: PortfolioState, instrumentId: number, price: number): Cents {
+export function maxPositionCents(
+  state: PortfolioState,
+  instrumentId: number,
+  price: number,
+): Cents {
   return positionValueCents(state.holdings[instrumentId], price) + state.cashCents;
 }
 
@@ -86,7 +96,8 @@ export function planPosition(
   input: { instrumentId: number; targetCents: Cents; price: number },
 ): TradePlan {
   const { instrumentId, targetCents, price } = input;
-  if (!Number.isFinite(price) || price <= 0) {
+  // Rounded simulations can reach zero. Existing worthless positions can be cleared, not bought.
+  if (!Number.isFinite(price) || price < 0 || (price === 0 && targetCents > 0)) {
     return { ok: false, reason: 'invalid-price' };
   }
   if (!Number.isSafeInteger(targetCents) || targetCents < 0) {

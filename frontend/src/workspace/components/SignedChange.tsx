@@ -7,7 +7,7 @@ export function SignedChange({ value }: { value: number | null }) {
   return (
     <span
       className={cn(
-        'font-heading tabular-nums',
+        'font-heading tabular-nums [overflow-wrap:anywhere]',
         rounded > 0 ? 'text-gain' : rounded < 0 ? 'text-loss' : 'text-muted-foreground',
       )}
     >

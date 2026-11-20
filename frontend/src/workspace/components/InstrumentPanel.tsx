@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import type { HistoricalObservation, Instrument } from '@/model';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +42,11 @@ interface InstrumentPanelProps {
   onClose: () => void;
   onSubmit: () => void;
   onRetryHistory: (id: number) => void;
+  readOnly?: boolean;
+  running?: boolean;
+  simulationChart?: ReactNode;
+  chartView?: 'history' | 'simulation';
+  onChartViewChange?: (view: 'history' | 'simulation') => void;
 }
 
 export function InstrumentPanel({
@@ -62,6 +67,11 @@ export function InstrumentPanel({
   onClose,
   onSubmit,
   onRetryHistory,
+  readOnly = false,
+  running = false,
+  simulationChart,
+  chartView = 'history',
+  onChartViewChange,
 }: InstrumentPanelProps) {
   let action = 'Update allocation';
   if (plan?.ok) {
@@ -82,11 +92,11 @@ export function InstrumentPanel({
       {instrument && (
         <DialogContent
           finalFocus={returnFocusRef}
-          className="max-h-[calc(100svh-2rem)] overflow-y-auto sm:max-w-2xl"
+          className="max-h-[calc(100svh-2rem)] w-[calc(100%-2rem)] min-w-0 overflow-y-auto p-4 sm:max-w-2xl sm:p-6 [&>*]:min-w-0"
         >
           <DialogHeader className="pr-8">
-            <DialogTitle className="break-words">{instrument.name}</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="[overflow-wrap:anywhere]">{instrument.name}</DialogTitle>
+            <DialogDescription className="[overflow-wrap:anywhere]">
               {instrument.description ??
                 'Explore this instrument and choose its share of your portfolio.'}
             </DialogDescription>
@@ -96,66 +106,94 @@ export function InstrumentPanel({
               <Badge variant="secondary">{instrument.currency}</Badge>
             </div>
           </DialogHeader>
-          <div className="flex min-w-0 flex-col gap-4">
+          {simulationChart && (
             <ToggleGroup
-              aria-label="Historical period"
-              value={[range]}
-              size="sm"
+              aria-label="Chart data"
+              value={[chartView]}
               variant="outline"
+              size="sm"
               onValueChange={(values) => {
-                const next = values[0] as HistoryRange;
-                if (HISTORY_RANGES.includes(next)) onRangeChange(next);
+                if (values[0] === 'history' || values[0] === 'simulation')
+                  onChartViewChange?.(values[0]);
               }}
             >
-              {HISTORY_RANGES.map((value) => (
-                <ToggleGroupItem key={value} value={value}>
-                  {value === 'ALL' ? 'All' : value}
-                </ToggleGroupItem>
-              ))}
+              <ToggleGroupItem value="history">History</ToggleGroupItem>
+              <ToggleGroupItem value="simulation">This simulation</ToggleGroupItem>
             </ToggleGroup>
-            {!history || history.status === 'loading' ? (
-              <div role="status">
-                <span className="sr-only">Loading instrument history</span>
-                <Skeleton className="h-48 w-full motion-reduce:animate-none" />
+          )}
+          {chartView === 'simulation' && simulationChart ? (
+            simulationChart
+          ) : (
+            <>
+              <div className="flex min-w-0 flex-col gap-4">
+                <ToggleGroup
+                  aria-label="Historical period"
+                  value={[range]}
+                  size="sm"
+                  variant="outline"
+                  onValueChange={(values) => {
+                    const next = values[0] as HistoryRange;
+                    if (HISTORY_RANGES.includes(next)) onRangeChange(next);
+                  }}
+                >
+                  {HISTORY_RANGES.map((value) => (
+                    <ToggleGroupItem key={value} value={value}>
+                      {value === 'ALL' ? 'All' : value}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+                <div className="min-h-64">
+                  {!history || history.status === 'loading' ? (
+                    <div role="status">
+                      <span className="sr-only">Loading instrument history</span>
+                      <Skeleton className="h-64 w-full motion-reduce:animate-none" />
+                    </div>
+                  ) : history.status === 'error' ? (
+                    <Alert>
+                      <AlertTitle>History couldn’t be loaded</AlertTitle>
+                      <AlertDescription className="flex flex-col items-start gap-2 [overflow-wrap:anywhere]">
+                        <p>
+                          {history.message}{' '}
+                          {readOnly
+                            ? 'The simulation result remains available.'
+                            : 'You can still edit the allocation.'}
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onRetryHistory(instrument.id)}
+                        >
+                          Retry history
+                        </Button>
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    <PriceChart points={historyForRange(history.data, range)} />
+                  )}
+                </div>
+                <details className="text-xs text-muted-foreground [overflow-wrap:anywhere]">
+                  <summary className="cursor-pointer py-1 focus-visible:outline-ring">
+                    About this historical data
+                  </summary>
+                  <p className="mt-2 leading-relaxed">
+                    Source: {instrument.historySource}. Dates shown are the original source dates,
+                    not live quotes. Index levels are not executable EUR prices. Past performance is
+                    not a forecast.
+                  </p>
+                  {instrument.historyDescription && (
+                    <p className="mt-2 leading-relaxed">{instrument.historyDescription}</p>
+                  )}
+                </details>
               </div>
-            ) : history.status === 'error' ? (
-              <Alert>
-                <AlertTitle>History couldn’t be loaded</AlertTitle>
-                <AlertDescription className="flex flex-col items-start gap-2">
-                  <p>{history.message} You can still edit the allocation.</p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onRetryHistory(instrument.id)}
-                  >
-                    Retry history
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            ) : (
-              <PriceChart points={historyForRange(history.data, range)} />
-            )}
-            <details className="text-xs text-muted-foreground">
-              <summary className="cursor-pointer py-1 focus-visible:outline-ring">
-                About this historical data
-              </summary>
-              <p className="mt-2 leading-relaxed">
-                Source: {instrument.historySource}. Dates shown are the original source dates, not
-                live quotes. Index levels are not executable EUR prices. Past performance is not a
-                forecast.
-              </p>
-              {instrument.historyDescription && (
-                <p className="mt-2 leading-relaxed">{instrument.historyDescription}</p>
-              )}
-            </details>
-          </div>
+            </>
+          )}
           <Separator />
           <form
             className="flex flex-col gap-5"
             onSubmit={(event) => {
               event.preventDefault();
-              onSubmit();
+              if (!readOnly) onSubmit();
             }}
           >
             <dl className="grid grid-cols-2 gap-3 text-sm">
@@ -172,21 +210,35 @@ export function InstrumentPanel({
                 </dd>
               </div>
             </dl>
-            <AmountField
-              text={text}
-              cents={cents}
-              basisCents={basisCents}
-              maxCents={maxCents}
-              error={error}
-              onTextChange={onTextChange}
-            />
+            {running && (
+              <p className="text-sm text-muted-foreground">
+                The simulation keeps running. Values and available amounts can change; confirmation
+                uses the current simulated value.
+              </p>
+            )}
+            {readOnly ? (
+              <p className="text-sm text-muted-foreground">
+                This run is complete. Positions are read-only; start over to build a new portfolio.
+              </p>
+            ) : (
+              <AmountField
+                text={text}
+                cents={cents}
+                basisCents={basisCents}
+                maxCents={maxCents}
+                error={error}
+                onTextChange={onTextChange}
+              />
+            )}
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                {readOnly ? 'Close' : 'Cancel'}
               </Button>
-              <Button type="submit" disabled={!plan?.ok || plan.kind === 'none'}>
-                {action}
-              </Button>
+              {!readOnly && (
+                <Button type="submit" disabled={!plan?.ok || plan.kind === 'none'}>
+                  {action}
+                </Button>
+              )}
             </DialogFooter>
           </form>
         </DialogContent>

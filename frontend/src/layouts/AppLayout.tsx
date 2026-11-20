@@ -15,7 +15,7 @@ export function AppLayout() {
   return (
     <div className="flex min-h-svh flex-col bg-background text-foreground [--app-header-height:4rem]">
       <header className="sticky top-0 z-30 h-[var(--app-header-height)] shrink-0 border-b border-border bg-card/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-full w-full max-w-7xl items-center justify-between gap-3 px-4">
+        <div className="mx-auto flex h-full w-full max-w-7xl items-center justify-between gap-2 px-3 min-[375px]:px-4 sm:gap-3">
           <Link to="/" className="outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <Badge className="gap-1.5 bg-primary px-2.5 py-0.5 text-primary-foreground">
               <HugeiconsIcon icon={ChartLineData01Icon} strokeWidth={2.2} aria-hidden="true" />
@@ -24,14 +24,17 @@ export function AppLayout() {
             </Badge>
           </Link>
 
-          <nav aria-label="Main navigation" className="flex items-center gap-2">
+          <nav aria-label="Main navigation" className="flex items-center gap-1 sm:gap-2">
             {NAV_ITEMS.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  cn(buttonVariants({ variant: isActive ? 'secondary' : 'ghost', size: 'sm' }), 'px-3 sm:px-4')
+                  cn(
+                    buttonVariants({ variant: isActive ? 'secondary' : 'ghost', size: 'sm' }),
+                    'px-1.5 min-[375px]:px-2 sm:px-4',
+                  )
                 }
               >
                 {item.label}

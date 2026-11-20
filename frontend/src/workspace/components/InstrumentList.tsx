@@ -23,6 +23,7 @@ interface InstrumentListProps {
   filters: InstrumentFilters;
   histories: Record<number, LoadState<HistoricalObservation[]>>;
   allocations: Record<number, number>;
+  readOnly?: boolean;
   onFiltersChange: (filters: InstrumentFilters) => void;
   onClearFilters: () => void;
   onRetry: () => void;
@@ -37,6 +38,7 @@ export function InstrumentList({
   filters,
   histories,
   allocations,
+  readOnly = false,
   onFiltersChange,
   onClearFilters,
   onRetry,
@@ -70,7 +72,7 @@ export function InstrumentList({
         ) : catalogue.status === 'error' ? (
           <Alert>
             <AlertTitle>Couldn’t load the instruments</AlertTitle>
-            <AlertDescription className="flex flex-col items-start gap-3">
+            <AlertDescription className="flex flex-col items-start gap-3 [overflow-wrap:anywhere]">
               <p>{catalogue.message}</p>
               <Button type="button" variant="outline" size="sm" onClick={onRetry}>
                 Try again
@@ -156,6 +158,8 @@ export function InstrumentList({
                     key={instrument.id}
                     instrument={instrument}
                     allocatedCents={allocations[instrument.id] ?? 0}
+                    owned={Object.hasOwn(allocations, instrument.id)}
+                    readOnly={readOnly}
                     history={histories[instrument.id]}
                     onRequestHistory={onRequestHistory}
                     onRetryHistory={onRetryHistory}

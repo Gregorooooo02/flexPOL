@@ -21,17 +21,5 @@ export const HORIZONS: readonly Horizon[] = [
 
 export const DEFAULT_HORIZON_YEARS = 5;
 
-export interface ReplaySpeed {
-  readonly id: 'week' | 'month' | 'quarter';
-  readonly label: string;
-  /** Replay days are weekdays, so speeds are in trading days per second. */
-  readonly tradingDaysPerSecond: number;
-}
-
-export const REPLAY_SPEEDS: readonly ReplaySpeed[] = [
-  { id: 'week', label: '1 week/s', tradingDaysPerSecond: 5 },
-  { id: 'month', label: '1 month/s', tradingDaysPerSecond: 21 },
-  { id: 'quarter', label: '1 quarter/s', tradingDaysPerSecond: 63 },
-];
-
-export const DEFAULT_REPLAY_SPEED_ID: ReplaySpeed['id'] = 'month';
+/** Every selected investment horizon plays from start to finish in ten real seconds. */
+export const SIMULATION_DURATION_MS = 10_000;

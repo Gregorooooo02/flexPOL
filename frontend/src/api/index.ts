@@ -4,3 +4,4 @@ export { getQuiz } from './quizApi';
 export { submitAnswer } from './questionApi';
 export { askCoach } from './coachApi';
 export { getInstrumentHistory, getInstruments } from './instrumentApi';
+export { simulateBatch } from './simulationApi';

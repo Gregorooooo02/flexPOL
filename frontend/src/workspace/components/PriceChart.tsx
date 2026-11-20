@@ -31,6 +31,7 @@ export function PriceChart({ points }: { points: readonly HistoricalObservation[
       </figcaption>
       <svg
         viewBox="0 0 560 144"
+        preserveAspectRatio="none"
         role="img"
         aria-labelledby={titleId}
         className="h-36 w-full text-primary"
@@ -40,7 +41,13 @@ export function PriceChart({ points }: { points: readonly HistoricalObservation[
           {formatHistoryDate(last.originalDate)}: {indexFormat.format(first.value)} to{' '}
           {indexFormat.format(last.value)}.
         </title>
-        <path d={historyPath(points, 560, 144)} fill="none" stroke="currentColor" strokeWidth="2" />
+        <path
+          d={historyPath(points, 560, 144)}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          vectorEffect="non-scaling-stroke"
+        />
       </svg>
       <dl className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
         {[

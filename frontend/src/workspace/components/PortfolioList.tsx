@@ -9,6 +9,7 @@ export function PortfolioList({
   positions,
   cashCents,
   totalCents,
+  readOnly = false,
   titleRef,
   onOpen,
   onRemove,
@@ -16,6 +17,7 @@ export function PortfolioList({
   positions: PortfolioPosition[];
   cashCents: number;
   totalCents: number;
+  readOnly?: boolean;
   titleRef: Ref<HTMLHeadingElement>;
   onOpen: (id: number, trigger: HTMLElement) => void;
   onRemove: (id: number) => void;
@@ -36,14 +38,16 @@ export function PortfolioList({
       <CardContent className="flex flex-col gap-5">
         <div className="flex items-center justify-between gap-3 text-sm">
           <span className="text-muted-foreground">Available cash</span>
-          <MoneyValue cents={cashCents} />
+          <MoneyValue cents={cashCents} className="min-w-0 text-right" />
         </div>
         {positions.length === 0 ? (
           <Empty className="px-2 py-8">
             <EmptyHeader>
-              <EmptyTitle>Make your first move</EmptyTitle>
+              <EmptyTitle>{readOnly ? 'No open positions' : 'Make your first move'}</EmptyTitle>
               <EmptyDescription>
-                Choose an instrument and set an amount. Unallocated money stays as cash.
+                {readOnly
+                  ? 'Your ending balance is held as cash.'
+                  : 'Choose an instrument and set an amount. Unallocated money stays as cash.'}
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -54,6 +58,7 @@ export function PortfolioList({
                 key={position.instrument.id}
                 {...position}
                 totalCents={totalCents}
+                readOnly={readOnly}
                 onOpen={onOpen}
                 onRemove={onRemove}
               />
@@ -62,7 +67,7 @@ export function PortfolioList({
         )}
         <div className="flex items-center justify-between gap-3 text-sm">
           <span>Total value</span>
-          <MoneyValue cents={totalCents} />
+          <MoneyValue cents={totalCents} className="min-w-0 text-right" />
         </div>
       </CardContent>
     </Card>

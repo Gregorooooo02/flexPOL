@@ -10,7 +10,7 @@ const dateFormat = new Intl.DateTimeFormat('en-IE', {
   timeZone: 'UTC',
 });
 
-/** Use original source dates: startup-relative display dates are not real market dates. */
+/** Format an ISO calendar date in UTC. Historical callers use originalDate, not shifted dates. */
 export function formatHistoryDate(date: string): string {
   return dateFormat.format(new Date(`${date}T00:00:00Z`));
 }
