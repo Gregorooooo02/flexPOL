@@ -40,6 +40,14 @@ export function AppLayout() {
             >
               Demo
             </NavLink>
+            <NavLink
+              to="/playground"
+              className={({ isActive }) =>
+                buttonVariants({ variant: isActive ? 'secondary' : 'ghost', size: 'sm' })
+              }
+            >
+              Playground
+            </NavLink>
             {user && (
               <>
                 <span

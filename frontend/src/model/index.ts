@@ -6,3 +6,12 @@ export type { ProblemDetail } from './problemDetail';
 export type { CoachRequest, CoachResponse } from './coach';
 export type { LoginRequest, User } from './user';
 export type { QuizAttempt } from './quizAttempt';
+export type {
+  AssetClass,
+  HistoricalObservation,
+  HistoryValueType,
+  Instrument,
+  RiskLevel,
+  SimulationConfiguration,
+} from './instrument';
+export type { SimulationPoint, SimulationRequest, SimulationResult } from './simulation';

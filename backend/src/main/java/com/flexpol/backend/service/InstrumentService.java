@@ -63,9 +63,9 @@ public class InstrumentService {
 	}
 
 	public SimulationDefinition getSimulationDefinition(Long id) {
+		var instrument = requireInstrument(id);
 		var configuration = configurationRepository.findByInstrumentId(id)
 				.orElseThrow(() -> new IllegalStateException("No simulation configuration for instrument " + id));
-		var instrument = requireInstrument(id);
 		return new SimulationDefinition(id, instrument.getCurrency(),
 				observationRepository.findLatestDateByInstrumentId(id).orElse(null),
 				instrument.isHistoryRebased(), configurationResponse(configuration));

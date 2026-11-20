@@ -1,5 +1,7 @@
 package com.flexpol.backend.exception;
 
+import com.flexpol.backend.model.InstrumentNotFoundException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,6 +29,13 @@ public class ApiExceptionHandler {
 	public ProblemDetail handleBadRequest(BadRequestException ex) {
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
 		problem.setTitle("Bad request");
+		return problem;
+	}
+
+	@ExceptionHandler(InstrumentNotFoundException.class)
+	public ProblemDetail handleInstrumentNotFound(InstrumentNotFoundException ex) {
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+		problem.setTitle("Resource not found");
 		return problem;
 	}
 }
