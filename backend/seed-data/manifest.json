@@ -1,0 +1,653 @@
+{
+  "schema_version": 1,
+  "provider": "Yahoo Finance chart endpoint (unofficial integration)",
+  "selection": "20 representative EUR-quoted instruments; not a popularity ranking.",
+  "requested_start_date": "2023-11-19",
+  "requested_end_date": "2026-11-19",
+  "generated_at_utc": "2026-11-20T15:54:58.188088+00:00",
+  "instrument_count": 20,
+  "total_observations": 15258,
+  "currency": "EUR",
+  "synthetic": false,
+  "dates_rebased": false,
+  "csv_columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adjusted_close",
+    "volume"
+  ],
+  "adjustments": {
+    "close": "Provider close, split-adjusted; cash distributions are not reinvested.",
+    "adjusted_close": "Provider adjusted close, adjusted for applicable splits and dividend distributions. Use relative changes as a total-return proxy, not as historical executable prices. Do not add dividends again.",
+    "reference_url": "https://help.yahoo.com/kb/SLN28256.html",
+    "limitations": "Provider adjustments are not independently audited and may be revised. ETF accumulating distributions are already reflected in fund value."
+  },
+  "usage": {
+    "terms_url": "https://legal.yahoo.com/us/en/yahoo/terms/otos/index.html",
+    "finance_terms_url": "https://legal.yahoo.com/us/en/yahoo/terms/product-atos/finance/index.html",
+    "permission_status": "NOT_VERIFIED",
+    "notice": "Third-party market data, not an openly licensed dataset. Yahoo terms restrict automated collection without prior permission, commercial reuse, and redistribution. Download access is not permission. Obtain appropriate rights before refreshing, publishing, or distributing these snapshots or derived datasets; attribution alone is insufficient."
+  },
+  "instruments": [
+    {
+      "file_key": "sap",
+      "name": "SAP SE",
+      "symbol": "SAP.DE",
+      "asset_class": "STOCK",
+      "currency": "EUR",
+      "provider_name": "SAP SE",
+      "provider_instrument_type": "EQUITY",
+      "exchange": "XETRA",
+      "exchange_timezone": "Europe/Berlin",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/SAP.DE?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/SAP.DE/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:45.360808+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 762,
+      "skipped_incomplete_dates": [],
+      "original_response": {
+        "path": "raw/sap.json",
+        "bytes": 80586,
+        "sha256": "53409c86dfdfbadc2e7787b94a9d5e9b9e7bbf62a891d3c42dfaf2e4a54c55cb"
+      },
+      "csv": {
+        "path": "raw/sap.csv",
+        "bytes": 79278,
+        "sha256": "060acf353660f8f51e4746785803f308e11cae40fb20b80f904ddca4c757a7d8"
+      }
+    },
+    {
+      "file_key": "siemens",
+      "name": "Siemens AG",
+      "symbol": "SIE.DE",
+      "asset_class": "STOCK",
+      "currency": "EUR",
+      "provider_name": "Siemens Aktiengesellschaft",
+      "provider_instrument_type": "EQUITY",
+      "exchange": "XETRA",
+      "exchange_timezone": "Europe/Berlin",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/SIE.DE?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/SIE.DE/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:46.006674+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 762,
+      "skipped_incomplete_dates": [],
+      "original_response": {
+        "path": "raw/siemens.json",
+        "bytes": 78755,
+        "sha256": "924c243f69354de69a3f48d83611ac4b2418be8d0bb4c3350debaf011b1d8607"
+      },
+      "csv": {
+        "path": "raw/siemens.csv",
+        "bytes": 77434,
+        "sha256": "b8d25ede80336f64846ae34832f6c300c231182199989e3729e52b36d94f29ad"
+      }
+    },
+    {
+      "file_key": "allianz",
+      "name": "Allianz SE",
+      "symbol": "ALV.DE",
+      "asset_class": "STOCK",
+      "currency": "EUR",
+      "provider_name": "Allianz SE",
+      "provider_instrument_type": "EQUITY",
+      "exchange": "XETRA",
+      "exchange_timezone": "Europe/Berlin",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/ALV.DE?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/ALV.DE/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:46.594201+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 762,
+      "skipped_incomplete_dates": [],
+      "original_response": {
+        "path": "raw/allianz.json",
+        "bytes": 75966,
+        "sha256": "a307d44cd651411e195d42749d62dae8cc906af07a2911636364be8b8422a33a"
+      },
+      "csv": {
+        "path": "raw/allianz.csv",
+        "bytes": 74660,
+        "sha256": "363c7ed69492a75f80477260043d27a35d7e6524f5aad3e6a9b798177d3be388"
+      }
+    },
+    {
+      "file_key": "deutsche-telekom",
+      "name": "Deutsche Telekom AG",
+      "symbol": "DTE.DE",
+      "asset_class": "STOCK",
+      "currency": "EUR",
+      "provider_name": "Deutsche Telekom AG",
+      "provider_instrument_type": "EQUITY",
+      "exchange": "XETRA",
+      "exchange_timezone": "Europe/Berlin",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/DTE.DE?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/DTE.DE/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:47.177032+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 762,
+      "skipped_incomplete_dates": [],
+      "original_response": {
+        "path": "raw/deutsche-telekom.json",
+        "bytes": 84669,
+        "sha256": "5d5e63be5dd2f017ff7cb9bc6ff85be00cd5a76616067dea65f4c6d8fe7e3244"
+      },
+      "csv": {
+        "path": "raw/deutsche-telekom.csv",
+        "bytes": 83357,
+        "sha256": "62cce3bba2afb3cac6e8a496b658b3e195a829bd6094a918059bd73b1bab9320"
+      }
+    },
+    {
+      "file_key": "airbus",
+      "name": "Airbus SE",
+      "symbol": "AIR.PA",
+      "asset_class": "STOCK",
+      "currency": "EUR",
+      "provider_name": "Airbus SE",
+      "provider_instrument_type": "EQUITY",
+      "exchange": "Paris",
+      "exchange_timezone": "Europe/Paris",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/AIR.PA?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/AIR.PA/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:47.583753+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 766,
+      "skipped_incomplete_dates": [],
+      "original_response": {
+        "path": "raw/airbus.json",
+        "bytes": 82983,
+        "sha256": "1c202e1863f1e81a8e463bde42ee14c916567048f585023a4621fb247942c175"
+      },
+      "csv": {
+        "path": "raw/airbus.csv",
+        "bytes": 81699,
+        "sha256": "9a24c3fc2363cd3172099d3cebbeef7ebd541e5a79ec8e50dc613c9c13e7b442"
+      }
+    },
+    {
+      "file_key": "schneider-electric",
+      "name": "Schneider Electric SE",
+      "symbol": "SU.PA",
+      "asset_class": "STOCK",
+      "currency": "EUR",
+      "provider_name": "Schneider Electric S.E.",
+      "provider_instrument_type": "EQUITY",
+      "exchange": "Paris",
+      "exchange_timezone": "Europe/Paris",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/SU.PA?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/SU.PA/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:48.434975+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 766,
+      "skipped_incomplete_dates": [],
+      "original_response": {
+        "path": "raw/schneider-electric.json",
+        "bytes": 77367,
+        "sha256": "92994760b5dd9e0f3ddc63d61f1a8dd2b1b1ae102630fc65582cf8569fe6658d"
+      },
+      "csv": {
+        "path": "raw/schneider-electric.csv",
+        "bytes": 76059,
+        "sha256": "1bde9ad4015a0cf28b7bf930eddbdd1c3e9b4185bc627cd3fdb84d22f9741f1b"
+      }
+    },
+    {
+      "file_key": "totalenergies",
+      "name": "TotalEnergies SE",
+      "symbol": "TTE.PA",
+      "asset_class": "STOCK",
+      "currency": "EUR",
+      "provider_name": "TotalEnergies SE",
+      "provider_instrument_type": "EQUITY",
+      "exchange": "Paris",
+      "exchange_timezone": "Europe/Paris",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/TTE.PA?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/TTE.PA/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:49.135259+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 766,
+      "skipped_incomplete_dates": [],
+      "original_response": {
+        "path": "raw/totalenergies.json",
+        "bytes": 83168,
+        "sha256": "f481c908c8e97fd68348e4ba56cf2dd67be217108addac2416cddd420bcd6a83"
+      },
+      "csv": {
+        "path": "raw/totalenergies.csv",
+        "bytes": 81452,
+        "sha256": "78570a837136db5d61160aefd231c4ea102e54114928bcff0a14d28dc8e0520b"
+      }
+    },
+    {
+      "file_key": "lvmh",
+      "name": "LVMH Moet Hennessy Louis Vuitton SE",
+      "symbol": "MC.PA",
+      "asset_class": "STOCK",
+      "currency": "EUR",
+      "provider_name": "LVMH Moët Hennessy - Louis Vuitton, Société Européenne",
+      "provider_instrument_type": "EQUITY",
+      "exchange": "Paris",
+      "exchange_timezone": "Europe/Paris",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/MC.PA?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/MC.PA/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:49.604534+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 766,
+      "skipped_incomplete_dates": [],
+      "original_response": {
+        "path": "raw/lvmh.json",
+        "bytes": 74420,
+        "sha256": "dabaa9793b81a6f40ef8873c347110ce0f48bd1f89858dd1da6999cbe8f84835"
+      },
+      "csv": {
+        "path": "raw/lvmh.csv",
+        "bytes": 72954,
+        "sha256": "62e34c9016d8416540f305140490f14580294af7847d37aef97ca69696b6bfea"
+      }
+    },
+    {
+      "file_key": "loreal",
+      "name": "L'Oreal SA",
+      "symbol": "OR.PA",
+      "asset_class": "STOCK",
+      "currency": "EUR",
+      "provider_name": "L'Oréal S.A.",
+      "provider_instrument_type": "EQUITY",
+      "exchange": "Paris",
+      "exchange_timezone": "Europe/Paris",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/OR.PA?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/OR.PA/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:50.050930+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 766,
+      "skipped_incomplete_dates": [],
+      "original_response": {
+        "path": "raw/loreal.json",
+        "bytes": 76403,
+        "sha256": "e242e1161471a339b446273db85701d9210ea40f17fdbca206f404872ea5d5fd"
+      },
+      "csv": {
+        "path": "raw/loreal.csv",
+        "bytes": 75120,
+        "sha256": "e5ffb48ea255db02ea25282a0f5d796338c9137a5d90426deb4f83e9f1f28886"
+      }
+    },
+    {
+      "file_key": "asml",
+      "name": "ASML Holding NV",
+      "symbol": "ASML.AS",
+      "asset_class": "STOCK",
+      "currency": "EUR",
+      "provider_name": "ASML Holding N.V.",
+      "provider_instrument_type": "EQUITY",
+      "exchange": "Amsterdam",
+      "exchange_timezone": "Europe/Amsterdam",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/ASML.AS?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/ASML.AS/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:50.639976+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 766,
+      "skipped_incomplete_dates": [],
+      "original_response": {
+        "path": "raw/asml.json",
+        "bytes": 74419,
+        "sha256": "04016f424997aa491a8b9549771eab8a95dbe45e6192615d4ff96610485fcd1c"
+      },
+      "csv": {
+        "path": "raw/asml.csv",
+        "bytes": 72691,
+        "sha256": "c596fd91d7f9679cd0fbc69172e1281ecb8f77321ad031592ba865d49f7a2ac9"
+      }
+    },
+    {
+      "file_key": "ing",
+      "name": "ING Groep NV",
+      "symbol": "INGA.AS",
+      "asset_class": "STOCK",
+      "currency": "EUR",
+      "provider_name": "ING Groep N.V.",
+      "provider_instrument_type": "EQUITY",
+      "exchange": "Amsterdam",
+      "exchange_timezone": "Europe/Amsterdam",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/INGA.AS?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/INGA.AS/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:51.364888+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 766,
+      "skipped_incomplete_dates": [],
+      "original_response": {
+        "path": "raw/ing.json",
+        "bytes": 86673,
+        "sha256": "b08b918db43eb50d41fc1af0ead813dd79fe88a108cfe8a613a39f160b87f0c3"
+      },
+      "csv": {
+        "path": "raw/ing.csv",
+        "bytes": 85129,
+        "sha256": "18741ad40d0f86e34ec98e2a7423fa54ed97c5ccb69e3326ed14925b6641eafe"
+      }
+    },
+    {
+      "file_key": "santander",
+      "name": "Banco Santander SA",
+      "symbol": "SAN.MC",
+      "asset_class": "STOCK",
+      "currency": "EUR",
+      "provider_name": "Banco Santander, S.A.",
+      "provider_instrument_type": "EQUITY",
+      "exchange": "MCE",
+      "exchange_timezone": "Europe/Madrid",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/SAN.MC?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/SAN.MC/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:51.792055+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 766,
+      "skipped_incomplete_dates": [],
+      "original_response": {
+        "path": "raw/santander.json",
+        "bytes": 86165,
+        "sha256": "9609757861ab6a23aaded131dd4c4a5cfac48d86cd5b80c8512f6c70597914d7"
+      },
+      "csv": {
+        "path": "raw/santander.csv",
+        "bytes": 84710,
+        "sha256": "b4263b1082fa9873bb46a109d156b131986427184b5fe2f3c2590e2c4d61522c"
+      }
+    },
+    {
+      "file_key": "vanguard-all-world",
+      "name": "Vanguard FTSE All-World UCITS ETF (Acc)",
+      "symbol": "VWCE.DE",
+      "asset_class": "EQUITY_ETF",
+      "currency": "EUR",
+      "exposure": "Global developed and emerging-market equities",
+      "distribution_policy": "ACCUMULATING",
+      "provider_name": "Vanguard FTSE All-World UCITS ETF USD Accumulation",
+      "provider_instrument_type": "ETF",
+      "exchange": "XETRA",
+      "exchange_timezone": "Europe/Berlin",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/VWCE.DE?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/VWCE.DE/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:52.391413+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 760,
+      "skipped_incomplete_dates": [
+        "2025-10-24",
+        "2026-03-06"
+      ],
+      "original_response": {
+        "path": "raw/vanguard-all-world.json",
+        "bytes": 83573,
+        "sha256": "49a5a2bf12bbdaf087b8ef9f9ce702cf3837e4caa178e30143887b78e3ab2e9f"
+      },
+      "csv": {
+        "path": "raw/vanguard-all-world.csv",
+        "bytes": 82307,
+        "sha256": "6f60efcc9c06206e9b4997e964c4474cbbaf45e82b30bf936c7642c4aaba6e2a"
+      }
+    },
+    {
+      "file_key": "ishares-world",
+      "name": "iShares Core MSCI World UCITS ETF (Acc)",
+      "symbol": "EUNL.DE",
+      "asset_class": "EQUITY_ETF",
+      "currency": "EUR",
+      "exposure": "Developed-market equities",
+      "distribution_policy": "ACCUMULATING",
+      "provider_name": "iShares Core MSCI World UCITS ETF USD (Acc)",
+      "provider_instrument_type": "ETF",
+      "exchange": "XETRA",
+      "exchange_timezone": "Europe/Berlin",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/EUNL.DE?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/EUNL.DE/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:52.889633+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 760,
+      "skipped_incomplete_dates": [
+        "2025-10-24",
+        "2026-03-06"
+      ],
+      "original_response": {
+        "path": "raw/ishares-world.json",
+        "bytes": 83154,
+        "sha256": "062c2c75cb5a5c13b282c1b7a15a2b994d1224da881d3651da33e0bbf7350e1e"
+      },
+      "csv": {
+        "path": "raw/ishares-world.csv",
+        "bytes": 81896,
+        "sha256": "3c79e0bf62879ba9579b9136a1d66f4fcdd47bccfc3d0f8f1b25ac936b9bc7c5"
+      }
+    },
+    {
+      "file_key": "ishares-sp500",
+      "name": "iShares Core S&P 500 UCITS ETF (Acc)",
+      "symbol": "SXR8.DE",
+      "asset_class": "EQUITY_ETF",
+      "currency": "EUR",
+      "exposure": "US large-cap equities",
+      "distribution_policy": "ACCUMULATING",
+      "provider_name": "iShares Core S&P 500 UCITS ETF USD (Acc)",
+      "provider_instrument_type": "ETF",
+      "exchange": "XETRA",
+      "exchange_timezone": "Europe/Berlin",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/SXR8.DE?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/SXR8.DE/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:55.044404+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 760,
+      "skipped_incomplete_dates": [
+        "2025-10-24",
+        "2026-03-06"
+      ],
+      "original_response": {
+        "path": "raw/ishares-sp500.json",
+        "bytes": 78513,
+        "sha256": "2819e960f33d96233846bde5c587da5a08698e24d5871936708223069eef2f6b"
+      },
+      "csv": {
+        "path": "raw/ishares-sp500.csv",
+        "bytes": 77256,
+        "sha256": "71c8c28b323228ebb07377db2d525fa7bc46cf6b95c50058cdf0d298ba754f0a"
+      }
+    },
+    {
+      "file_key": "ishares-nasdaq100",
+      "name": "iShares NASDAQ 100 UCITS ETF (Acc)",
+      "symbol": "SXRV.DE",
+      "asset_class": "EQUITY_ETF",
+      "currency": "EUR",
+      "exposure": "Nasdaq-100 equities",
+      "distribution_policy": "ACCUMULATING",
+      "provider_name": "iShares NASDAQ 100 UCITS ETF USD (Acc)",
+      "provider_instrument_type": "ETF",
+      "exchange": "XETRA",
+      "exchange_timezone": "Europe/Berlin",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/SXRV.DE?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/SXRV.DE/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:55.476985+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 762,
+      "skipped_incomplete_dates": [],
+      "original_response": {
+        "path": "raw/ishares-nasdaq100.json",
+        "bytes": 72898,
+        "sha256": "8618662a45ff5ab25bd34b876d9ec85c0e685cfdf3ec33b5e61414045f38b0f5"
+      },
+      "csv": {
+        "path": "raw/ishares-nasdaq100.csv",
+        "bytes": 71725,
+        "sha256": "6781d135ca59ab90b6c4c0155006a2e57d17852713e4f7336d15a9c71ee14cf7"
+      }
+    },
+    {
+      "file_key": "ishares-eurostoxx50",
+      "name": "iShares Core EURO STOXX 50 UCITS ETF (Dist)",
+      "symbol": "EUN2.DE",
+      "asset_class": "EQUITY_ETF",
+      "currency": "EUR",
+      "exposure": "Eurozone large-cap equities",
+      "distribution_policy": "DISTRIBUTING",
+      "provider_name": "iShares Core EURO STOXX 50 UCITS ETF EUR (Dist)",
+      "provider_instrument_type": "ETF",
+      "exchange": "XETRA",
+      "exchange_timezone": "Europe/Berlin",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/EUN2.DE?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/EUN2.DE/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:56.469494+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 760,
+      "skipped_incomplete_dates": [
+        "2025-10-24",
+        "2026-03-06"
+      ],
+      "original_response": {
+        "path": "raw/ishares-eurostoxx50.json",
+        "bytes": 82301,
+        "sha256": "d95d35539c20de396229d6a055433754628c60cacb434ea28e62fcd31baf0e0d"
+      },
+      "csv": {
+        "path": "raw/ishares-eurostoxx50.csv",
+        "bytes": 80437,
+        "sha256": "1bfdb6bb4bba08fc44474b56e98f8a16b304b4a319b3abac9b95364b3f2d5557"
+      }
+    },
+    {
+      "file_key": "ishares-emerging-markets",
+      "name": "iShares Core MSCI EM IMI UCITS ETF (Acc)",
+      "symbol": "IS3N.DE",
+      "asset_class": "EQUITY_ETF",
+      "currency": "EUR",
+      "exposure": "Emerging-market equities including small caps",
+      "distribution_policy": "ACCUMULATING",
+      "provider_name": "iShares Core MSCI EM IMI UCITS ETF USD (Acc)",
+      "provider_instrument_type": "ETF",
+      "exchange": "XETRA",
+      "exchange_timezone": "Europe/Berlin",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/IS3N.DE?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/IS3N.DE/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:57.296693+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 760,
+      "skipped_incomplete_dates": [
+        "2025-10-24",
+        "2026-03-06"
+      ],
+      "original_response": {
+        "path": "raw/ishares-emerging-markets.json",
+        "bytes": 83991,
+        "sha256": "060d386c89f676cd02bb1e4f3ddf52683160e492d6e27a7bfe26d5be925bbdcb"
+      },
+      "csv": {
+        "path": "raw/ishares-emerging-markets.csv",
+        "bytes": 82735,
+        "sha256": "13af55878c609ef18086c2f72b346cb900f1ac6a0cbd35fa6644f9aeb022667a"
+      }
+    },
+    {
+      "file_key": "ishares-world-small-cap",
+      "name": "iShares MSCI World Small Cap UCITS ETF (Acc)",
+      "symbol": "IUSN.DE",
+      "asset_class": "EQUITY_ETF",
+      "currency": "EUR",
+      "exposure": "Developed-market small-cap equities",
+      "distribution_policy": "ACCUMULATING",
+      "provider_name": "iShares MSCI World Small Cap UCITS ETF USD (Acc)",
+      "provider_instrument_type": "ETF",
+      "exchange": "XETRA",
+      "exchange_timezone": "Europe/Berlin",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/IUSN.DE?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/IUSN.DE/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:57.750755+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 760,
+      "skipped_incomplete_dates": [
+        "2025-10-24",
+        "2026-03-06"
+      ],
+      "original_response": {
+        "path": "raw/ishares-world-small-cap.json",
+        "bytes": 82400,
+        "sha256": "a6a2655f9bf7544dc09c3c240230f8dcfb4f3c69387dcba3b37c1885f91f4d2c"
+      },
+      "csv": {
+        "path": "raw/ishares-world-small-cap.csv",
+        "bytes": 81141,
+        "sha256": "19410b066d3cadfd09eefba730dc5d468cf7e456ff959fa9f401c37d2fdffeab"
+      }
+    },
+    {
+      "file_key": "vanguard-esg-global",
+      "name": "Vanguard ESG Global All Cap UCITS ETF (Acc)",
+      "symbol": "V3AA.DE",
+      "asset_class": "EQUITY_ETF",
+      "currency": "EUR",
+      "exposure": "ESG-screened global all-cap equities",
+      "distribution_policy": "ACCUMULATING",
+      "provider_name": "Vanguard ESG Global All Cap UCITS ETF (USD) Accumulating",
+      "provider_instrument_type": "ETF",
+      "exchange": "XETRA",
+      "exchange_timezone": "Europe/Berlin",
+      "verified_currency": "EUR",
+      "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/V3AA.DE?period1=1700352000&period2=1795132800&interval=1d&events=div%2Csplits&includeAdjustedClose=true",
+      "quote_url": "https://finance.yahoo.com/quote/V3AA.DE/history/",
+      "downloaded_at_utc": "2026-11-20T15:54:58.180993+00:00",
+      "first_observation_date": "2023-11-20",
+      "last_observation_date": "2026-11-19",
+      "row_count": 760,
+      "skipped_incomplete_dates": [
+        "2025-10-24",
+        "2026-03-06"
+      ],
+      "original_response": {
+        "path": "raw/vanguard-esg-global.json",
+        "bytes": 82191,
+        "sha256": "2a38c913dc3357b4f3c6bbc29d452b2cf7bd8b291588ac07ff7868f15464d0de"
+      },
+      "csv": {
+        "path": "raw/vanguard-esg-global.csv",
+        "bytes": 80924,
+        "sha256": "22c741aebfa7d35373425a20b79d1665d233551745dd47cf1abd40550cb01534"
+      }
+    }
+  ]
+}

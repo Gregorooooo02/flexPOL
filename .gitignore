@@ -12,3 +12,6 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+
+# Seed data
+backend/seed-data/raw

@@ -134,7 +134,7 @@ The repository is a monorepo with two apps: `backend/` and `frontend/`.
 | Persistence | Spring Data JPA (Hibernate) | `spring-boot-starter-data-jpa` |
 | Database | H2, in-memory | `jdbc:h2:mem:flexpol`; console via `spring-boot-h2console` |
 | Boilerplate | Lombok | Annotation processor configured in `maven-compiler-plugin` |
-| Testing | Spring Boot test (Web MVC), JUnit | `spring-boot-starter-webmvc-test` |
+| Testing | Spring Boot test (Web MVC), JUnit Jupiter | `spring-boot-starter-webmvc-test`; transitively includes JUnit Jupiter 6.1.3, parameterized tests, and its engine |
 | Build | Maven, through the wrapper | `./mvnw` (`mvnw.cmd` on Windows) |
 
 - Base package: `com.flexpol.backend`. Layers: `controller/` (REST endpoints, no logic) → `service/` (read-only `@Transactional` business logic, maps entities to DTOs) → `repository/` (Spring Data JPA). Also `entity/` (JPA entities), `dto/` (response records with static `from(...)` mappers; controllers never return entities) and `exception/` (`ResourceNotFoundException` and `BadRequestException`, mapped to 404 and 400 RFC 9457 problem details by `ApiExceptionHandler`).
@@ -156,8 +156,11 @@ The repository is a monorepo with two apps: `backend/` and `frontend/`.
 - Learning content tables: `chapter`, `subchapter` (lesson body in `lesson_markdown`), `quiz` (`CONTROL` per subchapter, `FINAL` per chapter), `question`, `answer_option`. Learner results: `quiz_attempt`, `attempt_answer`. Never send `answer_option.is_correct` to the frontend before the learner answers.
 - **`knowledge/` is the source of truth for content.** The block between the `GENERATED CONTENT` markers in `data.sql` is generated from it: after changing anything in `knowledge/`, run `node scripts/generate-content-sql.mjs` from the repository root and commit the updated `data.sql`. Don't edit that block by hand. The script fails if a question doesn't have options A–D with exactly one ✅.
 - The H2 console is at `http://localhost:8080/h2-console`.
-- H2 runs with `NON_KEYWORDS=USER` because `USER` is a reserved word there.
 - Commands: `./mvnw spring-boot:run` starts the app; `./mvnw test` runs the tests.
+- Instrument catalog/detail/history GET endpoints and `POST /api/simulations` are implemented. Simulations run on demand without persistence; `GBM` uses configured drift/volatility and a reproducible seed, and `FIXED_RATE` supports ACT/365 accrual with STOP-at-maturity behavior. The current seed contains only market instruments; no deposit fixture is API-selectable yet.
+- Simulation requests and responses use `durationDays` (1–10,950 calendar days, approximately 30 years) and support positive investments up to EUR 1,000,000,000,000, rounded to cents. Requested end dates use `startDate.plusDays(durationDays)`; fixed-rate product maturity still uses `termMonths`. Unknown instruments return 404; undefined/out-of-bounds inputs return 400. Model/configuration failures do not silently fall back to another engine.
+- GBM uses a calendar-day horizon but emits the initial point and weekday points, skipping intermediate weekend dates. If the end date is a weekend, one terminal carry-forward point is included without a random draw. A 10-day request from 20 November 2026 ends on 30 November and returns 7 points, not 10 or 11.
+- Run `bash mvnw test` from `backend/`. The current tests cover application startup, the calendar-day `durationDays` endpoint contract, sparse weekday output, weekend endpoints, the exact seed-67 example, horizon bounds, and rejection of the obsolete month-only request format.
 
 ## Frontend (`frontend/`)
 
