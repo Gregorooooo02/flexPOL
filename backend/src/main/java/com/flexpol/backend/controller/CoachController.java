@@ -6,6 +6,7 @@ import com.flexpol.backend.service.CoachService;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,7 +20,9 @@ public class CoachController {
 	private final CoachService coachService;
 
 	@PostMapping("/messages")
-	public CoachResponse ask(@RequestBody CoachRequest request) {
-		return coachService.ask(request);
+	public CoachResponse ask(
+			@RequestBody CoachRequest request,
+			@RequestHeader(name = UserHeader.NAME, required = false) String userEmail) {
+		return coachService.ask(request, userEmail);
 	}
 }
