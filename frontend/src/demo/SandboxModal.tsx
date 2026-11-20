@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
-import type { TopicDefinition } from './demoData';
+import type { TopicDefinition } from './learningPath';
 
 interface SandboxPageProps {
   readonly topic: TopicDefinition;
@@ -22,9 +22,9 @@ interface EtfStrategy {
 }
 
 const ETF_STRATEGIES: readonly EtfStrategy[] = [
-  { id: 'global', label: 'Globalny 7%', annualRate: 0.07 },
-  { id: 'sp500', label: 'S&P 500 8,5%', annualRate: 0.085 },
-  { id: 'balanced', label: '60/40 5,5%', annualRate: 0.055 },
+  { id: 'global', label: 'Global 7%', annualRate: 0.07 },
+  { id: 'sp500', label: 'S&P 500 8.5%', annualRate: 0.085 },
+  { id: 'balanced', label: '60/40 5.5%', annualRate: 0.055 },
 ];
 
 interface ChartSeriesPoint {
@@ -34,7 +34,7 @@ interface ChartSeriesPoint {
 }
 
 function formatPln(amount: number): string {
-  return `${Math.round(amount).toLocaleString('pl-PL')} zł`;
+  return `${Math.round(amount).toLocaleString('en-US')} PLN`;
 }
 
 function sliderValue(next: number | readonly number[]): number {
@@ -163,10 +163,10 @@ function SandboxChart({
           )}
 
           <text x={padLeft} y={height - 6} fill="#a3acad" fontSize="11">
-            Rok 0
+            Year 0
           </text>
           <text x={width - padRight} y={height - 6} textAnchor="end" fill="#a3acad" fontSize="11">
-            Rok {lastPoint?.year ?? 0}
+            Year {lastPoint?.year ?? 0}
           </text>
         </svg>
       </CardContent>
@@ -248,13 +248,13 @@ function EtfSandboxView() {
         <CardContent className="flex flex-col gap-4 px-4">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-muted-foreground">Miesięczna wpłata</span>
+              <span className="font-medium text-muted-foreground">Monthly contribution</span>
               <span className="font-semibold tabular-nums text-[#ffd22e]">
                 {formatPln(monthly)}
               </span>
             </div>
             <Slider
-              aria-label="Miesięczna wpłata"
+              aria-label="Monthly contribution"
               min={200}
               max={5000}
               step={100}
@@ -265,11 +265,11 @@ function EtfSandboxView() {
 
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-muted-foreground">Horyzont</span>
-              <span className="font-semibold tabular-nums text-[#ffd22e]">{years} lat</span>
+              <span className="font-medium text-muted-foreground">Horizon</span>
+              <span className="font-semibold tabular-nums text-[#ffd22e]">{years} years</span>
             </div>
             <Slider
-              aria-label="Horyzont inwestycji"
+              aria-label="Investment horizon"
               min={5}
               max={30}
               step={1}
@@ -297,16 +297,16 @@ function EtfSandboxView() {
 
       <SandboxChart
         points={points}
-        primaryLabel="Wartość portfela"
-        secondaryLabel="Wpłaty"
-        ariaLabel={`Symulacja portfela ETF na ${years} lat: wpłacono ${formatPln(finalContributed)}, końcowa wartość ${formatPln(finalTotal)}.`}
+        primaryLabel="Portfolio value"
+        secondaryLabel="Contributions"
+        ariaLabel={`ETF portfolio simulation over ${years} years: ${formatPln(finalContributed)} contributed, final value ${formatPln(finalTotal)}.`}
       />
 
       <MetricCards
         items={[
-          { label: 'Wpłacono', value: formatPln(finalContributed) },
-          { label: 'Zysk', value: `+${formatPln(profit)}`, tone: 'amber' },
-          { label: 'Wartość końcowa', value: formatPln(finalTotal), tone: 'gold' },
+          { label: 'Contributed', value: formatPln(finalContributed) },
+          { label: 'Gain', value: `+${formatPln(profit)}`, tone: 'amber' },
+          { label: 'Final value', value: formatPln(finalTotal), tone: 'gold' },
         ]}
       />
     </div>
@@ -345,13 +345,13 @@ function IkeSandboxView() {
         <CardContent className="flex flex-col gap-4 px-4">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-muted-foreground">Roczna wpłata</span>
+              <span className="font-medium text-muted-foreground">Yearly contribution</span>
               <span className="font-semibold tabular-nums text-[#ffd22e]">
                 {formatPln(annualDeposit)}
               </span>
             </div>
             <Slider
-              aria-label="Roczna wpłata"
+              aria-label="Yearly contribution"
               min={2000}
               max={26000}
               step={500}
@@ -362,11 +362,11 @@ function IkeSandboxView() {
 
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-muted-foreground">Lata</span>
-              <span className="font-semibold tabular-nums text-[#ffd22e]">{years} lat</span>
+              <span className="font-medium text-muted-foreground">Years</span>
+              <span className="font-semibold tabular-nums text-[#ffd22e]">{years} years</span>
             </div>
             <Slider
-              aria-label="Liczba lat"
+              aria-label="Number of years"
               min={5}
               max={30}
               step={1}
@@ -377,13 +377,13 @@ function IkeSandboxView() {
 
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-muted-foreground">Stopa zwrotu</span>
+              <span className="font-medium text-muted-foreground">Rate of return</span>
               <span className="font-semibold tabular-nums text-[#ffd22e]">
-                {ratePct.toFixed(1).replace('.', ',')}% / rok
+                {ratePct.toFixed(1)}% / year
               </span>
             </div>
             <Slider
-              aria-label="Oczekiwana stopa zwrotu"
+              aria-label="Expected rate of return"
               min={4}
               max={10}
               step={0.5}
@@ -396,16 +396,16 @@ function IkeSandboxView() {
 
       <SandboxChart
         points={points}
-        primaryLabel="IKE (0% Belki)"
-        secondaryLabel="Zwykłe konto (-19%)"
-        ariaLabel={`Porównanie IKE i zwykłego konta po ${years} latach: IKE ${formatPln(ikeFinal)}, zwykłe konto ${formatPln(regularNet)}.`}
+        primaryLabel="IKE (0% tax)"
+        secondaryLabel="Regular account (−19% tax)"
+        ariaLabel={`IKE vs a regular account after ${years} years: IKE ${formatPln(ikeFinal)}, regular account ${formatPln(regularNet)}.`}
       />
 
       <MetricCards
         items={[
-          { label: 'Zwykłe konto netto', value: formatPln(regularNet) },
-          { label: 'Oszczędzony podatek', value: `+${formatPln(taxSaved)}`, tone: 'amber' },
-          { label: 'IKE netto', value: formatPln(ikeFinal), tone: 'gold' },
+          { label: 'Regular account, net', value: formatPln(regularNet) },
+          { label: 'Tax saved', value: `+${formatPln(taxSaved)}`, tone: 'amber' },
+          { label: 'IKE, net', value: formatPln(ikeFinal), tone: 'gold' },
         ]}
       />
     </div>
@@ -447,13 +447,13 @@ function BondsSandboxView() {
         <CardContent className="flex flex-col gap-4 px-4">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-muted-foreground">Kapitał</span>
+              <span className="font-medium text-muted-foreground">Capital</span>
               <span className="font-semibold tabular-nums text-[#ffd22e]">
                 {formatPln(capital)}
               </span>
             </div>
             <Slider
-              aria-label="Kapitał początkowy"
+              aria-label="Starting capital"
               min={5000}
               max={200000}
               step={5000}
@@ -464,13 +464,13 @@ function BondsSandboxView() {
 
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-muted-foreground">Średnia inflacja</span>
+              <span className="font-medium text-muted-foreground">Average inflation</span>
               <span className="font-semibold tabular-nums text-[#ffd22e]">
-                {inflationPct.toFixed(1).replace('.', ',')}%
+                {inflationPct.toFixed(1)}%
               </span>
             </div>
             <Slider
-              aria-label="Średnia inflacja"
+              aria-label="Average inflation"
               min={2}
               max={8}
               step={0.5}
@@ -481,11 +481,11 @@ function BondsSandboxView() {
 
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-muted-foreground">Okres</span>
-              <span className="font-semibold tabular-nums text-[#ffd22e]">{years} lat</span>
+              <span className="font-medium text-muted-foreground">Period</span>
+              <span className="font-semibold tabular-nums text-[#ffd22e]">{years} years</span>
             </div>
             <Slider
-              aria-label="Okres"
+              aria-label="Period"
               min={2}
               max={10}
               step={1}
@@ -498,20 +498,20 @@ function BondsSandboxView() {
 
       <SandboxChart
         points={points}
-        primaryLabel="Obligacje EDO (inflacja + 2%)"
-        secondaryLabel="Lokata 4% netto"
-        ariaLabel={`Symulacja EDO na ${years} lat przy inflacji ${inflationPct}%: EDO ${formatPln(edoNetFinal)}, lokata ${formatPln(depositNetFinal)}.`}
+        primaryLabel="EDO bonds (inflation + 2%)"
+        secondaryLabel="Deposit 4% net"
+        ariaLabel={`EDO simulation over ${years} years at ${inflationPct}% inflation: EDO ${formatPln(edoNetFinal)}, deposit ${formatPln(depositNetFinal)}.`}
       />
 
       <MetricCards
         items={[
-          { label: 'Lokata 4% netto', value: formatPln(depositNetFinal) },
+          { label: 'Deposit 4% net', value: formatPln(depositNetFinal) },
           {
-            label: 'Przewaga EDO',
+            label: 'EDO advantage',
             value: advantage >= 0 ? `+${formatPln(advantage)}` : formatPln(advantage),
             tone: 'amber',
           },
-          { label: 'Obligacje EDO netto', value: formatPln(edoNetFinal), tone: 'gold' },
+          { label: 'EDO bonds, net', value: formatPln(edoNetFinal), tone: 'gold' },
         ]}
       />
     </div>
@@ -534,7 +534,7 @@ export function SandboxPage({ topic, onBack }: SandboxPageProps) {
             className="-ml-2 transition-transform active:scale-95"
           >
             <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2.2} />
-            Ścieżka
+            Path
           </Button>
 
           <Badge
@@ -565,7 +565,7 @@ export function SandboxPage({ topic, onBack }: SandboxPageProps) {
       <footer className="sticky bottom-0 z-20 border-t border-border bg-card/95 backdrop-blur-sm">
         <div className="mx-auto w-full max-w-md px-4 py-3">
           <Button type="button" size="lg" className="w-full" onClick={onBack}>
-            Wróć na ścieżkę
+            Back to the path
           </Button>
         </div>
       </footer>

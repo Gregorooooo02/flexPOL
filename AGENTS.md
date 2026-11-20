@@ -137,20 +137,21 @@ The repository is a monorepo with two apps: `backend/` and `frontend/`.
 | Testing | Spring Boot test (Web MVC), JUnit | `spring-boot-starter-webmvc-test` |
 | Build | Maven, through the wrapper | `./mvnw` (`mvnw.cmd` on Windows) |
 
-- Base package: `com.flexpol.backend`. Layers: `controller/` (REST endpoints, no logic) → `service/` (read-only `@Transactional` business logic, maps entities to DTOs) → `repository/` (Spring Data JPA). Also `entity/` (JPA entities), `dto/` (response records with static `from(...)` mappers; controllers never return entities) and `exception/` (`ResourceNotFoundException`, mapped to a 404 RFC 9457 problem detail by `ApiExceptionHandler`).
-- REST API (all `GET`, JSON):
+- Base package: `com.flexpol.backend`. Layers: `controller/` (REST endpoints, no logic) → `service/` (read-only `@Transactional` business logic, maps entities to DTOs) → `repository/` (Spring Data JPA). Also `entity/` (JPA entities), `dto/` (response records with static `from(...)` mappers; controllers never return entities) and `exception/` (`ResourceNotFoundException` and `BadRequestException`, mapped to 404 and 400 RFC 9457 problem details by `ApiExceptionHandler`).
+- REST API (JSON):
 
   | Endpoint | Returns |
   |---|---|
-  | `/api/chapters` | All chapters in order, each with subchapter summaries and `finalQuizId` |
-  | `/api/chapters/{chapterId}` | One chapter |
-  | `/api/chapters/{chapterId}/subchapters` | Subchapter summaries of a chapter (no lesson body) |
-  | `/api/chapters/{chapterId}/final-quiz` | The chapter's final quiz |
-  | `/api/subchapters/{subchapterId}` | One subchapter with `lessonMarkdown` and `controlQuizId` |
-  | `/api/subchapters/{subchapterId}/control-quiz` | The subchapter's control quiz |
-  | `/api/quizzes/{quizId}` | Any quiz by id |
+  | `GET /api/chapters` | All chapters in order, each with subchapter summaries and `finalQuizId` |
+  | `GET /api/chapters/{chapterId}` | One chapter |
+  | `GET /api/chapters/{chapterId}/subchapters` | Subchapter summaries of a chapter (no lesson body) |
+  | `GET /api/chapters/{chapterId}/final-quiz` | The chapter's final quiz |
+  | `GET /api/subchapters/{subchapterId}` | One subchapter with `lessonMarkdown` and `controlQuizId` |
+  | `GET /api/subchapters/{subchapterId}/control-quiz` | The subchapter's control quiz |
+  | `GET /api/quizzes/{quizId}` | Any quiz by id |
+  | `POST /api/questions/{questionId}/answer` | Body `{ "optionId": 3 }`. Checks one answer and returns `correct`, `correctOptionId` and the question's `explanation` |
 
-  Quiz responses contain questions and A–D options only. Correct answers and explanations are left out on purpose; they belong in a future answer-submission endpoint.
+  Quiz responses contain questions and A–D options only. Correct answers and explanations are left out on purpose: they are only revealed by the answer endpoint (`QuestionService`), after the learner has picked an option. Answers are not saved yet (`quiz_attempt` is unused).
 - The schema is recreated on every startup (`ddl-auto=create-drop`), and `src/main/resources/data.sql` seeds it.
 - Learning content tables: `chapter`, `subchapter` (lesson body in `lesson_markdown`), `quiz` (`CONTROL` per subchapter, `FINAL` per chapter), `question`, `answer_option`. Learner results: `quiz_attempt`, `attempt_answer`. Never send `answer_option.is_correct` to the frontend before the learner answers.
 - **`knowledge/` is the source of truth for content.** The block between the `GENERATED CONTENT` markers in `data.sql` is generated from it: after changing anything in `knowledge/`, run `node scripts/generate-content-sql.mjs` from the repository root and commit the updated `data.sql`. Don't edit that block by hand. The script fails if a question doesn't have options A–D with exactly one ✅.
@@ -166,12 +167,14 @@ The repository is a monorepo with two apps: `backend/` and `frontend/`.
 | Language | TypeScript | ~7.0 |
 | Build tool / dev server | Vite with `@vitejs/plugin-react` | Vite ^8.3, plugin ^6.1 |
 | HTTP client | axios | ^1.21, shared instance and `ApiError` in `src/config/axios.ts` |
+| Markdown | react-markdown + remark-gfm | ^10.1 / ^4.0, render lesson Markdown (including GFM tables) in `src/demo/LessonMarkdown.tsx` |
 | Linting | oxlint | ^1.90, configured in `.oxlintrc.json` |
 | Package manager | npm | Keep `package-lock.json` committed |
 
 - Commands: `npm run dev`, `npm run build` (runs `tsc -b` then `vite build`), `npm run lint`, `npm run preview`.
 - Backend connection: the frontend calls relative `/api/...` URLs, and the Vite dev server proxies `/api` to the backend at `http://localhost:8080` (`server.proxy` in `vite.config.ts`), so no CORS setup is needed. Set `VITE_API_BASE_URL` to point at a different backend.
-- `src/model/` holds TypeScript types that mirror the backend's response DTOs in `backend/.../dto/`. When a DTO changes, update the matching type in the same change. `src/config/axios.ts` holds the axios setup (base URL, timeout, error interceptor that turns failures into `ApiError`). `src/api/` holds only endpoint functions, one module per resource (`chapterApi`, `subchapterApi`, `quizApi`), built on that client; components call these functions instead of using axios directly, and import `ApiError` from `@/config/axios` for error handling.
+- `src/model/` holds TypeScript types that mirror the backend's response DTOs in `backend/.../dto/`. When a DTO changes, update the matching type in the same change. `src/config/axios.ts` holds the axios setup (base URL, timeout, error interceptor that turns failures into `ApiError`). `src/api/` holds only endpoint functions, one module per resource (`chapterApi`, `subchapterApi`, `quizApi`, `questionApi`), built on that client; components call these functions instead of using axios directly, and import `ApiError` from `@/config/axios` for error handling.
+- `src/demo/` holds the learning-path demo. `learningPath.ts` builds the path from `GET /api/chapters` (each chapter's subchapters, then its final quiz as a test node) and gives each chapter a colour theme and a sandbox in chapter order. `LessonModal.tsx` loads a lesson and its control quiz, or a final quiz, and checks answers through `questionApi`: control quizzes let the learner retry until correct, and final quizzes allow one answer per question and pass at `passMark`. Learner progress is kept in memory only, and the sandboxes (`SandboxModal.tsx`) are still frontend-only.
 
 ## Keeping this section up to date
 

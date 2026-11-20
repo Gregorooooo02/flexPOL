@@ -22,19 +22,19 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from 'cn';
+import { getChapters } from '@/api';
+import { ApiError } from '@/config/axios';
 import {
-  ALL_NODES_FLAT,
-  INITIAL_COMPLETED_IDS,
-  TOPICS,
-  TOTAL_NODES_COUNT,
+  buildLearningPath,
   findNodeById,
   getFirstUnfinishedTopic,
-  getNextUnlockedNodeAfter,
+  getNextNodeAfter,
   getNodeStatus,
+  getPreviousNodeBefore,
   getTopicCompletedCount,
   isTopicSandboxUnlocked,
-} from './demoData';
-import type { LearningNode, NodeStatus, TopicDefinition } from './demoData';
+} from './learningPath';
+import type { LearningNode, LearningPath, NodeStatus, TopicDefinition } from './learningPath';
 import { LessonPage } from './LessonModal';
 import { SandboxPage } from './SandboxModal';
 
@@ -54,10 +54,15 @@ interface DemoProgressState {
 }
 
 type ProgressAction =
-  | { readonly type: 'completeLesson'; readonly nodeId: string }
-  | { readonly type: 'completeTopic' }
-  | { readonly type: 'reset' }
+  | { readonly type: 'completeLesson'; readonly path: LearningPath; readonly nodeId: string }
+  | { readonly type: 'completeTopic'; readonly path: LearningPath }
+  | { readonly type: 'reset'; readonly path: LearningPath }
   | { readonly type: 'setBanner'; readonly banner: BannerState };
+
+type LoadState =
+  | { readonly status: 'loading' }
+  | { readonly status: 'error'; readonly message: string }
+  | { readonly status: 'ready'; readonly path: LearningPath };
 
 interface NodeLayoutSlot {
   readonly cx: number;
@@ -68,40 +73,78 @@ interface NodeLayoutSlot {
   readonly labelWidth: number;
 }
 
+interface StageLayout {
+  readonly height: number;
+  readonly nodeSlots: readonly NodeLayoutSlot[];
+  readonly sandboxSlot: NodeLayoutSlot;
+  /** pipeSegments[i] runs from node i to node i + 1, the last one to the sandbox. */
+  readonly pipeSegments: readonly string[];
+}
+
 const STAGE_W = 340;
-const STAGE_H = 690;
+const NODE_SPACING = 140;
+const FIRST_NODE_Y = 64;
+const STAGE_BOTTOM_PADDING = 66;
+const CENTER_X = 170;
+const LEFT_X = 68;
+const RIGHT_X = 272;
+const PIPE_CORNER = 24;
 
-const NODE_SLOTS: readonly [NodeLayoutSlot, NodeLayoutSlot, NodeLayoutSlot, NodeLayoutSlot] = [
-  { cx: 170, cy: 64, labelSide: 'right', labelLeft: 224, labelTop: 28, labelWidth: 112 },
-  { cx: 68, cy: 204, labelSide: 'right', labelLeft: 124, labelTop: 170, labelWidth: 204 },
-  { cx: 272, cy: 344, labelSide: 'left', labelLeft: 12, labelTop: 310, labelWidth: 204 },
-  { cx: 68, cy: 484, labelSide: 'right', labelLeft: 132, labelTop: 446, labelWidth: 196 },
-];
+/** The path zig-zags: first node and sandbox in the centre, the nodes between alternate left and right. */
+function slotAt(index: number, isSandbox: boolean): NodeLayoutSlot {
+  const cy = FIRST_NODE_Y + index * NODE_SPACING;
+  const labelTop = cy - 34;
+  if (index === 0 || isSandbox) {
+    return { cx: CENTER_X, cy, labelSide: 'right', labelLeft: 224, labelTop, labelWidth: 112 };
+  }
+  if (index % 2 === 1) {
+    return { cx: LEFT_X, cy, labelSide: 'right', labelLeft: 124, labelTop, labelWidth: 204 };
+  }
+  return { cx: RIGHT_X, cy, labelSide: 'left', labelLeft: 12, labelTop, labelWidth: 204 };
+}
 
-const SANDBOX_SLOT: NodeLayoutSlot = {
-  cx: 170,
-  cy: 624,
-  labelSide: 'right',
-  labelLeft: 224,
-  labelTop: 590,
-  labelWidth: 112,
-};
+function pipeBetween(from: NodeLayoutSlot, to: NodeLayoutSlot): string {
+  if (from.cx === to.cx) {
+    return `M ${from.cx} ${from.cy} L ${to.cx} ${to.cy}`;
+  }
+  const midY = (from.cy + to.cy) / 2;
+  const dir = to.cx > from.cx ? 1 : -1;
+  return [
+    `M ${from.cx} ${from.cy}`,
+    `L ${from.cx} ${midY - PIPE_CORNER}`,
+    `Q ${from.cx} ${midY} ${from.cx + dir * PIPE_CORNER} ${midY}`,
+    `L ${to.cx - dir * PIPE_CORNER} ${midY}`,
+    `Q ${to.cx} ${midY} ${to.cx} ${midY + PIPE_CORNER}`,
+    `L ${to.cx} ${to.cy}`,
+  ].join(' ');
+}
 
-const PIPE_SEGMENTS: readonly [string, string, string, string] = [
-  'M 170 64 L 170 110 Q 170 134 146 134 L 92 134 Q 68 134 68 158 L 68 204',
-  'M 68 204 L 68 250 Q 68 274 92 274 L 248 274 Q 272 274 272 298 L 272 344',
-  'M 272 344 L 272 390 Q 272 414 248 414 L 92 414 Q 68 414 68 438 L 68 484',
-  'M 68 484 L 68 530 Q 68 554 92 554 L 146 554 Q 170 554 170 578 L 170 624',
-];
+function buildStageLayout(nodeCount: number): StageLayout {
+  const nodeSlots = Array.from({ length: nodeCount }, (_, index) => slotAt(index, false));
+  const sandboxSlot = slotAt(nodeCount, true);
+  const pipeSegments = nodeSlots.map((slot, index) =>
+    pipeBetween(slot, nodeSlots[index + 1] ?? sandboxSlot),
+  );
+  return {
+    height: sandboxSlot.cy + STAGE_BOTTOM_PADDING,
+    nodeSlots,
+    sandboxSlot,
+    pipeSegments,
+  };
+}
 
-const INITIAL_PROGRESS_STATE: DemoProgressState = {
-  completedList: INITIAL_COMPLETED_IDS,
-  banner: {
-    tone: 'neutral',
-    message:
-      'Moduł 101 zaliczony — linia dotarła do 102. Kliknij kółko albo tytuł, żeby otworzyć lekcję.',
-  },
-};
+function createInitialProgress(path: LearningPath): DemoProgressState {
+  const first = path.flatNodes[0]?.node;
+  return {
+    completedList: [],
+    banner: {
+      tone: 'neutral',
+      message: first
+        ? `Start with module ${first.code}, “${first.title}”. Click the circle or the title to open the lesson.`
+        : 'The learning path is empty.',
+    },
+  };
+}
 
 function progressReducer(state: DemoProgressState, action: ProgressAction): DemoProgressState {
   switch (action.type) {
@@ -111,32 +154,32 @@ function progressReducer(state: DemoProgressState, action: ProgressAction): Demo
       }
       const nextList = [...state.completedList, action.nodeId];
       const nextSet = new Set(nextList);
-      const entry = findNodeById(action.nodeId);
+      const entry = findNodeById(action.path, action.nodeId);
       if (!entry) {
         return { ...state, completedList: nextList };
       }
       const topicDone = isTopicSandboxUnlocked(entry.topic, nextSet);
-      const nextStep = getNextUnlockedNodeAfter(action.nodeId);
+      const nextStep = getNextNodeAfter(action.path, action.nodeId);
 
       let nextBanner = state.banner;
       if (topicDone) {
         nextBanner = {
           tone: 'gold',
           message: nextStep
-            ? `Dział ${entry.topic.title} zaliczony. Sandbox „${entry.topic.sandboxShortLabel}” otwarty.`
-            : `Wszystkie działy zaliczone. Sandbox „${entry.topic.sandboxShortLabel}” otwarty.`,
+            ? `Chapter ${entry.topic.title} completed. The “${entry.topic.sandboxShortLabel}” sandbox is open.`
+            : `All chapters completed. The “${entry.topic.sandboxShortLabel}” sandbox is open.`,
         };
       } else if (nextStep) {
         nextBanner = {
           tone: 'gold',
-          message: `Zaliczone: ${entry.node.code}. Linia przeszła do modułu ${nextStep.node.code}.`,
+          message: `Completed: ${entry.node.code}. The path has moved on to module ${nextStep.node.code}.`,
         };
       }
       return { completedList: nextList, banner: nextBanner };
     }
     case 'completeTopic': {
       const currentSet = new Set(state.completedList);
-      const target = getFirstUnfinishedTopic(TOPICS, currentSet);
+      const target = getFirstUnfinishedTopic(action.path.topics, currentSet);
       if (!target) {
         return state;
       }
@@ -145,20 +188,20 @@ function progressReducer(state: DemoProgressState, action: ProgressAction): Demo
         nextSet.add(node.id);
       }
       const lastNode = target.nodes[target.nodes.length - 1];
-      const nextStep = getNextUnlockedNodeAfter(lastNode.id);
+      const nextStep = getNextNodeAfter(action.path, lastNode.id);
 
       return {
         completedList: Array.from(nextSet),
         banner: {
           tone: 'gold',
           message: nextStep
-            ? `Dział ${target.title} zaliczony. Sandbox „${target.sandboxShortLabel}” otwarty, startuje ${nextStep.node.code}.`
-            : 'Wszystkie 3 działy i sandboxy zostały odblokowane.',
+            ? `Chapter ${target.title} completed. The “${target.sandboxShortLabel}” sandbox is open, and module ${nextStep.node.code} is next.`
+            : 'All chapters and sandboxes are unlocked.',
         },
       };
     }
     case 'reset':
-      return INITIAL_PROGRESS_STATE;
+      return createInitialProgress(action.path);
     case 'setBanner':
       return { ...state, banner: action.banner };
   }
@@ -177,10 +220,77 @@ function renderNodeIcon(node: LearningNode, status: NodeStatus) {
   return <HugeiconsIcon icon={BookOpen01Icon} className="size-6" strokeWidth={2.2} />;
 }
 
+/** Loads the chapters from the backend, then shows the learning path built from them. */
 export function LearningPathDemo() {
+  const [loadState, setLoadState] = useState<LoadState>({ status: 'loading' });
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getChapters(controller.signal)
+      .then((chapters) => {
+        setLoadState({ status: 'ready', path: buildLearningPath(chapters) });
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+        setLoadState({
+          status: 'error',
+          message: error instanceof ApiError ? error.message : 'Unknown error.',
+        });
+      });
+    return () => controller.abort();
+  }, [reloadKey]);
+
+  const handleRetry = useCallback(() => {
+    setLoadState({ status: 'loading' });
+    setReloadKey((key) => key + 1);
+  }, []);
+
+  if (loadState.status === 'ready' && loadState.path.topics.length > 0) {
+    return <LearningPathView path={loadState.path} />;
+  }
+
+  return (
+    <div className="flex min-h-svh items-center justify-center bg-background px-4 text-foreground">
+      <Card size="sm" className="w-full max-w-md border border-border bg-card py-5" role="status" aria-live="polite">
+        <CardHeader className="items-center px-5 text-center">
+          <Badge className="mb-2 gap-1.5 bg-primary px-2.5 py-0.5 text-primary-foreground">
+            <HugeiconsIcon icon={ChartLineData01Icon} strokeWidth={2.2} />
+            flexPOL
+          </Badge>
+          <CardTitle className="normal-case tracking-normal">
+            {loadState.status === 'loading'
+              ? 'Loading the learning path…'
+              : loadState.status === 'error'
+                ? "Couldn't load the learning path"
+                : 'The learning path is empty'}
+          </CardTitle>
+          {loadState.status === 'error' && (
+            <CardDescription className="text-xs">
+              {loadState.message} Check that the backend is running on port 8080.
+            </CardDescription>
+          )}
+        </CardHeader>
+        {loadState.status !== 'loading' && (
+          <CardContent className="flex justify-center px-5 pt-2">
+            <Button type="button" size="sm" variant="outline" onClick={handleRetry}>
+              <HugeiconsIcon icon={RefreshIcon} strokeWidth={2} />
+              Try again
+            </Button>
+          </CardContent>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+function LearningPathView({ path }: { readonly path: LearningPath }) {
   const [{ completedList, banner }, dispatch] = useReducer(
     progressReducer,
-    INITIAL_PROGRESS_STATE,
+    path,
+    createInitialProgress,
   );
   const [activeView, setActiveView] = useState<ActiveView>({ kind: 'path' });
   const [burstNodeId, setBurstNodeId] = useState<string | null>(null);
@@ -198,8 +308,8 @@ export function LearningPathDemo() {
   const completedSet = useMemo(() => new Set(completedList), [completedList]);
 
   const firstUnfinishedTopic = useMemo(
-    () => getFirstUnfinishedTopic(TOPICS, completedSet),
-    [completedSet],
+    () => getFirstUnfinishedTopic(path.topics, completedSet),
+    [path, completedSet],
   );
 
   const goToView = useCallback((nextView: ActiveView) => {
@@ -236,25 +346,24 @@ export function LearningPathDemo() {
 
   const handleOpenNode = useCallback(
     (node: LearningNode) => {
-      const status = getNodeStatus(node.id, completedSet);
+      const status = getNodeStatus(path, node.id, completedSet);
       if (status === 'locked') {
-        const nodeIdx = ALL_NODES_FLAT.findIndex((entry) => entry.node.id === node.id);
-        const prevEntry = nodeIdx > 0 ? ALL_NODES_FLAT[nodeIdx - 1] : undefined;
+        const prevEntry = getPreviousNodeBefore(path, node.id);
         triggerLockedShake(node.id);
         dispatch({
           type: 'setBanner',
           banner: {
             tone: 'locked',
             message: prevEntry
-              ? `Moduł ${node.code} jest zablokowany. Najpierw zalicz ${prevEntry.node.code} (${prevEntry.topic.title}).`
-              : `Moduł ${node.code} jest zablokowany.`,
+              ? `Module ${node.code} is locked. Complete ${prevEntry.node.code} (${prevEntry.topic.title}) first.`
+              : `Module ${node.code} is locked.`,
           },
         });
         return;
       }
       triggerNavBurst(node.id, { kind: 'lesson', nodeId: node.id });
     },
-    [completedSet, triggerLockedShake, triggerNavBurst],
+    [path, completedSet, triggerLockedShake, triggerNavBurst],
   );
 
   const handleOpenSandbox = useCallback(
@@ -266,7 +375,7 @@ export function LearningPathDemo() {
           type: 'setBanner',
           banner: {
             tone: 'locked',
-            message: `Sandbox „${topic.sandboxShortLabel}” otworzy się po zaliczeniu testu ${topic.nodes[topic.nodes.length - 1].code}.`,
+            message: `The “${topic.sandboxShortLabel}” sandbox opens once you complete ${topic.nodes[topic.nodes.length - 1].code}.`,
           },
         });
         return;
@@ -276,13 +385,16 @@ export function LearningPathDemo() {
     [completedSet, triggerLockedShake, triggerNavBurst],
   );
 
-  const handleCompleteLesson = useCallback((nodeId: string) => {
-    dispatch({ type: 'completeLesson', nodeId });
-  }, []);
+  const handleCompleteLesson = useCallback(
+    (nodeId: string) => {
+      dispatch({ type: 'completeLesson', path, nodeId });
+    },
+    [path],
+  );
 
   const handleCompleteCurrentTopic = useCallback(() => {
-    dispatch({ type: 'completeTopic' });
-  }, []);
+    dispatch({ type: 'completeTopic', path });
+  }, [path]);
 
   const handleReset = useCallback(() => {
     if (timerRef.current !== null) {
@@ -291,13 +403,13 @@ export function LearningPathDemo() {
     setBurstNodeId(null);
     setShakeNodeId(null);
     setActiveView({ kind: 'path' });
-    dispatch({ type: 'reset' });
-  }, []);
+    dispatch({ type: 'reset', path });
+  }, [path]);
 
   if (activeView.kind === 'lesson') {
-    const entry = findNodeById(activeView.nodeId);
+    const entry = findNodeById(path, activeView.nodeId);
     if (entry) {
-      const nextEntry = getNextUnlockedNodeAfter(entry.node.id);
+      const nextEntry = getNextNodeAfter(path, entry.node.id);
       return (
         <LessonPage
           key={entry.node.id}
@@ -315,7 +427,7 @@ export function LearningPathDemo() {
   }
 
   if (activeView.kind === 'sandbox') {
-    const topic = TOPICS.find((t) => t.id === activeView.topicId);
+    const topic = path.topics.find((t) => t.id === activeView.topicId);
     if (topic) {
       return <SandboxPage topic={topic} onBack={() => goToView({ kind: 'path' })} />;
     }
@@ -332,7 +444,7 @@ export function LearningPathDemo() {
             </Badge>
 
             <h1 className="font-heading text-base font-semibold tracking-tight text-foreground">
-              Postęp kursu
+              Course progress
             </h1>
 
             <Badge
@@ -340,7 +452,7 @@ export function LearningPathDemo() {
               className="gap-1.5 border border-border bg-secondary px-2 py-0.5 tabular-nums"
             >
               <span>
-                {completedList.length}/{TOTAL_NODES_COUNT}
+                {completedList.length}/{path.flatNodes.length}
               </span>
               <span className="inline-flex size-4 items-center justify-center rounded-full bg-[#ffd22e] text-[#07090a]">
                 <HugeiconsIcon icon={Coins01Icon} className="size-3!" strokeWidth={2.4} />
@@ -358,7 +470,7 @@ export function LearningPathDemo() {
               className="flex-1 transition-transform active:scale-95"
             >
               <HugeiconsIcon icon={FastForwardIcon} strokeWidth={2} />
-              {firstUnfinishedTopic ? `Zalicz ${firstUnfinishedTopic.title}` : 'Komplet'}
+              {firstUnfinishedTopic ? `Complete ${firstUnfinishedTopic.title}` : 'All done'}
             </Button>
             <Button
               type="button"
@@ -398,17 +510,20 @@ export function LearningPathDemo() {
         </div>
 
         <div className="flex flex-col">
-          {TOPICS.map((topic, topicIndex) => {
+          {path.topics.map((topic, topicIndex) => {
+            const { height: stageHeight, nodeSlots, sandboxSlot, pipeSegments } = buildStageLayout(
+              topic.nodes.length,
+            );
             const doneCount = getTopicCompletedCount(topic, completedSet);
             const sandboxUnlocked = isTopicSandboxUnlocked(topic, completedSet);
             const progressPct = Math.round((doneCount / topic.nodes.length) * 100);
-            const firstNodeStatus = getNodeStatus(topic.nodes[0].id, completedSet);
+            const firstNodeStatus = getNodeStatus(path, topic.nodes[0].id, completedSet);
             const entryPipeColored = topicIndex > 0 && firstNodeStatus !== 'locked';
-            const nextTopic = TOPICS[topicIndex + 1];
+            const nextTopic = path.topics[topicIndex + 1];
             const exitPipeColored =
               Boolean(nextTopic) &&
               sandboxUnlocked &&
-              getNodeStatus(nextTopic.nodes[0].id, completedSet) !== 'locked';
+              getNodeStatus(path, nextTopic.nodes[0].id, completedSet) !== 'locked';
 
             const sandboxEffectId = `sandbox-${topic.id}`;
             const isSandboxBursting = burstNodeId === sandboxEffectId;
@@ -448,7 +563,7 @@ export function LearningPathDemo() {
                       <CardDescription className="text-xs">{topic.metaLabel}</CardDescription>
                       <Progress
                         value={progressPct}
-                        aria-label={`Postęp ${topic.title}`}
+                        aria-label={`${topic.title} progress`}
                         className="mt-1.5 [&_[data-slot=progress-track]]:h-1.5"
                         style={
                           {
@@ -461,30 +576,30 @@ export function LearningPathDemo() {
 
                   <div
                     className="relative mt-2 shrink-0"
-                    style={{ width: `${STAGE_W}px`, height: `${STAGE_H}px` }}
+                    style={{ width: `${STAGE_W}px`, height: `${stageHeight}px` }}
                   >
                     <svg
                       className="pointer-events-none absolute inset-0 size-full"
-                      viewBox={`0 0 ${STAGE_W} ${STAGE_H}`}
+                      viewBox={`0 0 ${STAGE_W} ${stageHeight}`}
                       aria-hidden="true"
                     >
                       {topicIndex > 0 && (
                         <>
                           <line
-                            x1={170}
+                            x1={CENTER_X}
                             y1={0}
-                            x2={170}
-                            y2={64}
+                            x2={CENTER_X}
+                            y2={FIRST_NODE_Y}
                             stroke="#2d3234"
                             strokeWidth="12"
                             strokeLinecap="round"
                           />
                           {entryPipeColored && (
                             <line
-                              x1={170}
+                              x1={CENTER_X}
                               y1={0}
-                              x2={170}
-                              y2={64}
+                              x2={CENTER_X}
+                              y2={FIRST_NODE_Y}
                               pathLength={100}
                               stroke={topic.pipeColor}
                               strokeWidth="12"
@@ -496,7 +611,7 @@ export function LearningPathDemo() {
                         </>
                       )}
 
-                      {PIPE_SEGMENTS.map((pathD, index) => {
+                      {pipeSegments.map((pathD, index) => {
                         const isSegmentColored = completedSet.has(topic.nodes[index].id);
                         return (
                           <g key={topic.nodes[index].id}>
@@ -528,20 +643,20 @@ export function LearningPathDemo() {
                       {nextTopic && (
                         <>
                           <line
-                            x1={170}
-                            y1={624}
-                            x2={170}
-                            y2={STAGE_H}
+                            x1={sandboxSlot.cx}
+                            y1={sandboxSlot.cy}
+                            x2={sandboxSlot.cx}
+                            y2={stageHeight}
                             stroke="#2d3234"
                             strokeWidth="12"
                             strokeLinecap="round"
                           />
                           {exitPipeColored && (
                             <line
-                              x1={170}
-                              y1={624}
-                              x2={170}
-                              y2={STAGE_H}
+                              x1={sandboxSlot.cx}
+                              y1={sandboxSlot.cy}
+                              x2={sandboxSlot.cx}
+                              y2={stageHeight}
                               pathLength={100}
                               stroke={topic.pipeColor}
                               strokeWidth="12"
@@ -556,17 +671,17 @@ export function LearningPathDemo() {
 
                     <ol className="relative m-0 size-full list-none p-0" role="list">
                       {topic.nodes.map((node, index) => {
-                        const slot = NODE_SLOTS[index];
-                        const status = getNodeStatus(node.id, completedSet);
+                        const slot = nodeSlots[index];
+                        const status = getNodeStatus(path, node.id, completedSet);
                         const isBursting = burstNodeId === node.id;
                         const isShaking = shakeNodeId === node.id;
 
                         const statusText =
                           status === 'completed'
-                            ? 'Zaliczone'
+                            ? 'Completed'
                             : status === 'active'
-                              ? 'Aktywna'
-                              : 'Zablokowana';
+                              ? 'Available'
+                              : 'Locked';
 
                         const ringColor =
                           status === 'completed'
@@ -604,7 +719,7 @@ export function LearningPathDemo() {
                                   size="icon"
                                   variant={status === 'locked' ? 'secondary' : 'default'}
                                   aria-disabled={status === 'locked' ? 'true' : undefined}
-                                  aria-label={`Moduł ${node.code}: ${node.title} — ${statusText}`}
+                                  aria-label={`Module ${node.code}: ${node.title} — ${statusText}`}
                                   onClick={() => handleOpenNode(node)}
                                   className={cn(
                                     'relative z-10 size-full overflow-hidden rounded-full border-0 shadow-none transition-transform active:scale-90',
@@ -684,7 +799,7 @@ export function LearningPathDemo() {
                       <li>
                         <div
                           className="absolute -translate-x-1/2 -translate-y-1/2"
-                          style={{ left: `${SANDBOX_SLOT.cx}px`, top: `${SANDBOX_SLOT.cy}px` }}
+                          style={{ left: `${sandboxSlot.cx}px`, top: `${sandboxSlot.cy}px` }}
                         >
                           <div
                             className={cn(
@@ -709,7 +824,7 @@ export function LearningPathDemo() {
                               variant={sandboxUnlocked ? 'default' : 'secondary'}
                               aria-disabled={!sandboxUnlocked ? 'true' : undefined}
                               aria-label={`Sandbox ${topic.title}: ${topic.sandboxTitle} — ${
-                                sandboxUnlocked ? 'Otwarty' : 'Zablokowany'
+                                sandboxUnlocked ? 'Open' : 'Locked'
                               }`}
                               onClick={() => handleOpenSandbox(topic)}
                               className={cn(
@@ -742,9 +857,9 @@ export function LearningPathDemo() {
                         <div
                           className="absolute flex flex-col items-start gap-0.5 text-left"
                           style={{
-                            left: `${SANDBOX_SLOT.labelLeft}px`,
-                            top: `${SANDBOX_SLOT.labelTop}px`,
-                            width: `${SANDBOX_SLOT.labelWidth}px`,
+                            left: `${sandboxSlot.labelLeft}px`,
+                            top: `${sandboxSlot.labelTop}px`,
+                            width: `${sandboxSlot.labelWidth}px`,
                           }}
                         >
                           <span
