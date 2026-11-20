@@ -6,7 +6,7 @@
 - Instrument IDs are assigned explicitly in SQL; there is no `code` field.
 - Use Spring Data JPA and an in-memory H2 database.
 - Hibernate recreates the schema on startup; `data.sql` populates it afterward.
-- No migrations, profiles, saved simulation runs, tests, or dedicated validation layer for now.
+- No migrations, profiles, saved simulation runs, or dedicated validation layer for now. Testing policy changed for Part 5: write JUnit simulation contracts first on a custom synthetic dataset, with production methods left unimplemented until the next step.
 - Download historical files once; the application runs entirely offline.
 - New instruments using existing behavior should require only seed changes. New simulation behaviors belong in isolated engine implementations.
 - Distinguish real source history, rebased historical demo data, and synthetic future outcomes. Keep the project's educational-demo positioning explicit.
@@ -286,6 +286,8 @@ Completed: added seven Java record DTOs under `dto/`, two empty `@Service` compo
 
 Package cleanup: the four direct endpoint request/response records remain under `dto/`; `SimulationConfigurationResponse`, `SimulationAssumptions`, and `SimulationPoint` now live under `model/`. Their record fields and JSON contracts are unchanged. The obsolete user model, repository, repository test, and seed rows are removed.
 
+Cleanup completed and verified: a clean package build with tests skipped succeeded; manual startup confirmed no `USER` table, exactly three instrument repositories, unchanged instrument record counts, and all four placeholder routes still returning 501. Offline seed regeneration remains byte-identical after removing user inserts. The H2 URL is `jdbc:h2:mem:flexpol`, and `AGENTS.md` plus the seed documentation reflect the current package structure.
+
 Packaging with tests skipped and a manual HTTP startup smoke check succeeded. Both simulation request forms (explicit seed and omitted seed) bind successfully, unknown numeric instrument IDs still receive the intended placeholder response, and Spring's default malformed JSON/path handling remains HTTP 400. Seed counts remain 3 users, 20 instruments, 20 configurations, and 15,258 observations. No tests, dependencies, entities, repositories, seed data, or configuration were changed. Part 5 (retrieval and simulation) is next.
 
 ### Goal
@@ -427,7 +429,38 @@ Do not return fabricated successful payloads, dummy simulations, or empty lists 
 
 All DTOs and empty service components compile, constructor wiring succeeds, all four routes return the intended 501 status for syntactically valid requests, the seeded database remains intact, and no repository retrieval or simulation behavior has been implemented.
 
-## Part 5 — Implement retrieval and simulation
+## Part 5 — Implement retrieval and simulation (completed)
+
+### Status
+
+Completed: GBM and fixed-rate calculations, model-key registration, on-demand simulation orchestration, instrument/configuration/history retrieval, and all four HTTP endpoints are implemented. The original engine reference tests are unchanged and pass. Simulations return EUR amounts, effective dates, the actual seed, model/version, provenance, limitations, and a consistent return fraction; results are not persisted. The 20-instrument seed is unchanged and still contains no API-selectable deposit fixture.
+
+JUnit Jupiter 6.1.3, parameterized tests, and the execution engine already exist transitively through `spring-boot-starter-webmvc-test`; no dependency was added. The synthetic CSV dataset under `backend/src/test/resources/simulation/` contains 18 scenarios (8 GBM, 10 fixed rate) and two complete fixed-seed reference paths. Engine tests cover results, calendars, HALF_EVEN rounding, reproducibility/isolation, deterministic cases, ACT/365 accrual, and maturity stopping. Added service tests for configuration/registry behavior, generated-seed replay, maturity and return mapping, missing/corrupt data, decimal parameters, bulk catalog loading, and basic request bounds. MockMvc integration tests exercise the seeded endpoints and unchanged database counts.
+
+Verification: `bash mvnw package` passed all 76 tests with no failures, errors, or skipped cases. A packaged-JAR HTTP smoke check confirmed all GET routes, 1-/12-/24-month simulation POSTs, seed-zero reproducibility, generated-seed replay, original history dates, weekend carry-forward, cent rounding, consistent final values/return fractions, unknown-instrument 404 responses, and out-of-bounds-request 400 responses. No dependencies, schema, or seed data were changed. `AGENTS.md` and the synthetic fixture README now describe the implemented behavior.
+
+Historical test-first baseline: the first `bash mvnw test` run compiled successfully and ran 43 tests, with 6 passing and 37 reaching deliberate `UnsupportedOperationException` stubs. Those previously red engine tests are now green through production implementation, not disabled or rewritten to accept placeholder exceptions.
+
+### Current API usage and bounds
+
+```http
+POST /api/simulations
+Content-Type: application/json
+
+{
+  "instrumentId": 1001,
+  "initialInvestment": 10000,
+  "durationMonths": 12,
+  "randomSeed": 42
+}
+```
+
+- The three GET routes and simulation POST return HTTP 200 on success, not 501.
+- Basic inline guards require an instrument ID, 1–360 months, and a positive investment no greater than EUR 1,000,000,000,000 that rounds to at least one cent. These bound calculation work without adding a Bean Validation dependency or a dedicated validation subsystem.
+- Amounts are normalized to cents using HALF_EVEN before simulation; returned points/final amounts use two decimal places and total return uses eight.
+- Omit `randomSeed` to generate and receive a replayable seed. Generated seeds are in `[0, 2^53)`, exactly representable as JavaScript JSON numbers. Explicit caller-supplied Java long seeds, including zero and negatives, are preserved; clients using larger-than-safe integers must serialize them without precision loss.
+- Unknown instruments return 404. Missing inputs or unsupported request sizes return 400 using Spring problem details. Missing/malformed model configuration, unsupported configured model keys, and duplicate engine registration are explicit failures rather than silent fallbacks.
+- Database snapshots are prepared in read-only transactions; calculations run afterward without an open database transaction. Catalog configuration reads are bulk, and simulation fetches only the latest observation date rather than the whole history.
 
 ### Goal
 
@@ -435,7 +468,23 @@ Replace placeholders with working, on-demand functionality.
 
 ### Instrument retrieval
 
-Implement repository-backed instrument listing, instrument details with simulation assumptions, and historical observations ordered by date. Return DTOs rather than serializing JPA entities directly.
+Implement repository-backed instrument listing, instrument details with simulation assumptions, and historical observations ordered by date. Return endpoint DTOs rather than serializing JPA entities directly.
+
+- `GET /api/instruments`: HTTP 200 with all 20 instruments ordered by ID; include each instrument's structured simulation configuration, not its history.
+- `GET /api/instruments/{id}`: HTTP 200 with the same representation as one catalog entry; unknown instruments return HTTP 404.
+- `GET /api/instruments/{id}/history`: HTTP 200 with the existing historical observation records ordered by display date. Include both original and display dates. Return an empty list for an existing instrument without history, but HTTP 404 for an unknown instrument.
+- Use read-only transactions around database reads and DTO mapping so CLOB configuration strings are read before the persistence context closes. Do not rely on Open Session in View.
+- Load configurations in bulk for the catalog rather than issuing one configuration query per instrument. Fetch only the latest observation when simulation needs a starting date; do not load a full history solely to find its last entry.
+- Decode parameter JSON using the existing Jackson support, preserving decimal values as `BigDecimal` in generic maps. Keep rates as numeric JSON values and preserve all calibration/provenance fields.
+- Use straightforward mapping methods; do not introduce a mapping dependency or expose entity relationships through the API.
+
+### Implementation subparts
+
+1. **Retrieval:** implement the three GET routes, structured configuration mapping, and focused repository lookups.
+2. **Orchestration:** implement simulation input/context preparation and model-key engine registration.
+3. **GBM:** implement a reproducible single market trajectory and connect the POST route.
+4. **Fixed rate:** implement a second strategy with explicit compounding and maturity behavior, without modifying the current market-data seed.
+5. **Integration and documentation:** manually inspect results, record limitations, and mark this part complete only after startup and endpoint checks.
 
 ### Extensible engine structure
 
@@ -446,11 +495,44 @@ simulation/
   FixedRateSimulationEngine
 
 model/
+  SimulationContext
+  SimulationTrajectory
   GbmParameters
   FixedRateParameters
 ```
 
-`SimulationService` selects an injected engine using `modelKey`; avoid a growing switch over instrument categories. Each engine interprets its own parameters through a typed DTO. Keep financial calculations independent of repository access.
+`SimulationService` selects an injected engine using `modelKey`; avoid a growing switch over instrument categories. Each engine interprets its own parameters through a typed model record. Keep financial calculations independent of repository access and endpoint DTOs.
+
+- `SimulationEngine` exposes its supported model key/version and a method accepting a `SimulationContext` and returning a `SimulationTrajectory`.
+- Register implementations as Spring components and build a key-to-engine registry from constructor-injected implementations. Duplicate keys fail visibly at startup; unsupported configured keys must not silently fall back to GBM.
+- `SimulationContext` holds immutable scalar inputs: investment amount, start/end dates, actual random seed, and a snapshot of model parameters. Do not pass managed JPA entities into engines.
+- `SimulationTrajectory` holds the computed points, effective end date, and model-specific explanatory limitations. Keep it under `model/`, not `dto/`.
+- Engine parameters and helper records stay in `model/`. Only direct endpoint request/response records stay in `dto/`.
+- Preserve JSON provenance while decoding only the fields needed by each typed parameter record; the existing seed contains additional calibration metadata that must not cause unknown-property decoding failures.
+
+### Simulation orchestration
+
+For `POST /api/simulations`:
+
+1. Resolve the instrument, configuration, selected engine, and latest historical display date using read-only database access.
+2. Use that latest display date as `startDate`; for a configured instrument with no history, use the current date. Capture the date once per request.
+3. Calculate the requested end date with `startDate.plusMonths(durationMonths)`.
+4. Use the caller's `randomSeed` verbatim, including zero. If omitted, generate a seed and return it. Create a fresh deterministic random generator per simulation; never use shared mutable random state for trajectory steps.
+5. Copy the necessary configuration into an immutable context, end database work, and then invoke the engine. Do not hold a transaction open during trajectory generation.
+6. Map the trajectory to `SimulationResult`, including actual start/end dates, initial/final investment values, seed, model/version, complete parameter assumptions, and total return as a fraction.
+7. Return HTTP 200 with the result. Do not create a simulation database record.
+
+Keep controllers thin and HTTP concerns out of calculation engines. Handle unknown instruments as 404. Missing/malformed configurations, duplicate engine keys, and unsupported configured model keys are explicit configuration failures, not fabricated successful simulations. Do not add a general validation subsystem, Bean Validation dependency, or unrelated exception framework. Define only the small amount of failure handling needed by the implemented operations.
+
+### Dates, output, and reproducibility
+
+- Market simulations emit the initial point and subsequent weekday points through the requested end date.
+- If a market simulation ends on a weekend, include an end-date point carrying forward the last computed value; do not add another random step for that point.
+- Deposits accrue on calendar dates, according to their own convention.
+- The market calendar is deliberately approximate: weekdays are not an exchange calendar, and `1/252` model-year steps do not exactly match the number of weekdays in a calendar year. State this limitation rather than implying precise annual timing.
+- Include the initial investment at the start date and ensure the last point equals `finalValue`.
+- Use unrounded internal values for calculations, then convert to `BigDecimal` and round monetary outputs to two decimals using `HALF_EVEN`. Calculate `totalReturn` consistently from the returned final amount and initial investment, with an explicit scale such as eight decimal places.
+- Reproducibility requires the same seed, model version, configuration snapshot, dates, and investment amount. Repeating a seeded request within one database lifetime should reproduce the same path. A database restart on another date rebases the seed history and therefore changes the simulation dates; do not promise seed-only reproducibility across restarts or algorithm changes.
 
 ### GBM engine
 
@@ -460,7 +542,7 @@ For stocks and equity ETFs:
 - Use configured annual expected return and volatility.
 - Approximate market sessions with weekdays; no exchange-holiday calendar initially.
 - Scale the path to the initial EUR investment.
-- Support an optional random seed; generate and return one when omitted.
+- Use the actual seed supplied by orchestration; draw standard-normal values from a fresh `java.util.Random` instance for a stable, explicitly chosen generator algorithm.
 - Return the assumptions used.
 - Do not persist results.
 
@@ -478,14 +560,25 @@ Z = standard normal random value
 
 The expected-return parameter is the model drift, not historical CAGR. Use floating-point calculations internally where logarithms and exponentials are required, and round monetary outputs at the boundary.
 
+Use the configured `periodsPerYear`, initially 252, rather than duplicating an unexplained magic number. Read expected return and volatility from the selected instrument's configuration, not from hard-coded asset-class defaults. Expected return is nominal; do not add dividends again or subtract ETF expenses a second time. Explain that GBM does not model changing volatility, heavy-tailed crashes, or guaranteed returns.
+
 ### Fixed-rate engine
 
-Add a small fictional deposit seed fixture if this behavior is included in the initial demo:
+Implement fixed-rate support as an independent engine, but do not add deposit fixtures, fabricate market history, or change the 20-instrument seed in this part. It can be exercised manually using an in-memory simulation context; making it selectable through the API later requires a seeded instrument/configuration.
 
 - Deterministic interest accrual.
 - Explicit rate and compounding frequency.
 - Explicit maturity behavior.
 - No assumption that the same rate remains available after maturity.
+
+Use typed parameters `annualNominalRate`, `compoundsPerYear`, `termMonths`, and `maturityPolicy`. Initially support `STOP` only; implement a nominal annual rate with periodic compounding and ACT/365 fractional-year accrual:
+
+```text
+value(t) = initialInvestment × (1 + annualNominalRate / compoundsPerYear)
+           ^ (compoundsPerYear × elapsedCalendarDays / 365)
+```
+
+Explain that fractional exponents are a demo accrued-value convention, not a promise of actual daily interest posting. For `STOP`, end at the earlier of the requested horizon and product maturity; return the effective end date and explain truncation in the limitations. Keep the requested duration in the result as the user's original input. Never silently roll over the deposit or reuse its interest rate after maturity. A zero rate produces a flat trajectory, and the random seed has no effect on a deterministic deposit path.
 
 A fixed-coupon bond is not automatically suitable for this engine because its market price can fluctuate.
 
@@ -502,12 +595,30 @@ Expose exclusions in response assumptions rather than leaving them implicit. EUR
 
 ### Completion criteria
 
-A caller can retrieve an instrument, request a duration-based simulation, and receive a plausible EUR-valued trajectory reproducible from the same inputs, parameters, algorithm, and random seed.
+- All three GET endpoints return actual seeded data with the established JSON contract; missing instrument IDs return 404.
+- POST returns a plausible single EUR investment trajectory rather than 501, with explicit model assumptions and provenance.
+- A repeated request with the same explicit seed and unchanged dates/configuration produces the same path; an omitted seed is returned so the caller can replay it.
+- Initial and terminal points, final amount, return fraction, date ordering, and two-decimal monetary outputs are internally consistent.
+- GBM uses configured return/volatility and produces no non-finite numeric output for the supported demo inputs.
+- Fixed-rate calculations can be invoked independently and demonstrate deterministic compounding, a zero-rate flat path, and stopping at maturity without rollover.
+- Read-only operations leave the 20 instruments, 20 configurations, and 15,258 historical rows unchanged. No simulation results are persisted.
+- JUnit engine, service, and integration tests pass, along with application startup, real HTTP requests, and manual calculation inspections. The original engine reference expectations remain unchanged.
+
+### Manual verification checklist
+
+1. Inspect catalog length, one stock, one ETF, their structured numeric parameters, and one complete chronological history.
+2. Confirm unknown IDs produce 404 for details, history, and simulation.
+3. Request 1-, 12-, and 24-month simulations, including an explicit seed of zero, an ordinary explicit seed, and an omitted seed.
+4. Replay the returned seed and compare paths; use a different seed and confirm a stochastic path changes.
+5. Verify the initial point, requested/effective end date, weekend endpoint behavior, final amount, return fraction, and original calibration metadata.
+6. Invoke engines directly with zero volatility and zero rate to inspect deterministic behavior, and inspect fixed-rate maturity truncation.
+7. Confirm JSON contains enum names, ISO dates, numeric amounts/rates, no persistence internals, and truthful tax/inflation/fee and historical-demo limitations.
+8. Recheck record counts, update the notes with actual outcomes, and mark Part 5 complete only after these checks.
 
 ## Verification approach
 
-Do not add tests for this implementation. Perform compilation and startup checks for each runnable part, followed by manual endpoint smoke checks once functionality is implemented.
+Parts 1–4 used compilation, startup checks, and manual endpoint smoke checks. For Part 5, the user explicitly requested JUnit tests before implementation, superseding the earlier no-tests constraint. The synthetic engine contracts, fixture integrity checks, service unit tests, MockMvc endpoint integration tests, and existing Spring startup test now pass. Keep them enabled and run `bash mvnw test` or `bash mvnw package` from `backend/` when changing the simulator. The earlier red baseline is retained above as implementation history, not the current expected state.
 
 ## Delivery sequence
 
-Local dataset (completed) → entity model and empty tables → generated SQL and populated database → stable API skeleton → functioning simulation.
+Local dataset (completed) → entity model (completed) → generated SQL and populated database (completed) → API skeleton and package cleanup (completed) → simulation contracts (completed) → engine implementations (completed) → retrieval, orchestration, and HTTP integration (completed).

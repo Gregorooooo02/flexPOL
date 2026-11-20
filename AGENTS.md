@@ -132,14 +132,17 @@ The repository is a monorepo with two apps: `backend/` and `frontend/`.
 | Persistence | Spring Data JPA (Hibernate) | `spring-boot-starter-data-jpa` |
 | Database | H2, in-memory | `jdbc:h2:mem:flexpol`; console via `spring-boot-h2console` |
 | Boilerplate | Lombok | Annotation processor configured in `maven-compiler-plugin` |
-| Testing | Spring Boot test (Web MVC), JUnit | `spring-boot-starter-webmvc-test` |
+| Testing | Spring Boot test (Web MVC), JUnit Jupiter | `spring-boot-starter-webmvc-test`; transitively includes JUnit Jupiter 6.1.3, parameterized tests, and its engine |
 | Build | Maven, through the wrapper | `./mvnw` (`mvnw.cmd` on Windows) |
 
-- Base package: `com.flexpol.backend`, with `model/`, `model/enums/`, `repository/`, `dto/`, `service/`, and `controller/` subpackages. There is no `entity/` package or user model.
+- Base package: `com.flexpol.backend`, with `model/`, `model/enums/`, `repository/`, `dto/`, `service/`, `simulation/`, and `controller/` subpackages. There is no `entity/` package or user model.
 - `dto/` contains only records directly used as endpoint requests/responses; supporting records belong in `model/`.
 - The schema is recreated on every startup (`ddl-auto=create-drop`), and `src/main/resources/data.sql` seeds it.
 - The H2 console is at `http://localhost:8080/h2-console`.
 - Commands: `./mvnw spring-boot:run` starts the app; `./mvnw test` runs the tests.
+- Instrument catalog/detail/history GET endpoints and `POST /api/simulations` are implemented. Simulations run on demand without persistence; `GBM` uses configured drift/volatility and a reproducible seed, and `FIXED_RATE` supports ACT/365 accrual with STOP-at-maturity behavior. The current seed contains only market instruments; no deposit fixture is API-selectable yet.
+- Simulation requests support 1–360 months and positive investments up to EUR 1,000,000,000,000, rounded to cents. Unknown instruments return 404; undefined/out-of-bounds inputs return 400. Model/configuration failures do not silently fall back to another engine.
+- Synthetic engine contracts, service tests, and MockMvc API integration tests run with `bash mvnw test` from `backend/`. Fixture conventions are documented in `backend/src/test/resources/simulation/README.md`; the earlier test-first engine stubs have been implemented.
 
 ## Frontend (`frontend/`)
 

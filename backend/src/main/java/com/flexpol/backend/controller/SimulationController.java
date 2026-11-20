@@ -6,7 +6,6 @@ import com.flexpol.backend.service.SimulationService;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +21,6 @@ public class SimulationController {
 
 	@PostMapping
 	public ResponseEntity<SimulationResult> simulate(@RequestBody SimulationRequest request) {
-		return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+		return ResponseEntity.ok(simulationService.simulate(request));
 	}
 }

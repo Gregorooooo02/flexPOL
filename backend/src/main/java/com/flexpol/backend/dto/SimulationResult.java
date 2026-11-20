@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.flexpol.backend.model.SimulationAssumptions;
 import com.flexpol.backend.model.SimulationPoint;
 
 /**
@@ -20,7 +19,6 @@ public record SimulationResult(
 		LocalDate startDate,
 		LocalDate endDate,
 		long randomSeed,
-		SimulationAssumptions assumptions,
 		BigDecimal finalValue,
 		BigDecimal totalReturn,
 		List<SimulationPoint> points) {
