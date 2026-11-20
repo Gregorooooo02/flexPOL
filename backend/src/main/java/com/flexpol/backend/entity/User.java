@@ -21,10 +21,12 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false, unique = true)
+	/** Display name only; several learners may share one. The email identifies the user. */
+	@Column(nullable = false, length = 50)
 	private String username;
 
-	@Column(nullable = false, unique = true)
+	/** Trimmed and lower-cased. */
+	@Column(nullable = false, unique = true, length = 254)
 	private String email;
 
 	public User(String username, String email) {

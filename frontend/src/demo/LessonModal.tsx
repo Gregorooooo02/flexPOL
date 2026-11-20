@@ -21,7 +21,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { cn } from 'cn';
-import { getQuiz, getSubchapter, getSubchapterControlQuiz, submitAnswer } from '@/api';
+import { getQuiz, getSubchapter, getSubchapterControlQuiz, startQuizAttempt, submitAnswer } from '@/api';
 import { usePublishCoachFocus } from '@/components/coach/coachFocus';
 import { ApiError } from '@/config/axios';
 import type { AnswerOption, AnswerResult, Question, Quiz } from '@/model';
@@ -214,6 +214,8 @@ export function LessonPage({
   const [answers, setAnswers] = useState<AnswerMap>({});
   const [flashKey, setFlashKey] = useState<{ optionId: number; seq: number } | null>(null);
   const answerAbortRef = useRef<AbortController | null>(null);
+  /** The saved quiz attempt's id once started (null if it couldn't be), or null before the questions. */
+  const attemptRef = useRef<Promise<number | null> | null>(null);
   const hasHedgie = node.kind === 'lesson';
   const loadHedgie = useHedgieScene(hasHedgie);
 
@@ -287,10 +289,27 @@ export function LessonPage({
     setReloadKey((key) => key + 1);
   };
 
+  /**
+   * Starts a saved attempt for the logged-in learner. Answers wait for it and send its id; if it
+   * can't be started they are still checked, just not saved.
+   */
+  const startAttempt = () => {
+    if (!quiz) {
+      return;
+    }
+    attemptRef.current = startQuizAttempt(quiz.id, answerAbortRef.current?.signal)
+      .then((attempt) => attempt.id)
+      .catch(() => null);
+  };
+
   const handleStartQuestions = () => {
     if (questionCount === 0) {
       finish(true);
       return;
+    }
+    // Going back to the theory and on again keeps the same attempt
+    if (!attemptRef.current) {
+      startAttempt();
     }
     goToStep({ kind: 'question', index: 0 });
   };
@@ -309,7 +328,9 @@ export function LessonPage({
     const isStillPending = (prev: AnswerMap) =>
       prev[question.id]?.optionId === option.id && prev[question.id]?.status === 'checking';
 
-    submitAnswer(question.id, option.id, answerAbortRef.current?.signal)
+    const signal = answerAbortRef.current?.signal;
+    (attemptRef.current ?? Promise.resolve(null))
+      .then((attemptId) => submitAnswer(question.id, option.id, { attemptId, signal }))
       .then((result) => {
         setAnswers((prev) =>
           isStillPending(prev)
@@ -360,6 +381,7 @@ export function LessonPage({
 
   const handleRetryQuiz = () => {
     setAnswers({});
+    startAttempt();
     goToStep({ kind: 'question', index: 0 });
   };
 

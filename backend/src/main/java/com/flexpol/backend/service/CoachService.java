@@ -47,6 +47,7 @@ public class CoachService {
 
 	private final ChatClient chatClient;
 	private final CoachContextService contextService;
+	private final CoachConversationService conversationService;
 	private final String systemPrompt;
 	private final boolean configured;
 
@@ -54,12 +55,14 @@ public class CoachService {
 			ChatClient.Builder chatClientBuilder,
 			ChatMemory chatMemory,
 			CoachContextService contextService,
+			CoachConversationService conversationService,
 			@Value("classpath:prompts/coach-system.md") Resource systemPrompt,
 			@Value("${spring.ai.openai.api-key:}") String apiKey) {
 		this.chatClient = chatClientBuilder
 				.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
 				.build();
 		this.contextService = contextService;
+		this.conversationService = conversationService;
 		this.systemPrompt = read(systemPrompt);
 		this.configured = StringUtils.hasText(apiKey);
 		if (!configured) {
@@ -70,8 +73,10 @@ public class CoachService {
 	/**
 	 * Sends one learner message to the coach, with the lesson and quiz question they are on as context.
 	 * Without a {@code conversationId} a new conversation starts; its id is returned in the response.
+	 * With {@code userEmail} (the {@code X-User-Email} header) the conversation belongs to that learner,
+	 * and only they can continue it ({@link CoachConversationService}).
 	 */
-	public CoachResponse ask(CoachRequest request) {
+	public CoachResponse ask(CoachRequest request, String userEmail) {
 		String message = request.message();
 		if (!StringUtils.hasText(message)) {
 			throw new BadRequestException("message is required");
@@ -82,9 +87,7 @@ public class CoachService {
 		if (request.selectedOptionId() != null && request.questionId() == null) {
 			throw new BadRequestException("selectedOptionId requires questionId");
 		}
-		String conversation = request.conversationId() == null
-				? UUID.randomUUID().toString()
-				: normalize(request.conversationId());
+		String requestedConversation = request.conversationId() == null ? null : normalize(request.conversationId());
 
 		// Context goes in as template parameters, so braces in lesson or question text are never parsed.
 		Map<String, Object> params = new HashMap<>();
@@ -97,6 +100,8 @@ public class CoachService {
 			system.append(QUESTION_SECTION);
 			params.put("question", contextService.questionContext(request.questionId(), request.selectedOptionId()));
 		}
+		// After the context checks, so a rejected request doesn't leave an empty conversation behind.
+		String conversation = conversationService.resolve(requestedConversation, userEmail);
 
 		if (!configured) {
 			return fallback(conversation);

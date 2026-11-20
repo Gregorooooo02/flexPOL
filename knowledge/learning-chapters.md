@@ -1,6 +1,6 @@
-# Finance Quest — Learning Chapters
+# HedgeFlex — Learning Chapters
 
-The learning path for Finance Quest. Each chapter ends in a sandbox mission, so learners move from knowing to doing.
+The learning path for HedgeFlex. Each chapter ends in a sandbox mission, so learners move from knowing to doing.
 
 For the hackathon MVP, **Chapter 1** is built in full. Chapters 2 and 3 appear in the learning path as locked chapters with their subchapter titles.
 
