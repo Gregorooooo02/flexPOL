@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { to: '/learning', label: 'Learning', end: false },
   { to: '/scenarios', label: 'Scenarios', end: false },
   { to: '/playground', label: 'Playground', end: false },
+  { to: '/roadmap', label: 'My Roadmap', end: false },
 ];
 
 const MOBILE_MENU_ID = 'mobile-navigation';

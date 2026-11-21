@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "actions": [
+    {
+      "id": "define-one-goal",
+      "concept": "goals",
+      "title": "Write down one goal",
+      "description": "Name what the money is for, how much you need, and when you expect to need it.",
+      "relevance": "A clear amount and date give you something concrete to plan toward, before considering products.",
+      "lessonCodes": ["1.1", "1.2", "3.3", "3.5"],
+      "chapterNumbers": [1, 3],
+      "scenarioSlugs": ["nina-home-deposit", "sam-university-fund"],
+      "destination": { "kind": "tool", "id": "goal-planner" }
+    },
+    {
+      "id": "check-withdrawal-conditions",
+      "concept": "liquidity",
+      "title": "Check how you can access your money",
+      "description": "Find the withdrawal time, restrictions, and any early-access penalties for an account you use or are researching.",
+      "relevance": "Money that exists on paper may not be available when you need it. Keep planned expenses separate from an emergency buffer.",
+      "lessonCodes": ["1.3", "2.1", "2.2", "3.4"],
+      "chapterNumbers": [1, 3],
+      "scenarioSlugs": ["henryk-retires-next-year"],
+      "destination": { "kind": "tool", "id": "emergency-buffer" }
+    },
+    {
+      "id": "review-goal-risk",
+      "concept": "risk",
+      "title": "Describe what a loss would mean for your goal",
+      "description": "Separate how you feel about price swings from whether a loss could affect essential expenses or delay your goal.",
+      "relevance": "Being comfortable with uncertainty does not remove a need for money at a particular time.",
+      "lessonCodes": ["1.4", "2.6", "2.7"],
+      "chapterNumbers": [1],
+      "scenarioSlugs": ["nina-home-deposit"],
+      "destination": { "kind": "profile", "id": "risk" }
+    },
+    {
+      "id": "research-holdings",
+      "concept": "diversification",
+      "title": "Find out what a product actually holds",
+      "description": "Look for an official holdings list. Note the largest companies, industries, or regions and anything you do not understand.",
+      "relevance": "Different product names do not necessarily mean different underlying investments. Diversification reduces risk but cannot remove it.",
+      "lessonCodes": ["1.5", "2.3", "2.4"],
+      "chapterNumbers": [2],
+      "scenarioSlugs": ["marek-favourite-company"],
+      "destination": { "kind": "profile", "id": "knowledge" }
+    },
+    {
+      "id": "find-annual-charges",
+      "concept": "fees",
+      "title": "Find the fees in an official document",
+      "description": "Find the annual percentage charge for an option you are researching. Note transaction costs and other charges separately.",
+      "relevance": "Small recurring charges can change long-term outcomes, but fees alone do not tell you whether an option is suitable.",
+      "lessonCodes": ["2.5", "2.7"],
+      "chapterNumbers": [2],
+      "scenarioSlugs": [],
+      "destination": { "kind": "tool", "id": "fee-impact" }
+    },
+    {
+      "id": "review-after-life-change",
+      "concept": "review",
+      "title": "Choose what to review after a life change",
+      "description": "Write down which goal dates, access needs, or responsibilities you would revisit after a change in circumstances.",
+      "relevance": "A plan is a set of assumptions to review, not a permanent investor identity. Retirement spending needs more analysis than a simple savings projection.",
+      "lessonCodes": ["3.1", "3.2", "3.6", "3.7"],
+      "chapterNumbers": [3],
+      "scenarioSlugs": ["henryk-retires-next-year"],
+      "destination": { "kind": "profile", "id": "review" }
+    }
+  ]
+}

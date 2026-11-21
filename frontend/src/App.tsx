@@ -8,22 +8,35 @@ import { PlaygroundPage } from './playground/PlaygroundPage';
 import { SandboxPage } from './sandbox/SandboxPage';
 import { ScenarioPage } from './scenarios/ScenarioPage';
 import { ScenariosPage } from './scenarios/ScenariosPage';
+import { AuthenticatedJourneyLayout } from './journey/AuthenticatedJourneyLayout';
+import { RoadmapPage } from './roadmap/RoadmapPage';
+import { RoadmapSetupPage } from './roadmap/RoadmapSetupPage';
+import { ToolsPage } from './tools/ToolsPage';
+import { ToolPageShell } from './tools/ToolPageShell';
 
 export function App() {
   return (
     <Routes>
-      <Route element={<AppLayout />}>
-        <Route index element={<HomePage />} />
-        <Route path="login" element={<><HomePage /><LoginPage /></>} />
-        <Route element={<RequireAuth />}>
-          <Route path="learning" element={<DemoPage />} />
-          <Route path="demo" element={<Navigate to="/learning" replace />} />
-          <Route path="scenarios" element={<ScenariosPage />} />
-          <Route path="scenarios/:scenarioId" element={<ScenarioPage />} />
-          <Route path="scenarios/:scenarioId/play" element={<SandboxPage />} />
-          <Route path="playground" element={<PlaygroundPage />} />
+      <Route element={<AuthenticatedJourneyLayout />}>
+        <Route element={<AppLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="login" element={<><HomePage /><LoginPage /></>} />
+          <Route element={<RequireAuth />}>
+            <Route path="learning" element={<DemoPage />} />
+            <Route path="demo" element={<Navigate to="/learning" replace />} />
+            <Route path="scenarios" element={<ScenariosPage />} />
+            <Route path="scenarios/:scenarioId" element={<ScenarioPage />} />
+            <Route path="scenarios/:scenarioId/play" element={<SandboxPage />} />
+            <Route path="playground" element={<PlaygroundPage />} />
+            <Route path="roadmap" element={<RoadmapPage />} />
+            <Route path="roadmap/setup" element={<RoadmapSetupPage />} />
+            <Route path="tools" element={<ToolsPage />} />
+            <Route path="tools/goal-planner" element={<ToolPageShell tool="goal-planner" />} />
+            <Route path="tools/emergency-buffer" element={<ToolPageShell tool="emergency-buffer" />} />
+            <Route path="tools/fee-impact" element={<ToolPageShell tool="fee-impact" />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   );

@@ -3,10 +3,10 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
-  useReducer,
   useRef,
   useState,
 } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   BookOpen01Icon,
@@ -17,7 +17,11 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useJourneySession } from '@/journey/journeySessionContext';
+import { finalTestPath, lessonPath, resolveLearningLink } from '@/journey/learningLinks';
+import type { LearningCompletion } from '@/journey/types';
 import {
   Card,
   CardContent,
@@ -48,18 +52,6 @@ import { LessonPage } from './LessonModal';
 type ActiveView =
   | { readonly kind: 'path' }
   | { readonly kind: 'lesson'; readonly nodeId: string };
-
-interface DemoProgressState {
-  readonly completedList: readonly string[];
-  readonly banner: DemoBanner | null;
-}
-
-type ProgressAction =
-  | { readonly type: 'completeLesson'; readonly path: LearningPath; readonly nodeId: string }
-  | { readonly type: 'completeTopic'; readonly path: LearningPath }
-  | { readonly type: 'reset'; readonly path: LearningPath }
-  | { readonly type: 'setBanner'; readonly banner: DemoBanner }
-  | { readonly type: 'dismissBanner' };
 
 type LoadState =
   | { readonly status: 'loading' }
@@ -194,80 +186,14 @@ function buildStageLayout(
   };
 }
 
-function createInitialProgress(path: LearningPath): DemoProgressState {
+function createInitialBanner(path: LearningPath): DemoBanner {
   const first = path.flatNodes[0]?.node;
   return {
-    completedList: [],
-    banner: {
-      tone: 'neutral',
-      message: first
-        ? `Start with ${first.code} “${first.title}”.`
-        : 'The learning path is empty.',
-    },
+    tone: 'neutral',
+    message: first
+      ? `Start with ${first.code} “${first.title}”. Progress lasts for this session, until refresh or logout.`
+      : 'The learning path is empty.',
   };
-}
-
-function progressReducer(state: DemoProgressState, action: ProgressAction): DemoProgressState {
-  switch (action.type) {
-    case 'completeLesson': {
-      if (state.completedList.includes(action.nodeId)) {
-        return state;
-      }
-      const nextList = [...state.completedList, action.nodeId];
-      const nextSet = new Set(nextList);
-      const entry = findNodeById(action.path, action.nodeId);
-      if (!entry) {
-        return { ...state, completedList: nextList };
-      }
-      const topicDone = isTopicCompleted(entry.topic, nextSet);
-      const nextStep = getNextNodeAfter(action.path, action.nodeId);
-
-      let nextBanner = state.banner;
-      if (topicDone) {
-        nextBanner = {
-          tone: 'gold',
-          message: nextStep
-            ? `Chapter ${entry.topic.title} completed. The path has moved on to module ${nextStep.node.code}.`
-            : 'All chapters completed.',
-        };
-      } else if (nextStep) {
-        nextBanner = {
-          tone: 'gold',
-          message: `Completed: ${entry.node.code}. The path has moved on to module ${nextStep.node.code}.`,
-        };
-      }
-      return { completedList: nextList, banner: nextBanner };
-    }
-    case 'completeTopic': {
-      const currentSet = new Set(state.completedList);
-      const target = getFirstUnfinishedTopic(action.path.topics, currentSet);
-      if (!target) {
-        return state;
-      }
-      const nextSet = new Set(state.completedList);
-      for (const node of target.nodes) {
-        nextSet.add(node.id);
-      }
-      const lastNode = target.nodes[target.nodes.length - 1];
-      const nextStep = getNextNodeAfter(action.path, lastNode.id);
-
-      return {
-        completedList: Array.from(nextSet),
-        banner: {
-          tone: 'gold',
-          message: nextStep
-            ? `Chapter ${target.title} completed. Module ${nextStep.node.code} is next.`
-            : 'All chapters completed.',
-        },
-      };
-    }
-    case 'reset':
-      return createInitialProgress(action.path);
-    case 'setBanner':
-      return { ...state, banner: action.banner };
-    case 'dismissBanner':
-      return { ...state, banner: null };
-  }
 }
 
 function renderNodeIcon(node: LearningNode, status: NodeStatus) {
@@ -346,12 +272,22 @@ export function LearningPathDemo() {
 }
 
 function LearningPathView({ path }: { readonly path: LearningPath }) {
-  const [{ completedList, banner }, dispatch] = useReducer(
-    progressReducer,
-    path,
-    createInitialProgress,
-  );
-  const [activeView, setActiveView] = useState<ActiveView>({ kind: 'path' });
+  const { state, dispatch } = useJourneySession();
+  const [banner, setBanner] = useState<DemoBanner | null>(() =>
+    path.flatNodes.some(({ node }) => Object.hasOwn(state.learning.completions, node.id))
+      ? { tone: 'neutral', message: 'Your completed modules are still marked for this session. Choose a module to continue; refresh or logout resets this progress.' }
+      : createInitialBanner(path));
+  const [search] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const completedSet = useMemo(() => new Set(path.flatNodes
+    .filter(({ node }) => Object.hasOwn(state.learning.completions, node.id))
+    .map(({ node }) => node.id)), [path, state.learning.completions]);
+  const link = resolveLearningLink(search, path, completedSet);
+  const prerequisiteEntry = link.kind === 'locked' ? link.prerequisite : null;
+  const activeView: ActiveView = link.kind === 'lesson'
+    ? { kind: 'lesson', nodeId: link.entry.node.id } : { kind: 'path' };
+  const resumeEntry = state.learning.resumeNodeId ? findNodeById(path, state.learning.resumeNodeId) : null;
   const [isDesktop, setIsDesktop] = useState(
     () => typeof window !== 'undefined' && window.matchMedia(DESKTOP_MEDIA_QUERY).matches,
   );
@@ -362,6 +298,22 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
   const pathTrackRef = useRef<HTMLDivElement>(null);
   const wrongAnswerCount = useRef(0);
   const getNextWrongAnswerIndex = useCallback(() => wrongAnswerCount.current++, []);
+
+  // Only metadata survives leaving the route, never question/answer/attempt UI state.
+  const openedNodeId = activeView.kind === 'lesson' ? activeView.nodeId : null;
+  useEffect(() => {
+    if (openedNodeId) dispatch({ type: 'resume-learning', nodeId: openedNodeId });
+  }, [openedNodeId, dispatch]);
+
+  const chapterId = link.kind === 'chapter' ? link.topic.id : null;
+  useLayoutEffect(() => {
+    if (chapterId) document.getElementById(`path-${chapterId}`)?.scrollIntoView({ block: 'start' });
+  }, [chapterId, location.key]);
+
+  // Browser history/search navigation must cancel a pending animated node transition.
+  useEffect(() => () => {
+    if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+  }, [location.key]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
@@ -388,15 +340,6 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
     return () => observer.disconnect();
   }, [activeView.kind]);
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current !== null) {
-        window.clearTimeout(timerRef.current);
-      }
-    };
-  }, []);
-
-  const completedSet = useMemo(() => new Set(completedList), [completedList]);
   const desktopStageWidth = Math.min(DESKTOP_STAGE_MAX_W, Math.max(0, pathTrackWidth - 32));
 
   const firstUnfinishedTopic = useMemo(
@@ -407,9 +350,15 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
   const goToView = useCallback((nextView: ActiveView) => {
     setBurstNodeId(null);
     setShakeNodeId(null);
-    setActiveView(nextView);
+    if (nextView.kind === 'path') {
+      navigate('/learning');
+    } else {
+      const entry = findNodeById(path, nextView.nodeId);
+      if (!entry) return;
+      navigate(entry.node.kind === 'lesson' ? lessonPath(entry.node.code) : finalTestPath(Number(entry.topic.seriesNumber)));
+    }
     window.scrollTo({ top: 0 });
-  }, []);
+  }, [navigate, path]);
 
   const triggerNavBurst = useCallback(
     (effectId: string, nextView: ActiveView) => {
@@ -442,14 +391,11 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
       if (status === 'locked') {
         const prevEntry = getPreviousNodeBefore(path, node.id);
         triggerLockedShake(node.id);
-        dispatch({
-          type: 'setBanner',
-          banner: {
-            tone: 'locked',
-            message: prevEntry
-              ? `Module ${node.code} is locked. Complete ${prevEntry.node.code} (${prevEntry.topic.title}) first.`
-              : `Module ${node.code} is locked.`,
-          },
+        setBanner({
+          tone: 'locked',
+          message: prevEntry
+            ? `Module ${node.code} is locked. Complete ${prevEntry.node.code} (${prevEntry.topic.title}) first.`
+            : `Module ${node.code} is locked.`,
         });
         return;
       }
@@ -459,15 +405,30 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
   );
 
   const handleCompleteLesson = useCallback(
-    (nodeId: string) => {
-      dispatch({ type: 'completeLesson', path, nodeId });
+    (nodeId: string, provenance: LearningCompletion['provenance']) => {
+      const entry = findNodeById(path, nodeId);
+      if (!entry) return;
+      dispatch({ type: 'complete-learning', completions: [{ nodeId, provenance }] });
+      const nextSet = new Set([...completedSet, nodeId]);
+      const nextStep = getNextNodeAfter(path, nodeId);
+      setBanner({
+        tone: 'gold',
+        message: provenance === 'demo'
+          ? `Demo shortcut: module ${entry.node.code} unlocked as completed, not recorded as a passed lesson or test.`
+          : isTopicCompleted(entry.topic, nextSet)
+          ? `Chapter ${entry.topic.title} completed.${nextStep ? ` Module ${nextStep.node.code} is next.` : ''}`
+          : `Completed: ${entry.node.code}.${nextStep ? ` Module ${nextStep.node.code} is next.` : ''}`,
+      });
     },
-    [path],
+    [path, dispatch, completedSet],
   );
 
   const handleCompleteCurrentTopic = useCallback(() => {
-    dispatch({ type: 'completeTopic', path });
-  }, [path]);
+    const target = getFirstUnfinishedTopic(path.topics, completedSet);
+    if (!target) return;
+    dispatch({ type: 'complete-learning', completions: target.nodes.map((node) => ({ nodeId: node.id, provenance: 'demo' })) });
+    setBanner({ tone: 'gold', message: `Demo shortcut: ${target.title} unlocked as completed. This is not evidence of passing its lessons or test.` });
+  }, [path, completedSet, dispatch]);
 
   const handleReset = useCallback(() => {
     if (timerRef.current !== null) {
@@ -475,9 +436,10 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
     }
     setBurstNodeId(null);
     setShakeNodeId(null);
-    setActiveView({ kind: 'path' });
-    dispatch({ type: 'reset', path });
-  }, [path]);
+    navigate('/learning', { replace: true });
+    dispatch({ type: 'reset-learning' });
+    setBanner(createInitialBanner(path));
+  }, [path, dispatch, navigate]);
 
   if (activeView.kind === 'lesson') {
     const entry = findNodeById(path, activeView.nodeId);
@@ -504,13 +466,13 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
       className="relative flex h-[calc(100svh-var(--app-header-height))] min-h-0 flex-1 flex-col overflow-hidden"
     >
       <DemoToolbar
-        completedCount={completedList.length}
+        completedCount={completedSet.size}
         totalCount={path.flatNodes.length}
         firstUnfinishedTopicTitle={firstUnfinishedTopic?.title ?? null}
         banner={banner}
         onCompleteCurrentTopic={handleCompleteCurrentTopic}
         onReset={handleReset}
-        onDismissBanner={() => dispatch({ type: 'dismissBanner' })}
+        onDismissBanner={() => setBanner(null)}
       />
 
       <div className="flex min-h-0 flex-1 flex-col">
@@ -521,6 +483,26 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
           aria-label="Learning path"
           tabIndex={isDesktop ? 0 : undefined}
         >
+          {(link.kind === 'invalid' || link.kind === 'locked') && (
+            <Alert role="status" className="mx-auto my-4 max-w-3xl">
+              <AlertTitle>{link.kind === 'locked' ? 'Complete the prerequisite first' : 'Learning link unavailable'}</AlertTitle>
+              <AlertDescription className="flex flex-col items-start gap-2">
+                <p>{link.message}</p>
+                {prerequisiteEntry && (
+                  <Button variant="outline" size="sm" onClick={() => handleOpenNode(prerequisiteEntry.node)}>
+                    Open {prerequisiteEntry.node.code}: {prerequisiteEntry.node.title}
+                  </Button>
+                )}
+                <Link to="/learning" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>Show the learning path</Link>
+              </AlertDescription>
+            </Alert>
+          )}
+          {link.kind === 'path' && resumeEntry && getNodeStatus(path, resumeEntry.node.id, completedSet) !== 'locked' && (
+            <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2 px-4 py-4">
+              <Button variant="outline" size="sm" onClick={() => handleOpenNode(resumeEntry.node)}>Reopen {resumeEntry.node.code}: {resumeEntry.node.title}</Button>
+              <span className="text-xs text-muted-foreground">Lesson view restarts; completed modules stay marked for this session.</span>
+            </div>
+          )}
           {path.topics.map((topic, topicIndex) => {
             const firstNodeY =
               isDesktop && pathTrackWidth >= 680 ? FIRST_NODE_Y_SIDE : FIRST_NODE_Y_STACKED;
@@ -546,6 +528,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
             return (
               <section
                 key={topic.id}
+                id={`path-${topic.id}`}
                 aria-labelledby={`topic-heading-${topic.id}`}
                 className="relative bg-background px-4 py-0 lg:flex lg:w-full lg:flex-none lg:flex-col lg:px-4 lg:py-0"
               >

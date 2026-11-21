@@ -24,6 +24,7 @@ import { getQuiz, getSubchapter, getSubchapterControlQuiz, startQuizAttempt, sub
 import { usePublishCoachFocus } from '@/components/coach/coachFocus';
 import { ApiError } from '@/config/axios';
 import type { AnswerChoice, AnswerOption, AnswerResult, Assignments, Question, Quiz } from '@/model';
+import type { LearningCompletion } from '@/journey/types';
 import { AssignmentQuestion } from './AssignmentQuestion';
 import { NumberQuestion } from './NumberQuestion';
 import { PortfolioPrediction } from './PortfolioPrediction';
@@ -41,7 +42,7 @@ interface LessonPageProps {
   readonly isTopicCompleted: boolean;
   readonly nextNodeSummary: string | null;
   readonly getNextWrongAnswerIndex: () => number;
-  readonly onComplete: (nodeId: string) => void;
+  readonly onComplete: (nodeId: string, provenance: LearningCompletion['provenance']) => void;
   readonly onBack: () => void;
 }
 
@@ -64,7 +65,7 @@ type ContentState =
 type LessonStep =
   | { readonly kind: 'theory' }
   | { readonly kind: 'question'; readonly index: number }
-  | { readonly kind: 'result'; readonly passed: boolean };
+  | { readonly kind: 'result'; readonly passed: boolean; readonly demo: boolean };
 
 interface AnswerState {
   readonly choice: AnswerChoice;
@@ -268,7 +269,9 @@ export function LessonPage({
       ? 'Theory'
       : step.kind === 'question'
         ? `Question ${step.index + 1}/${questionCount}`
-        : step.passed
+        : step.demo
+          ? 'Demo completion'
+          : step.passed
           ? 'Passed'
           : 'Not passed';
 
@@ -285,11 +288,11 @@ export function LessonPage({
     window.scrollTo({ top: 0 });
   };
 
-  const finish = (passed: boolean) => {
+  const finish = (passed: boolean, demo = false) => {
     if (passed) {
-      onComplete(node.id);
+      onComplete(node.id, demo ? 'demo' : node.kind === 'lesson' ? 'practice' : 'final-quiz');
     }
-    goToStep({ kind: 'result', passed });
+    goToStep({ kind: 'result', passed, demo });
   };
 
   const handleRetryLoad = () => {
@@ -465,7 +468,7 @@ export function LessonPage({
                 type="button"
                 variant="ghost"
                 size="xs"
-                onClick={() => finish(true)}
+                onClick={() => finish(true, true)}
                 className="transition-transform active:scale-95"
               >
                 Complete (demo)
@@ -788,9 +791,9 @@ export function LessonPage({
                 className="px-2.5 py-0.5 text-[#07090a]"
                 style={{ backgroundColor: topic.accentHex }}
               >
-                Module {node.code} completed
+                {step.demo ? `Module ${node.code} completed by demo shortcut` : `Module ${node.code} completed`}
               </Badge>
-              {isScored && (
+              {isScored && !step.demo && (
                 <Badge variant="outline" className="mt-1.5 border border-border px-2 py-0.5 tabular-nums">
                   Score: {score}/{questionCount}
                 </Badge>
@@ -799,7 +802,9 @@ export function LessonPage({
                 {node.title}
               </CardTitle>
               <CardDescription className="mt-1 text-foreground/85">
-                {isTopicCompleted
+                {step.demo
+                  ? 'This demo shortcut unlocks the path. It is not evidence that you passed the lesson or test.'
+                  : isTopicCompleted
                   ? nextNodeSummary
                     ? `Chapter ${topic.title} completed. The path now leads to module ${nextNodeSummary}.`
                     : `Chapter ${topic.title} completed. Every module on the path is completed.`
