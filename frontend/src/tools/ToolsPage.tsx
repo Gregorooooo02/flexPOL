@@ -11,7 +11,7 @@ export function ToolsPage() {
   const [search] = useSearchParams();
   const source = readJourneySource(search) ?? { kind: 'tools' as const };
   return (
-    <JourneyPage title="Practical tools" description="A bridge from learning a concept to understanding your own situation. Explore what is planned; calculators are not available yet.">
+    <JourneyPage title="Practical tools" description="Start your goal and risk worksheet now, or explore the planned calculators. Calculators are not available yet.">
       <div className="grid gap-5 @2xl:grid-cols-2">
         {TOOL_IDS.map((id) => (
           <Card key={id}>
@@ -27,12 +27,12 @@ export function ToolsPage() {
         ))}
         <Card>
           <CardHeader>
-            <Badge variant="outline">Worksheet coming later</Badge>
+            <Badge variant="outline">Available for this session</Badge>
             <CardTitle><h2>Goal and risk profile</h2></CardTitle>
             <CardDescription>Separate time horizon, access needs, loss capacity, comfort with uncertainty, and knowledge—without assigning an investor label.</CardDescription>
           </CardHeader>
           <CardFooter className="mt-auto">
-            <Link to={withJourneySource('/roadmap/setup', source)} className={buttonVariants({ variant: 'outline' })}>Preview the worksheet</Link>
+            <Link to={withJourneySource('/roadmap/setup', source)} className={buttonVariants({ variant: 'outline' })}>Open the worksheet</Link>
           </CardFooter>
         </Card>
       </div>

@@ -1,6 +1,6 @@
 # Financial Roadmap and Practical Tools — Implementation Plan
 
-Status: M1 foundation implemented. M2–M6 remain planned; calculators, profile forms, and completion handoff CTAs are not implemented yet.
+Status: M1 foundation and M2 goal/profile roadmap implemented. M3–M6 remain planned; calculators, persistent storage, and completion handoff CTAs are not implemented yet.
 
 ## 1. Product decision
 
@@ -260,6 +260,8 @@ Detailed execution plan: [Milestone 1 implementation plan](financial-roadmap-m1-
 Acceptance: a learner can leave Learning, open a placeholder tool, and return without losing completed nodes; account changes do not expose the previous draft.
 
 ### M2 — Goal and profile roadmap
+
+Detailed execution plan: [Milestone 2 implementation plan](financial-roadmap-m2-implementation-plan.md).
 
 - Build short setup/edit flow and roadmap summary.
 - Add separate profile observations and a small set of deterministic suggestions.

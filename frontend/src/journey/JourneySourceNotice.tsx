@@ -6,6 +6,8 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { scenarioPath } from '@/scenarios/routes';
 import { connectionPath, connectionsForSource } from './connections';
 import { readJourneySource, sourceLabel, sourceReturnPath } from './routes';
+import type { JourneySource } from './types';
+import { readProfileSection } from '@/roadmap/routes';
 
 function ScenarioReturnLink({ slug }: { readonly slug: string }) {
   const [result, setResult] = useState<{ path: string; missing?: boolean } | null>(null);
@@ -44,13 +46,15 @@ function ScenarioReturnLink({ slug }: { readonly slug: string }) {
   );
 }
 
-export function JourneySourceNotice() {
+export function JourneySourceNotice({ source: sourceOverride }: { readonly source?: JourneySource | null }) {
   const [search] = useSearchParams();
   const { pathname } = useLocation();
-  const source = readJourneySource(search);
+  const source = sourceOverride === undefined ? readJourneySource(search) : sourceOverride;
   if (!source) return null;
   const connections = connectionsForSource(source);
-  const relevant = connections.find((connection) => connectionPath(connection).split('?')[0] === pathname);
+  const section = readProfileSection(search);
+  const relevant = connections.find((connection) => connectionPath(connection).split('?')[0] === pathname
+    && (connection.destination.kind !== 'profile' || connection.destination.id === section));
   return (
     <Alert role="note">
       <AlertTitle>Connected to {sourceLabel(source)}</AlertTitle>

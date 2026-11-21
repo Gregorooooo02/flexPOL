@@ -18,6 +18,24 @@ export interface GoalProfile {
   readonly lossCapacity?: 'essential-needs' | 'delay-goal' | 'flexible' | 'unknown';
   readonly willingness?: 'uncomfortable' | 'uncertain' | 'comfortable' | 'unknown';
   readonly knowledge?: 'starting' | 'some' | 'experienced' | 'unknown';
+  readonly reviewNotes?: string;
+}
+
+export type SetupStep = 'goal' | 'constraints' | 'review';
+
+/** Raw edits are separate from saved facts and never go into route state or storage. */
+export interface RoadmapSetupDraft {
+  readonly goalId: string;
+  readonly title: string;
+  readonly targetAmount: string;
+  readonly goalDate: string;
+  /** Native date fields expose incomplete calendar edits as an empty value plus badInput. */
+  readonly dateInputInvalid: boolean;
+  readonly savedAmount: string;
+  readonly monthlyContribution: string;
+  readonly profile: GoalProfile;
+  readonly source: JourneySource;
+  readonly step: SetupStep;
 }
 
 export interface RoadmapAction {
