@@ -144,7 +144,7 @@ function ScenarioBrief({ scenario }: { readonly scenario: Scenario }) {
       </header>
 
       <div className="flex flex-col gap-1 border-l-2 border-primary bg-secondary/60 px-4 py-3">
-        <p className="flex items-center gap-1.5 text-[0.625rem] font-semibold tracking-widest text-muted-foreground uppercase">
+        <p className="flex items-center gap-1.5 text-[0.6875rem] font-semibold tracking-widest text-muted-foreground uppercase">
           <HugeiconsIcon icon={Target02Icon} className="size-3.5 shrink-0" strokeWidth={2} aria-hidden="true" />
           Goal
         </p>
@@ -331,7 +331,7 @@ function PageShell({ children }: { readonly children: ReactNode }) {
 function Fact({ label, value, detail }: { readonly label: string; readonly value: string; readonly detail: string }) {
   return (
     <div className="flex min-w-0 flex-col gap-0.5 bg-card px-4 py-3">
-      <dt className="text-[0.625rem] font-semibold tracking-widest text-muted-foreground uppercase">{label}</dt>
+      <dt className="text-[0.6875rem] font-semibold tracking-widest text-muted-foreground uppercase">{label}</dt>
       <dd className="font-heading text-lg font-semibold tabular-nums [overflow-wrap:anywhere]">{value}</dd>
       <dd className="text-xs text-muted-foreground">{detail}</dd>
     </div>

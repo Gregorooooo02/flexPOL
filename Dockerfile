@@ -10,6 +10,8 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/ ./
+# The capstone's authored questions and rules are bundled directly by Vite.
+COPY knowledge/final-lesson.json /app/knowledge/
 RUN npm run build
 
 # --- 2. Backend jar with the frontend inside ---------------------------------

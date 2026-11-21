@@ -35,7 +35,7 @@ export function DemoToolbar({
   return (
     <aside
       aria-label="Course progress and controls"
-      className="pointer-events-none absolute bottom-4 left-4 z-30 flex max-w-[calc(100%-2rem)] flex-col items-start gap-2 sm:max-w-sm coach-sidebar:max-w-[min(24rem,calc(100%-10rem))]"
+      className="pointer-events-none absolute bottom-4 left-4 z-30 flex w-fit max-w-[min(26rem,calc(100%-2rem))] flex-col items-stretch gap-2 coach-sidebar:max-w-[min(26rem,calc(100%-10.5rem))]"
     >
       <div
         role="status"
@@ -79,11 +79,11 @@ export function DemoToolbar({
         )}
       </div>
 
-      <div className="pointer-events-auto flex flex-wrap items-center gap-2 border border-border bg-card/95 p-1.5 shadow-lg backdrop-blur-md">
+      <div className="pointer-events-auto flex items-center gap-1 border border-border bg-card/95 p-1 shadow-lg backdrop-blur-md sm:gap-1.5 sm:p-1.5">
         <div
           aria-label={`Course progress: ${completedCount} of ${totalCount} completed`}
           title="Course progress"
-          className="flex items-center gap-2 bg-secondary px-2.5 py-1 text-sm font-semibold tabular-nums"
+          className="flex items-center gap-1.5 bg-secondary px-2 py-1 text-sm font-semibold tabular-nums sm:gap-2 sm:px-2.5"
         >
           <span className="inline-flex size-5 items-center justify-center rounded-full bg-[#ffd22e] text-[#07090a]">
             <HugeiconsIcon icon={Coins01Icon} className="size-3.5!" strokeWidth={2.4} />
@@ -94,18 +94,18 @@ export function DemoToolbar({
           </span>
         </div>
 
-        <div className="flex min-w-0 items-center gap-1">
+        <div className="flex min-w-0 flex-1 items-center gap-1">
           <Button
             type="button"
             size="xs"
             variant="secondary"
             disabled={firstUnfinishedTopicTitle === null}
             onClick={onCompleteCurrentTopic}
-            className="max-w-44 truncate transition-transform active:scale-95"
+            className="min-w-0 flex-1 px-2 text-[0.8125rem] tracking-normal transition-transform active:scale-95 sm:flex-none sm:px-3 sm:text-xs sm:tracking-widest"
           >
             <HugeiconsIcon icon={FastForwardIcon} strokeWidth={2} />
             <span className="truncate">
-              {firstUnfinishedTopicTitle !== null ? `Complete ${firstUnfinishedTopicTitle}` : 'All done'}
+              {firstUnfinishedTopicTitle !== null ? 'Complete' : 'All done'}
             </span>
           </Button>
           <Button

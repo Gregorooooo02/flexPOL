@@ -1,0 +1,166 @@
+{
+  "title": "Ready for the real world?",
+  "objective": "Six quick questions. One starting point. A simple way forward.",
+  "intro": "Think about one goal and use what you learned about time, access and risk. You can use your own situation or a fictional example.",
+  "disclaimer": "An educational starting point, not personal financial advice or a product recommendation. Investments can lose value; you do not have to open an account or buy anything.",
+  "longTermReason": "You have a long, flexible horizon, spare money and room to handle market swings.",
+  "questions": [
+    {
+      "id": "age", "label": "What is your age group?", "lesson": "3.1", "help": "Age adds context, not an automatic risk level.",
+      "options": [
+        { "value": "minor", "label": "Under 18" },
+        { "value": "young", "label": "18–30" },
+        { "value": "middle", "label": "31–49" },
+        { "value": "older", "label": "50+" }
+      ]
+    },
+    {
+      "id": "goal", "label": "What are you saving for?", "lesson": "1.2", "help": "Choose just one goal for this plan.",
+      "options": [
+        { "value": "emergency", "label": "An emergency fund" },
+        { "value": "purchase", "label": "A purchase or home deposit" },
+        { "value": "retirement", "label": "Retirement" },
+        { "value": "wealth", "label": "Long-term wealth or education" },
+        { "value": "unknown", "label": "Not sure yet" }
+      ]
+    },
+    {
+      "id": "horizon", "label": "When will you first need the money?", "lesson": "1.3", "help": "Use the earliest likely withdrawal date.",
+      "options": [
+        { "value": "short", "label": "Within 3 years" },
+        { "value": "medium", "label": "More than 3, up to 7 years" },
+        { "value": "long", "label": "More than 7 years" },
+        { "value": "unknown", "label": "Not sure yet" }
+      ]
+    },
+    {
+      "id": "readiness", "label": "Are your financial basics covered?", "lesson": "3.2", "help": "An emergency buffer is separate, accessible money for essential expenses.",
+      "options": [
+        { "value": "ready", "label": "Yes: 3+ months saved, no expensive debt, money is spare" },
+        { "value": "buffer", "label": "I still need an emergency buffer" },
+        { "value": "commitments", "label": "I have expensive debt or need this money for bills" },
+        { "value": "unknown", "label": "Not sure yet" }
+      ]
+    },
+    {
+      "id": "access", "label": "Could you wait if markets fell?", "lesson": "1.4", "help": "Think about what you can afford, not just how a loss feels.",
+      "options": [
+        { "value": "flexible", "label": "Yes, I could wait several extra years" },
+        { "value": "fixed", "label": "No, my goal has a firm date" },
+        { "value": "early", "label": "I may need the money early" },
+        { "value": "essential", "label": "A loss would put my goal or essentials at risk" },
+        { "value": "unknown", "label": "Not sure yet" }
+      ]
+    },
+    {
+      "id": "tolerance", "label": "How would a 20% fall feel?", "lesson": "1.4", "help": "Imagine 1,000 becoming 800. Losses can be larger and recovery is not guaranteed.",
+      "options": [
+        { "value": "low", "label": "Too stressful — I would want to sell" },
+        { "value": "moderate", "label": "Uncomfortable — I prefer smaller swings" },
+        { "value": "high", "label": "I could stick with a long-term plan" },
+        { "value": "unknown", "label": "Not sure yet" }
+      ]
+    }
+  ],
+  "rules": [
+    { "profile": "guardian", "when": [
+      { "field": "age", "values": ["minor"], "reason": "Check account eligibility with a parent or guardian before any real-money step." }
+    ] },
+    { "profile": "foundations", "when": [
+      { "field": "readiness", "values": ["buffer"], "reason": "A separate emergency buffer helps you avoid selling investments to cover surprises." },
+      { "field": "readiness", "values": ["commitments"], "reason": "Essential bills and expensive debt come before exposing spare money to market risk." }
+    ] },
+    { "profile": "clarify", "when": [
+      { "field": "goal", "values": ["unknown"], "reason": "Define the goal before choosing an investment." },
+      { "field": "horizon", "values": ["unknown"], "reason": "Your first withdrawal date helps determine how much risk the money can withstand." },
+      { "field": "readiness", "values": ["unknown"], "reason": "Check your buffer, debt and essential spending before deciding what is spare." },
+      { "field": "access", "values": ["unknown"], "reason": "Work out whether an early withdrawal or a loss would disrupt the goal." },
+      { "field": "tolerance", "values": ["unknown"], "reason": "More practice can help you explore a level of fluctuation you could live with." }
+    ] },
+    { "profile": "accessible", "when": [
+      { "field": "goal", "values": ["emergency"], "reason": "Emergency money needs ready access, not stock-market risk." },
+      { "field": "horizon", "values": ["short"], "reason": "You may need the money within three years, leaving little time to withstand a market fall." },
+      { "field": "access", "values": ["early", "essential"], "reason": "Access and protecting the required amount matter more than chasing growth for this goal." },
+      { "field": "tolerance", "values": ["low"], "reason": "Smaller fluctuations are more consistent with the comfort level you described." }
+    ] },
+    { "profile": "cautious", "when": [
+      { "field": "horizon", "values": ["medium"], "reason": "A three-to-seven-year goal calls for caution: markets may not recover before you need the money." },
+      { "field": "access", "values": ["fixed"], "reason": "A firm date makes protecting the amount you need especially important." },
+      { "field": "tolerance", "values": ["moderate"], "reason": "You prefer smaller swings rather than a stock-heavy approach." }
+    ] }
+  ],
+  "profiles": {
+    "guardian": {
+      "title": "Start with a parent or guardian",
+      "summary": "Explore eligible youth savings together and keep practising with virtual money.",
+      "tradeoff": "Age limits, ownership and withdrawal rules vary by country.",
+      "steps": [
+        { "title": "Share your goal", "body": "Talk to a parent or guardian." },
+        { "title": "Compare youth accounts", "body": "Use regulated banks' official websites." },
+        { "title": "Check the rules", "body": "Ask a bank about eligibility and consent." },
+        { "title": "Decide together", "body": "Keep learning; no purchase is required." }
+      ]
+    },
+    "foundations": {
+      "title": "Build a buffer before investing",
+      "summary": "An easy-access savings account is a useful starting point while you build emergency savings and address expensive debt.",
+      "tradeoff": "Savings may trail inflation, but having accessible money can prevent forced selling.",
+      "steps": [
+        { "title": "Check bills and debt", "body": "Cover essentials; review expensive debt." },
+        { "title": "Compare savings accounts", "body": "Look at regulated banks' official sites." },
+        { "title": "Check access and fees", "body": "Verify withdrawal terms and deposit protection." },
+        { "title": "Build your buffer", "body": "Save affordably, then revisit investing." }
+      ]
+    },
+    "clarify": {
+      "title": "Make the goal clearer first",
+      "summary": "A short planning conversation is a better next step than choosing stocks or a fund while key answers are uncertain.",
+      "tradeoff": "Waiting is an option. You do not need to guess or buy something to complete the lesson.",
+      "steps": [
+        { "title": "Name the goal", "body": "Write down the amount and first withdrawal date." },
+        { "title": "Check your budget", "body": "Identify your buffer, debt and spare money." },
+        { "title": "Ask for help", "body": "Contact a qualified, regulated adviser if needed." },
+        { "title": "Try again", "body": "Update these six answers when ready." }
+      ]
+    },
+    "accessible": {
+      "title": "Start by comparing savings accounts",
+      "summary": "For this goal, easy-access savings fit better than stocks or stock ETFs. Consider a term deposit only for money you will not need before maturity.",
+      "tradeoff": "Returns may not beat inflation. Fixed-term deposits can restrict access or charge an early-exit penalty.",
+      "steps": [
+        { "title": "Compare 2–3 banks", "body": "Use their official savings pages." },
+        { "title": "Check the small print", "body": "Verify regulation, fees, access and deposit protection." },
+        { "title": "Open if it fits", "body": "Use the verified bank app, website or branch." },
+        { "title": "Build a saving habit", "body": "Set an affordable transfer and review the rate." }
+      ]
+    },
+    "cautious": {
+      "title": "Compare deposits and high-quality bonds",
+      "summary": "Start with savings or deposits that match your deadline. Learn about high-quality bonds before considering market-risk money for this goal.",
+      "tradeoff": "Bonds can lose value or default; bond funds do not promise your original money back on a set date.",
+      "steps": [
+        { "title": "Set the goal date", "body": "Keep money needed soon accessible." },
+        { "title": "Compare options", "body": "Read official bank and bond information." },
+        { "title": "Speak to an adviser", "body": "Ask about fees, losses, access and commissions." },
+        { "title": "Choose when ready", "body": "Verify the provider and terms before opening an account." }
+      ]
+    },
+    "diversified": {
+      "title": "Explore a broad-market index fund or ETF",
+      "summary": "A low-cost, diversified, unleveraged fund is a reasonable category to study for this long-term goal, with emergency savings kept separate.",
+      "tradeoff": "Large losses are possible, even over long periods. A narrow or leveraged ETF is not the same as a broad-market fund.",
+      "steps": [
+        { "title": "Compare providers", "body": "Research regulated banks, brokers or fund platforms." },
+        { "title": "Check risks and fees", "body": "Verify the licence, holdings, all costs and local tax rules." },
+        { "title": "Open an account", "body": "If you choose, use a verified channel for identity checks." },
+        { "title": "Start small, review yearly", "body": "Only invest spare money once you understand the product." }
+      ]
+    }
+  },
+  "contextNotes": [
+    { "field": "goal", "values": ["retirement"], "text": "For retirement, also compare employer and personal pension accounts: check fees, tax rules and withdrawal lock-ups." },
+    { "field": "age", "values": ["older"], "text": "As withdrawals approach, review how a market fall would affect them. Age alone does not determine your investment mix." }
+  ],
+  "providerCheck": "Before opening an account, check the provider's legal entity, permissions and warning lists with your local regulator. A licence is not an endorsement or protection against market losses. Ask an adviser how they are paid.",
+  "resource": { "label": "Find your local securities regulator (IOSCO)", "url": "https://www.iosco.org/about/?subsection=membership" }
+}

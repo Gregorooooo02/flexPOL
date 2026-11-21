@@ -31,7 +31,7 @@ export function SandboxHeader({
       <div className="flex min-w-0 flex-col gap-2">
         <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <div className="flex min-w-0 flex-col">
-            <p className="text-[0.625rem] font-semibold tracking-widest text-muted-foreground uppercase">
+            <p className="text-[0.6875rem] font-semibold tracking-widest text-muted-foreground uppercase">
               Scenario {scenario.code} · {scenario.persona.name}
             </p>
             <h1

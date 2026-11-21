@@ -2,7 +2,6 @@ import { RefreshIcon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getScenarios } from '@/api';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty';
@@ -67,17 +66,7 @@ export function ScenariosPage() {
   return (
     <div className="@container flex flex-1 flex-col">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-6">
-        <header className="flex flex-col gap-2">
-          <h1 className="font-heading text-2xl font-semibold tracking-tight">Scenarios</h1>
-          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            Help someone reach a real-life money goal. Each scenario gives you their budget, horizon and the
-            instruments they can use. Split the money between cash and those instruments, then see how the plan
-            holds up in a simulated market.
-          </p>
-          <Badge variant="secondary" className="max-w-full whitespace-normal">
-            Fictional people · synthetic prices · virtual money
-          </Badge>
-        </header>
+        <h1 className="sr-only">Scenarios</h1>
 
         {loadState.status === 'loading' && <LoadingTiles />}
 
