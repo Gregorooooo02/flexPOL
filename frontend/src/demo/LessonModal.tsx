@@ -24,6 +24,7 @@ import { getQuiz, getSubchapter, getSubchapterControlQuiz, startQuizAttempt, sub
 import { usePublishCoachFocus } from '@/components/coach/coachFocus';
 import { ApiError } from '@/config/axios';
 import type { AnswerOption, AnswerResult, Question, Quiz } from '@/model';
+import { withAlpha } from './learningPath';
 import type { LearningNode, TopicDefinition } from './learningPath';
 import { LessonMarkdown } from './LessonMarkdown';
 import { HedgieCelebration } from './hedgie/HedgieCelebration';
@@ -438,8 +439,8 @@ export function LessonPage({
                 step.kind === 'result' && step.passed
                   ? { backgroundColor: topic.accentHex, color: '#07090a' }
                   : {
-                      backgroundColor: '#21292b',
-                      color: topic.accentHex,
+                      backgroundColor: 'var(--secondary)',
+                      color: topic.accentTextHex,
                       borderColor: topic.pipeSecondary,
                     }
               }
@@ -557,8 +558,8 @@ export function LessonPage({
                       <Badge
                         className="px-2 py-0.5"
                         style={{
-                          backgroundColor: '#21292b',
-                          color: topic.accentHex,
+                          backgroundColor: 'var(--secondary)',
+                          color: topic.accentTextHex,
                         }}
                       >
                         {String(index + 1).padStart(2, '0')}
@@ -571,7 +572,7 @@ export function LessonPage({
                 )}
                 {section.markdown && (
                   <CardContent className="px-4">
-                    <LessonMarkdown markdown={section.markdown} accentHex={topic.accentHex} />
+                    <LessonMarkdown markdown={section.markdown} accentHex={topic.accentTextHex} />
                   </CardContent>
                 )}
               </Card>
@@ -588,7 +589,7 @@ export function LessonPage({
               <CardHeader className="px-4">
                 <Badge
                   className="px-2 py-0.5"
-                  style={{ backgroundColor: '#21292b', color: topic.accentHex }}
+                  style={{ backgroundColor: 'var(--secondary)', color: topic.accentTextHex }}
                 >
                   Question {step.kind === 'question' ? step.index + 1 : 0} of {questionCount}
                 </Badge>
@@ -627,7 +628,7 @@ export function LessonPage({
                       look === 'correct'
                         ? {
                             borderColor: topic.accentHex,
-                            boxShadow: `0 0 18px -4px ${topic.accentHex}66`,
+                            boxShadow: `0 0 18px -4px ${withAlpha(topic.accentHex, 40)}`,
                           }
                         : look === 'checking'
                           ? { borderColor: topic.pipeSecondary }
@@ -684,7 +685,7 @@ export function LessonPage({
                   currentResult.correct
                     ? {
                         borderColor: topic.accentHex,
-                        backgroundColor: `${topic.pipeColor}18`,
+                        backgroundColor: withAlpha(topic.pipeColor, 9),
                       }
                     : undefined
                 }
@@ -694,7 +695,7 @@ export function LessonPage({
                   <HugeiconsIcon
                     icon={currentResult.correct ? CheckmarkCircle02Icon : CancelCircleIcon}
                     className="mt-0.5 size-4 shrink-0"
-                    style={{ color: currentResult.correct ? topic.accentHex : '#fe9900' }}
+                    style={{ color: currentResult.correct ? topic.accentTextHex : 'var(--topic-2-accent-text)' }}
                     strokeWidth={2}
                   />
                   <div className="flex flex-col gap-1 text-foreground">
@@ -721,8 +722,8 @@ export function LessonPage({
             className="border py-8 animate-in fade-in-0 zoom-in-95 duration-200"
             style={{
               borderColor: topic.accentHex,
-              backgroundColor: `${topic.pipeColor}14`,
-              boxShadow: `0 0 32px -10px ${topic.pipeColor}55`,
+              backgroundColor: withAlpha(topic.pipeColor, 8),
+              boxShadow: `0 0 32px -10px ${withAlpha(topic.pipeColor, 33)}`,
             }}
           >
             <CardHeader className="items-center px-5 text-center">
@@ -791,7 +792,7 @@ export function LessonPage({
         <HedgieWrongAnswer key={wrongAnswerIndex} reactionIndex={wrongAnswerIndex} loadScene={loadHedgie} />
       )}
 
-      <footer className="sticky bottom-0 z-20 border-t border-border bg-card/90 backdrop-blur-sm">
+      <footer data-coach-footer className="sticky bottom-0 z-20 border-t border-border bg-card/90 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-md flex-col gap-2 px-4 py-3 lg:max-w-3xl">
           {step.kind === 'theory' && content && (
             <Button

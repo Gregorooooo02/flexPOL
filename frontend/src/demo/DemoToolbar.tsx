@@ -20,40 +20,43 @@ export function DemoToolbar({
 }: DemoToolbarProps) {
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-card/95 backdrop-blur-sm">
-      <div className="mx-auto flex w-full max-w-md flex-col gap-2 px-4 py-3 lg:max-w-7xl lg:flex-row lg:items-center lg:gap-8">
-        <div className="flex items-center justify-between gap-2 lg:flex-1">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-3 px-4 py-3 lg:max-w-7xl lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+        <div className="flex items-center gap-3">
           <h1 className="font-heading text-base font-semibold tracking-tight text-foreground">
             Course progress
           </h1>
 
           <Badge
             variant="outline"
-            className="gap-1.5 border border-border bg-secondary px-2 py-0.5 tabular-nums"
+            aria-label={`${completedCount} of ${totalCount} completed`}
+            className="gap-2 border border-border bg-secondary px-3 py-1 text-lg tracking-normal tabular-nums"
           >
             <span>
               {completedCount}/{totalCount}
             </span>
-            <span className="inline-flex size-4 items-center justify-center rounded-full bg-[#ffd22e] text-[#07090a]">
-              <HugeiconsIcon icon={Coins01Icon} className="size-3!" strokeWidth={2.4} />
+            <span className="inline-flex size-6 items-center justify-center rounded-full bg-[#ffd22e] text-[#07090a]">
+              <HugeiconsIcon icon={Coins01Icon} className="size-4!" strokeWidth={2.4} />
             </span>
           </Badge>
         </div>
 
-        <div className="flex items-center justify-between gap-2 lg:w-96">
+        <div className="flex items-center gap-2">
           <Button
             type="button"
-            size="xs"
+            size="sm"
             variant="secondary"
             disabled={firstUnfinishedTopicTitle === null}
             onClick={onCompleteCurrentTopic}
-            className="flex-1 transition-transform active:scale-95 lg:flex-none"
+            className="min-w-0 flex-1 transition-transform active:scale-95 lg:flex-none"
           >
             <HugeiconsIcon icon={FastForwardIcon} strokeWidth={2} />
-            {firstUnfinishedTopicTitle !== null ? `Complete ${firstUnfinishedTopicTitle}` : 'All done'}
+            <span className="truncate">
+              {firstUnfinishedTopicTitle !== null ? `Complete ${firstUnfinishedTopicTitle}` : 'All done'}
+            </span>
           </Button>
           <Button
             type="button"
-            size="xs"
+            size="sm"
             variant="outline"
             onClick={onReset}
             className="transition-transform active:scale-95"

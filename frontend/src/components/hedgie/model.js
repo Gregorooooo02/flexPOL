@@ -339,3 +339,43 @@ export function createMedal(scene) {
   curve(medal, amber, [[-.091,.004,.043],[-.036,-.051,.043],[.093,.075,.043]], .023);
   return medal;
 }
+
+const sharedGeometries = new Set([sphere, quill, faceGeometry]);
+const sharedMaterials = new Set([fur, darkFur, biscuit, vanilla, coral, ink, brow, mouth, tongue, gold, amber, glint]);
+
+// Each renderer owns its assets, so disposing a lesson scene cannot unload the coach's model.
+export function isolateHedgieResources(scene) {
+  const copies = new Map();
+  function copy(resource, sharedResources) {
+    if (!sharedResources.has(resource)) return resource;
+    if (!copies.has(resource)) copies.set(resource, resource.clone());
+    return copies.get(resource);
+  }
+  scene.traverse((object) => {
+    if (!object.isMesh) return;
+    object.geometry = copy(object.geometry, sharedGeometries);
+    object.material = Array.isArray(object.material)
+      ? object.material.map((material) => copy(material, sharedMaterials))
+      : copy(object.material, sharedMaterials);
+  });
+}
+
+export function disposeHedgieScene(scene, renderer) {
+  const geometries = new Set();
+  const materials = new Set();
+  scene.traverse((object) => {
+    if (object.isMesh) {
+      geometries.add(object.geometry);
+      for (const material of [object.material].flat()) materials.add(material);
+    }
+    if (object.isInstancedMesh) object.dispose();
+    object.shadow?.dispose();
+  });
+  for (const geometry of geometries) geometry.dispose();
+  for (const material of materials) {
+    material.map?.dispose();
+    material.dispose();
+  }
+  renderer.dispose();
+  renderer.forceContextLoss();
+}

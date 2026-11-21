@@ -28,7 +28,10 @@ interface TopicTheme {
   readonly ambientGlow: string;
   readonly pipeColor: string;
   readonly pipeSecondary: string;
+  /** Fill colour; text on it uses #07090a. */
   readonly accentHex: string;
+  /** Accent for text drawn straight on the band or a card (darker in the light theme). */
+  readonly accentTextHex: string;
   readonly spikyFillHex: string;
 }
 
@@ -54,33 +57,24 @@ export interface LearningPath {
   readonly flatNodes: readonly FlatNodeEntry[];
 }
 
-/** Colour bands, used in chapter order. */
-const TOPIC_THEMES: readonly TopicTheme[] = [
-  {
-    bandClassName: 'bg-[#07090a]',
-    ambientGlow: 'radial-gradient(ellipse at 50% 0%, rgba(255, 210, 46, 0.14), transparent 100%)',
-    pipeColor: '#ffd22e',
-    pipeSecondary: '#efb100',
-    accentHex: '#ffd22e',
-    spikyFillHex: '#efb100',
-  },
-  {
-    bandClassName: 'bg-[#14100c]',
-    ambientGlow: 'radial-gradient(ellipse at 50% 0%, rgba(254, 153, 0, 0.16), transparent 100%)',
-    pipeColor: '#fe9900',
-    pipeSecondary: '#e17101',
-    accentHex: '#fe9900',
-    spikyFillHex: '#e17101',
-  },
-  {
-    bandClassName: 'bg-[#131b1d]',
-    ambientGlow: 'radial-gradient(ellipse at 50% 0%, rgba(186, 77, 0, 0.22), transparent 100%)',
-    pipeColor: '#ba4d00',
-    pipeSecondary: '#973b00',
-    accentHex: '#ff8a3d',
-    spikyFillHex: '#ba4d00',
-  },
-];
+/** Colour bands, used in chapter order. Values are CSS variables from index.css, so they follow the light/dark theme. */
+// Band classes are written out in full so Tailwind can find them.
+const BAND_CLASSES = ['bg-[var(--topic-1-band)]', 'bg-[var(--topic-2-band)]', 'bg-[var(--topic-3-band)]'];
+
+const TOPIC_THEMES: readonly TopicTheme[] = [1, 2, 3].map((n) => ({
+  bandClassName: BAND_CLASSES[n - 1],
+  ambientGlow: `radial-gradient(ellipse at 50% 0%, var(--topic-${n}-glow), transparent 100%)`,
+  pipeColor: `var(--topic-${n}-pipe)`,
+  pipeSecondary: `var(--topic-${n}-pipe-2)`,
+  accentHex: `var(--topic-${n}-accent)`,
+  accentTextHex: `var(--topic-${n}-accent-text)`,
+  spikyFillHex: `var(--topic-${n}-spiky)`,
+}));
+
+/** A theme colour (possibly a CSS variable) at the given opacity. */
+export function withAlpha(color: string, percent: number): string {
+  return `color-mix(in srgb, ${color} ${percent}%, transparent)`;
+}
 
 function toTopic(chapter: Chapter, index: number): TopicDefinition {
   const theme = TOPIC_THEMES[index % TOPIC_THEMES.length];

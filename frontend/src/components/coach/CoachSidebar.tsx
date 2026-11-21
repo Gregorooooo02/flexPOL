@@ -1,9 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { usePanelRef } from 'react-resizable-panels';
 import { useLocation } from 'react-router';
 import { cn } from 'cn';
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -15,12 +14,17 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
 import { CoachPanel } from './CoachPanel';
+import { CoachLauncher } from './CoachLauncher';
 import { useCoachFocus } from './coachFocus';
 import type { CoachFocus } from './coachFocus';
-import { hedgieImage } from './hedgie';
 import { useCoachChat } from './useCoachChat';
+import {hedgieImage} from "@/components/coach/hedgie.ts";
+import { Button } from '../ui/button';
 
 const DESKTOP_MEDIA_QUERY = '(min-width: 64rem)';
+/** Width of the Hedgie sidebar the first time it opens; capped by the panel's maxSize (45%). */
+const SIDEBAR_DEFAULT_WIDTH = '32rem';
+const COACH_SIDEBAR_ID = 'coach-sidebar';
 
 const QUESTION_SUGGESTIONS = [
   'Help me with this question',
@@ -42,9 +46,12 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
   const focus = useCoachFocus();
   const focusScopeId = focus?.scopeId ?? 'general';
   const sidebarRef = usePanelRef();
+  const launcherRef = useRef<HTMLButtonElement>(null);
   const mainRef = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
   const transitionTimeout = useRef<number | undefined>(undefined);
+  const hasOpenedSidebar = useRef(false);
+  const [desktop, setDesktop] = useState(() => window.matchMedia(DESKTOP_MEDIA_QUERY).matches);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mobileChat, setMobileChat] = useState({ focusScopeId, open: false });
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -68,12 +75,20 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
 
   function openSidebar() {
     setSidebarOpen(true);
-    animatePanelChange(() => sidebarRef.current?.expand());
+    animatePanelChange(() => {
+      // The first open uses the default width; later opens restore the width the learner left it at.
+      if (hasOpenedSidebar.current) {
+        sidebarRef.current?.expand();
+      } else {
+        hasOpenedSidebar.current = true;
+        sidebarRef.current?.resize(SIDEBAR_DEFAULT_WIDTH);
+      }
+    });
   }
 
   function closeSidebar() {
-    setSidebarOpen(false);
     animatePanelChange(() => sidebarRef.current?.collapse());
+    window.requestAnimationFrame(() => launcherRef.current?.focus({ preventScroll: true }));
   }
 
   // A new route starts at the top. The content panel around <main> is what scrolls, and it
@@ -85,10 +100,10 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
   useEffect(() => {
     const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
     const handleMediaChange = () => {
+      setDesktop(mediaQuery.matches);
       setMobileChat((current) => ({ ...current, open: false }));
       if (!mediaQuery.matches) {
         sidebarRef.current?.collapse();
-        setSidebarOpen(false);
       }
     };
 
@@ -110,6 +125,7 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
     <div className="group/coach relative flex min-h-0 flex-1 flex-col">
       <ResizablePanelGroup
         orientation="horizontal"
+        onLayoutChange={(layout) => setSidebarOpen(layout[COACH_SIDEBAR_ID] > 0)}
         className={cn('min-h-0 flex-1', isTransitioning && 'fx-coach-sidebar-transition')}
       >
         <ResizablePanel defaultSize="100%" minSize="40%" className="min-w-0">
@@ -127,14 +143,13 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
           )}
         />
         <ResizablePanel
-          id="coach-sidebar"
+          id={COACH_SIDEBAR_ID}
           defaultSize="0%"
           minSize="20rem"
           maxSize="45%"
           collapsedSize="0%"
           collapsible
           panelRef={sidebarRef}
-          onResize={(size) => setSidebarOpen(size.asPercentage > 0)}
           className="min-w-0"
         >
           <CoachChatSession
@@ -142,12 +157,22 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
             focus={focus}
             sidebarOpen={sidebarOpen}
             mobileChatOpen={mobileChatOpen}
+            launcherRef={launcherRef}
             onMobileChatOpenChange={(open) => setMobileChat({ focusScopeId, open })}
             onCloseSidebar={closeSidebar}
           />
         </ResizablePanel>
       </ResizablePanelGroup>
 
+      <CoachLauncher
+        buttonRef={launcherRef}
+        desktop={desktop}
+        chatOpen={desktop ? sidebarOpen : mobileChatOpen}
+        onOpen={() => {
+          if (desktop) openSidebar();
+          else setMobileChat({ focusScopeId, open: true });
+        }}
+      />
       <Button
         type="button"
         className="fixed right-4 bottom-4 z-40 shadow-md group-has-[[data-workspace-action-bar]]/coach:bottom-32 lg:hidden"
@@ -177,6 +202,7 @@ interface CoachChatSessionProps {
   readonly focus: CoachFocus | null;
   readonly sidebarOpen: boolean;
   readonly mobileChatOpen: boolean;
+  readonly launcherRef: RefObject<HTMLButtonElement | null>;
   readonly onMobileChatOpenChange: (open: boolean) => void;
   readonly onCloseSidebar: () => void;
 }
@@ -185,6 +211,7 @@ function CoachChatSession({
   focus,
   sidebarOpen,
   mobileChatOpen,
+  launcherRef,
   onMobileChatOpenChange,
   onCloseSidebar,
 }: CoachChatSessionProps) {
@@ -208,14 +235,20 @@ function CoachChatSession({
         aria-hidden={!sidebarOpen}
         inert={!sidebarOpen}
         className={cn(
-          'h-full min-h-0 p-3 transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none',
+          'h-full min-h-0 bg-card p-3 transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none',
           sidebarOpen ? 'translate-x-0 opacity-100' : 'translate-x-3 opacity-0',
         )}
       >
-        <CoachPanel {...panelProps} onClose={onCloseSidebar} className="h-full min-h-0" />
+        <CoachPanel {...panelProps} onClose={onCloseSidebar}
+          className="h-full min-h-0 shadow-none ring-0"
+        />
       </aside>
       <Dialog open={mobileChatOpen} onOpenChange={onMobileChatOpenChange}>
-        <DialogContent className="h-[min(40rem,85svh)] p-0 lg:hidden" showCloseButton={false}>
+        <DialogContent
+          className="h-[min(40rem,85svh)] p-0 lg:hidden"
+          finalFocus={launcherRef}
+          showCloseButton={false}
+        >
           <DialogTitle className="sr-only">AI coach</DialogTitle>
           <CoachPanel
             {...panelProps}

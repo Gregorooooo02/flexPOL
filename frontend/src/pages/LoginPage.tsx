@@ -29,6 +29,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { ApiError } from '@/config/axios';
+import { ThemeToggle } from '@/theme/ThemeToggle';
 
 /** Shown for show only: real sign-in is out of scope for the hackathon. */
 const OAUTH_PROVIDERS: ReadonlyArray<{ readonly name: string; readonly icon: IconSvgElement }> = [
@@ -91,7 +92,8 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-background px-4 py-10 text-foreground">
+    <div className="relative flex min-h-svh items-center justify-center bg-background px-4 py-10 text-foreground">
+      <ThemeToggle className="absolute top-4 right-4" />
       <Card className="w-full max-w-sm">
         <CardHeader className="justify-items-center text-center">
           <img src={hedgieImage('greeting')} alt="" className="mb-2 size-20" />

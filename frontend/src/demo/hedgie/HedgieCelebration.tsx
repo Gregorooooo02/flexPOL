@@ -59,7 +59,7 @@ export function HedgieCelebration({ loadScene }: HedgieCelebrationProps) {
           />
         </span>
       </button>
-      <div className="mb-3 text-xs text-foreground/70 peer-enabled:peer-hover:text-[#ffcf45]">
+      <div className="mb-3 text-xs text-foreground/70 peer-enabled:peer-hover:text-[#9a6a00] dark:peer-enabled:peer-hover:text-[#ffcf45]">
         {status === 'ready' ? (
           'Tap or click to celebrate'
         ) : (

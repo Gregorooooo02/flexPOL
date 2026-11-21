@@ -7,6 +7,67 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  color-scheme: light;
+  --background: #f7f8f8;
+  --foreground: #0d1112;
+  --card: #ffffff;
+  --card-foreground: #0d1112;
+  --popover: #ffffff;
+  --popover-foreground: #0d1112;
+  --primary: #efb100;
+  --primary-foreground: #07090a;
+  --secondary: #eceff0;
+  --secondary-foreground: #0d1112;
+  --muted: #eceff0;
+  --muted-foreground: #5b6466;
+  --accent: #fdf1c7;
+  --accent-foreground: #7a4f00;
+  --destructive: #ba4d00;
+  --gain: #15803d;
+  --loss: #dc2626;
+  --border: #dde1e2;
+  --input: #d3d8d9;
+  --ring: #d99a00;
+  --chart-1: #e0a800;
+  --chart-2: #fe9900;
+  --chart-3: #efb100;
+  --chart-4: #e17101;
+  --chart-5: #973b00;
+  --radius: 0;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0d1112;
+  --sidebar-primary: #efb100;
+  --sidebar-primary-foreground: #07090a;
+  --sidebar-accent: #eceff0;
+  --sidebar-accent-foreground: #7a4f00;
+  --sidebar-border: #dde1e2;
+  --sidebar-ring: #d99a00;
+
+  /* Learning path chapter colours (src/demo/learningPath.ts). `accent` is a fill behind dark text, `accent-text` is text on the band. */
+  --topic-1-band: #fffdf5;
+  --topic-1-glow: rgba(239, 177, 0, 0.18);
+  --topic-1-pipe: #efb100;
+  --topic-1-pipe-2: #d99a00;
+  --topic-1-accent: #ffc61a;
+  --topic-1-accent-text: #7a4f00;
+  --topic-1-spiky: #efb100;
+  --topic-2-band: #fff8f0;
+  --topic-2-glow: rgba(254, 153, 0, 0.18);
+  --topic-2-pipe: #fe9900;
+  --topic-2-pipe-2: #e17101;
+  --topic-2-accent: #fe9900;
+  --topic-2-accent-text: #9a4600;
+  --topic-2-spiky: #e17101;
+  --topic-3-band: #f6f8f8;
+  --topic-3-glow: rgba(186, 77, 0, 0.16);
+  --topic-3-pipe: #ba4d00;
+  --topic-3-pipe-2: #973b00;
+  --topic-3-accent: #ff8a3d;
+  --topic-3-accent-text: #973b00;
+  --topic-3-spiky: #ba4d00;
+}
+
+.dark {
   color-scheme: dark;
   --background: #07090a;
   --foreground: #fafbfb;
@@ -33,7 +94,6 @@
   --chart-3: #efb100;
   --chart-4: #e17101;
   --chart-5: #973b00;
-  --radius: 0;
   --sidebar: #151a1c;
   --sidebar-foreground: #fafbfb;
   --sidebar-primary: #efb100;
@@ -42,47 +102,40 @@
   --sidebar-accent-foreground: #ffd22e;
   --sidebar-border: #2d3234;
   --sidebar-ring: #ffd22e;
-}
 
-.dark {
-  --background: #07090a;
-  --foreground: #fafbfb;
-  --card: #151a1c;
-  --card-foreground: #fafbfb;
-  --popover: #151a1c;
-  --popover-foreground: #fafbfb;
-  --primary: #efb100;
-  --primary-foreground: #07090a;
-  --secondary: #21292b;
-  --secondary-foreground: #fafbfb;
-  --muted: #26262a;
-  --muted-foreground: #a3acad;
-  --accent: #2d3234;
-  --accent-foreground: #ffd22e;
-  --destructive: #ba4d00;
-  --gain: #4ade80;
-  --loss: #ff6b6b;
-  --border: #2d3234;
-  --input: #2d3234;
-  --ring: #ffd22e;
-  --chart-1: #ffd22e;
-  --chart-2: #fe9900;
-  --chart-3: #efb100;
-  --chart-4: #e17101;
-  --chart-5: #973b00;
-  --sidebar: #151a1c;
-  --sidebar-foreground: #fafbfb;
-  --sidebar-primary: #efb100;
-  --sidebar-primary-foreground: #07090a;
-  --sidebar-accent: #21292b;
-  --sidebar-accent-foreground: #ffd22e;
-  --sidebar-border: #2d3234;
-  --sidebar-ring: #ffd22e;
+  --topic-1-band: #07090a;
+  --topic-1-glow: rgba(255, 210, 46, 0.14);
+  --topic-1-pipe: #ffd22e;
+  --topic-1-pipe-2: #efb100;
+  --topic-1-accent: #ffd22e;
+  --topic-1-accent-text: #ffd22e;
+  --topic-1-spiky: #efb100;
+  --topic-2-band: #14100c;
+  --topic-2-glow: rgba(254, 153, 0, 0.16);
+  --topic-2-pipe: #fe9900;
+  --topic-2-pipe-2: #e17101;
+  --topic-2-accent: #fe9900;
+  --topic-2-accent-text: #fe9900;
+  --topic-2-spiky: #e17101;
+  --topic-3-band: #131b1d;
+  --topic-3-glow: rgba(186, 77, 0, 0.22);
+  --topic-3-pipe: #ba4d00;
+  --topic-3-pipe-2: #973b00;
+  --topic-3-accent: #ff8a3d;
+  --topic-3-accent-text: #ff8a3d;
+  --topic-3-spiky: #ba4d00;
 }
 
 @theme inline {
   --font-sans: 'Raleway Variable', sans-serif;
   --font-heading: 'Figtree Variable', sans-serif;
+  /* Slightly larger text scale than Tailwind's default (12/14/16/18/20 px) so
+     the app stays readable on a projector. Spacing is unchanged. */
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.1875rem;
+  --text-xl: 1.3125rem;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -130,7 +183,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-base text-foreground;
   }
   html {
     @apply font-sans;

@@ -1,7 +1,16 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   BookOpen01Icon,
+  Cancel01Icon,
   Coins01Icon,
   Flag02Icon,
   LockIcon,
@@ -30,6 +39,7 @@ import {
   getPreviousNodeBefore,
   getTopicCompletedCount,
   isTopicCompleted,
+  withAlpha,
 } from './learningPath';
 import type { LearningNode, LearningPath, NodeStatus } from './learningPath';
 import { DemoToolbar } from './DemoToolbar';
@@ -46,14 +56,15 @@ interface BannerState {
 
 interface DemoProgressState {
   readonly completedList: readonly string[];
-  readonly banner: BannerState;
+  readonly banner: BannerState | null;
 }
 
 type ProgressAction =
   | { readonly type: 'completeLesson'; readonly path: LearningPath; readonly nodeId: string }
   | { readonly type: 'completeTopic'; readonly path: LearningPath }
   | { readonly type: 'reset'; readonly path: LearningPath }
-  | { readonly type: 'setBanner'; readonly banner: BannerState };
+  | { readonly type: 'setBanner'; readonly banner: BannerState }
+  | { readonly type: 'dismissBanner' };
 
 type LoadState =
   | { readonly status: 'loading' }
@@ -80,6 +91,7 @@ interface StageLayout {
 }
 
 const STAGE_W = 340;
+const DESKTOP_STAGE_MAX_W = 768;
 const NODE_SPACING = 140;
 const FIRST_NODE_Y = 64;
 const STAGE_BOTTOM_PADDING = 66;
@@ -88,32 +100,50 @@ const LEFT_X = 68;
 const RIGHT_X = 272;
 const PIPE_CORNER = 24;
 const DESKTOP_MEDIA_QUERY = '(min-width: 64rem)';
-const DESKTOP_FIRST_NODE_X = 96;
-const DESKTOP_NODE_SPACING = 220;
-const DESKTOP_TOP_NODE_Y = 64;
-const DESKTOP_BOTTOM_NODE_Y = 264;
-const DESKTOP_TOP_LABEL_TOP = 120;
-const DESKTOP_BOTTOM_LABEL_TOP = 142;
-const DESKTOP_LABEL_WIDTH = 180;
-const DESKTOP_STAGE_RIGHT_PADDING = 96;
-const DESKTOP_STAGE_HEIGHT = 330;
 
 /** The path zig-zags: first and last node in the centre, the nodes between alternate left and right. */
-function slotAt(index: number, isLast: boolean, isDesktop: boolean): NodeLayoutSlot {
+function slotAt(
+  index: number,
+  isLast: boolean,
+  isDesktop: boolean,
+  stageWidth: number,
+): NodeLayoutSlot {
+  const cy = FIRST_NODE_Y + index * NODE_SPACING;
   if (isDesktop) {
-    const cx = DESKTOP_FIRST_NODE_X + index * DESKTOP_NODE_SPACING;
-    const isTopRow = index % 2 === 0;
+    const centerX = stageWidth / 2;
+    const leftX = stageWidth * 0.2;
+    const rightX = stageWidth * 0.8;
+    const labelWidth = stageWidth * 0.46;
+    if (index === 0 || isLast) {
+      return {
+        cx: centerX,
+        cy,
+        labelSide: 'right',
+        labelLeft: centerX + 54,
+        labelTop: cy - 34,
+        labelWidth: stageWidth - centerX - 70,
+      };
+    }
+    if (index % 2 === 1) {
+      return {
+        cx: leftX,
+        cy,
+        labelSide: 'right',
+        labelLeft: leftX + 56,
+        labelTop: cy - 34,
+        labelWidth,
+      };
+    }
     return {
-      cx,
-      cy: isTopRow ? DESKTOP_TOP_NODE_Y : DESKTOP_BOTTOM_NODE_Y,
-      labelSide: 'center',
-      labelLeft: cx - DESKTOP_LABEL_WIDTH / 2,
-      labelTop: isTopRow ? DESKTOP_TOP_LABEL_TOP : DESKTOP_BOTTOM_LABEL_TOP,
-      labelWidth: DESKTOP_LABEL_WIDTH,
+      cx: rightX,
+      cy,
+      labelSide: 'left',
+      labelLeft: rightX - 56 - labelWidth,
+      labelTop: cy - 34,
+      labelWidth,
     };
   }
 
-  const cy = FIRST_NODE_Y + index * NODE_SPACING;
   const labelTop = cy - 34;
   if (index === 0 || isLast) {
     return { cx: CENTER_X, cy, labelSide: 'right', labelLeft: 224, labelTop, labelWidth: 112 };
@@ -124,19 +154,7 @@ function slotAt(index: number, isLast: boolean, isDesktop: boolean): NodeLayoutS
   return { cx: RIGHT_X, cy, labelSide: 'left', labelLeft: 12, labelTop, labelWidth: 204 };
 }
 
-function pipeBetween(from: NodeLayoutSlot, to: NodeLayoutSlot, isDesktop: boolean): string {
-  if (isDesktop) {
-    const midX = (from.cx + to.cx) / 2;
-    const verticalDirection = to.cy > from.cy ? 1 : -1;
-    return [
-      `M ${from.cx} ${from.cy}`,
-      `L ${midX - PIPE_CORNER} ${from.cy}`,
-      `Q ${midX} ${from.cy} ${midX} ${from.cy + verticalDirection * PIPE_CORNER}`,
-      `L ${midX} ${to.cy - verticalDirection * PIPE_CORNER}`,
-      `Q ${midX} ${to.cy} ${midX + PIPE_CORNER} ${to.cy}`,
-      `L ${to.cx} ${to.cy}`,
-    ].join(' ');
-  }
+function pipeBetween(from: NodeLayoutSlot, to: NodeLayoutSlot): string {
   if (from.cx === to.cx) {
     return `M ${from.cx} ${from.cy} L ${to.cx} ${to.cy}`;
   }
@@ -155,26 +173,22 @@ function pipeBetween(from: NodeLayoutSlot, to: NodeLayoutSlot, isDesktop: boolea
   ].join(' ');
 }
 
-function buildStageLayout(nodeCount: number, isDesktop: boolean): StageLayout {
+function buildStageLayout(
+  nodeCount: number,
+  isDesktop: boolean,
+  desktopStageWidth: number,
+): StageLayout {
+  const width = isDesktop ? desktopStageWidth : STAGE_W;
   const nodeSlots = Array.from({ length: nodeCount }, (_, index) =>
-    slotAt(index, index === nodeCount - 1, isDesktop),
+    slotAt(index, index === nodeCount - 1, isDesktop, width),
   );
   const lastSlot = nodeSlots[nodeSlots.length - 1];
   const pipeSegments = nodeSlots
     .slice(0, -1)
-    .map((slot, index) => pipeBetween(slot, nodeSlots[index + 1], isDesktop));
-  if (isDesktop) {
-    return {
-      width: lastSlot.cx + DESKTOP_STAGE_RIGHT_PADDING,
-      height: DESKTOP_STAGE_HEIGHT,
-      nodeSlots,
-      lastSlot,
-      pipeSegments,
-    };
-  }
+    .map((slot, index) => pipeBetween(slot, nodeSlots[index + 1]));
 
   return {
-    width: STAGE_W,
+    width,
     height: lastSlot.cy + STAGE_BOTTOM_PADDING,
     nodeSlots,
     lastSlot,
@@ -253,6 +267,8 @@ function progressReducer(state: DemoProgressState, action: ProgressAction): Demo
       return createInitialProgress(action.path);
     case 'setBanner':
       return { ...state, banner: action.banner };
+    case 'dismissBanner':
+      return { ...state, banner: null };
   }
 }
 
@@ -341,10 +357,10 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
   const [isDesktop, setIsDesktop] = useState(
     () => typeof window !== 'undefined' && window.matchMedia(DESKTOP_MEDIA_QUERY).matches,
   );
+  const [pathTrackWidth, setPathTrackWidth] = useState(DESKTOP_STAGE_MAX_W + 32);
   const [burstNodeId, setBurstNodeId] = useState<string | null>(null);
   const [shakeNodeId, setShakeNodeId] = useState<string | null>(null);
   const timerRef = useRef<number | null>(null);
-  const pathPageRef = useRef<HTMLDivElement>(null);
   const pathTrackRef = useRef<HTMLDivElement>(null);
   const wrongAnswerCount = useRef(0);
   const getNextWrongAnswerIndex = useCallback(() => wrongAnswerCount.current++, []);
@@ -356,33 +372,22 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isDesktop || activeView.kind !== 'path') {
       return;
     }
 
-    const pathPage = pathPageRef.current;
     const pathTrack = pathTrackRef.current;
-    if (!pathPage || !pathTrack) {
+    if (!pathTrack) {
       return;
     }
 
-    const handleWheel = (event: WheelEvent) => {
-      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
-        return;
-      }
-      event.preventDefault();
-      const verticalDelta =
-        event.deltaMode === WheelEvent.DOM_DELTA_LINE
-          ? event.deltaY * 40
-          : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
-            ? event.deltaY * pathTrack.clientWidth
-            : event.deltaY;
-      pathTrack.scrollLeft += verticalDelta;
-    };
+    const updateWidth = () => setPathTrackWidth(pathTrack.clientWidth);
+    updateWidth();
 
-    pathPage.addEventListener('wheel', handleWheel, { passive: false });
-    return () => pathPage.removeEventListener('wheel', handleWheel);
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(pathTrack);
+    return () => observer.disconnect();
   }, [activeView.kind, isDesktop]);
 
   useEffect(() => {
@@ -394,6 +399,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
   }, []);
 
   const completedSet = useMemo(() => new Set(completedList), [completedList]);
+  const desktopStageWidth = Math.min(DESKTOP_STAGE_MAX_W, Math.max(0, pathTrackWidth - 32));
 
   const firstUnfinishedTopic = useMemo(
     () => getFirstUnfinishedTopic(path.topics, completedSet),
@@ -497,7 +503,6 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
 
   return (
     <div
-      ref={pathPageRef}
       className="flex flex-1 flex-col lg:h-[calc(100svh-var(--app-header-height))] lg:min-h-0"
     >
       <DemoToolbar
@@ -509,31 +514,45 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
       />
 
       <div className="flex-1 lg:flex lg:min-h-0 lg:flex-col">
-        <div className="border-b border-border bg-card/60 px-4 py-3 lg:shrink-0">
-          <div className="mx-auto max-w-md lg:max-w-7xl lg:px-8">
-            <Card
-              size="sm"
-              className={cn(
-                'border py-2.5 transition-colors',
-                banner.tone === 'gold'
-                  ? 'border-[#e17101] bg-[#973b00]/20'
-                  : banner.tone === 'locked'
-                    ? 'border-[#ba4d00] bg-[#973b00]/15'
-                    : 'border-border bg-card',
-              )}
-              role="status"
-              aria-live="polite"
-            >
-              <CardContent className="px-3.5 text-xs leading-relaxed text-foreground/90">
-                {banner.message}
-              </CardContent>
-            </Card>
-          </div>
+        <div
+          role="status"
+          aria-live="polite"
+          className={cn('border-b border-border bg-card/60 px-4 py-3 lg:shrink-0', !banner && 'hidden')}
+        >
+          {banner && (
+            <div className="mx-auto max-w-md lg:max-w-7xl lg:px-8">
+              <Card
+                size="sm"
+                className={cn(
+                  'border py-2.5 transition-colors',
+                  banner.tone === 'gold'
+                    ? 'border-[#e17101] bg-[#973b00]/20'
+                    : banner.tone === 'locked'
+                      ? 'border-[#ba4d00] bg-[#973b00]/15'
+                      : 'border-border bg-card',
+                )}
+              >
+                <CardContent className="flex items-center gap-3 px-3.5 text-sm leading-relaxed text-foreground/90">
+                  <span className="min-w-0 flex-1">{banner.message}</span>
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label="Dismiss notification"
+                    onClick={() => dispatch({ type: 'dismissBanner' })}
+                    className="-my-1.5 -mr-1.5 shrink-0"
+                  >
+                    <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
 
         <div
           ref={pathTrackRef}
-          className="flex flex-col lg:[container-type:inline-size] lg:min-h-[calc(100svh-var(--app-header-height)-8rem)] lg:flex-1 lg:flex-row lg:items-stretch lg:overflow-x-auto lg:overflow-y-hidden lg:overscroll-x-contain"
+          className="flex flex-col lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-y-contain"
           role="region"
           aria-label="Learning path"
           tabIndex={isDesktop ? 0 : undefined}
@@ -545,7 +564,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
               nodeSlots,
               lastSlot,
               pipeSegments,
-            } = buildStageLayout(topic.nodes.length, isDesktop);
+            } = buildStageLayout(topic.nodes.length, isDesktop, desktopStageWidth);
             const doneCount = getTopicCompletedCount(topic, completedSet);
             const topicCompleted = isTopicCompleted(topic, completedSet);
             const progressPct = Math.round((doneCount / topic.nodes.length) * 100);
@@ -562,20 +581,19 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                 key={topic.id}
                 aria-labelledby={`topic-heading-${topic.id}`}
                 className={cn(
-                  'border-b border-border px-4 py-8 lg:flex lg:h-full lg:min-h-[calc(100svh-var(--app-header-height)-8rem)] lg:flex-none lg:flex-col lg:border-r lg:border-b-0 lg:px-8 lg:py-4',
+                  'border-b border-border px-4 py-8 lg:flex lg:w-full lg:flex-none lg:flex-col lg:px-4 lg:py-8',
                   topic.bandClassName,
                 )}
                 style={{
                   backgroundImage: topic.ambientGlow,
                   backgroundSize: isDesktop ? '100% 100%' : undefined,
                   backgroundRepeat: isDesktop ? 'no-repeat' : undefined,
-                  width: isDesktop ? `max(100vw, ${stageWidth + 65}px)` : undefined,
                 }}
               >
-                <div className="mx-auto flex w-full max-w-md flex-col items-center lg:mx-0 lg:max-w-none lg:items-center">
+                <div className="mx-auto flex w-full max-w-md flex-col items-center lg:max-w-3xl">
                   <Card
                     size="sm"
-                    className="w-full border border-border bg-card/85 py-3.5 backdrop-blur-xs lg:sticky lg:left-8 lg:self-start lg:max-w-[calc(100cqw_-_4rem)]"
+                    className="w-full border border-border bg-card/85 py-3.5 backdrop-blur-xs"
                   >
                     <CardHeader className="min-w-0 px-4">
                       <div className="flex min-w-0 items-center justify-between gap-2">
@@ -596,7 +614,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                         <Badge
                           variant="outline"
                           className="shrink-0 border border-border px-2 py-0.5 tabular-nums"
-                          style={{ color: topic.accentHex }}
+                          style={{ color: topic.accentTextHex }}
                         >
                           {doneCount}/{topic.nodes.length}
                         </Badge>
@@ -616,7 +634,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                   </Card>
 
                   <div
-                    className="relative mt-2 shrink-0 lg:mx-auto lg:mt-16 lg:scale-95"
+                    className="relative mt-2 shrink-0 lg:mt-12"
                     style={{ width: `${stageWidth}px`, height: `${stageHeight}px` }}
                   >
                     <svg
@@ -624,29 +642,29 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                       viewBox={`0 0 ${stageWidth} ${stageHeight}`}
                       aria-hidden="true"
                     >
-                      {topicIndex > 0 && !isDesktop && (
+                      {topicIndex > 0 && (
                         <>
                           <line
-                            x1={CENTER_X}
+                            x1={isDesktop ? desktopStageWidth / 2 : CENTER_X}
                             y1={0}
-                            x2={CENTER_X}
+                            x2={isDesktop ? desktopStageWidth / 2 : CENTER_X}
                             y2={FIRST_NODE_Y}
-                            stroke="#2d3234"
+                            stroke="var(--border)"
                             strokeWidth="12"
                             strokeLinecap="round"
                           />
                           {entryPipeColored && (
                             <line
-                              x1={CENTER_X}
+                              x1={isDesktop ? desktopStageWidth / 2 : CENTER_X}
                               y1={0}
-                              x2={CENTER_X}
+                              x2={isDesktop ? desktopStageWidth / 2 : CENTER_X}
                               y2={FIRST_NODE_Y}
                               pathLength={100}
                               stroke={topic.pipeColor}
                               strokeWidth="12"
                               strokeLinecap="round"
                               className="fx-pipe-fill"
-                              style={{ filter: `drop-shadow(0 0 6px ${topic.pipeColor}66)` }}
+                              style={{ filter: `drop-shadow(0 0 6px ${withAlpha(topic.pipeColor, 40)})` }}
                             />
                           )}
                         </>
@@ -659,7 +677,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                             <path
                               d={pathD}
                               fill="none"
-                              stroke="#2d3234"
+                              stroke="var(--border)"
                               strokeWidth="12"
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -674,21 +692,21 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 className="fx-pipe-fill"
-                                style={{ filter: `drop-shadow(0 0 6px ${topic.pipeColor}66)` }}
+                                style={{ filter: `drop-shadow(0 0 6px ${withAlpha(topic.pipeColor, 40)})` }}
                               />
                             )}
                           </g>
                         );
                       })}
 
-                      {nextTopic && !isDesktop && (
+                      {nextTopic && (
                         <>
                           <line
                             x1={lastSlot.cx}
                             y1={lastSlot.cy}
                             x2={lastSlot.cx}
                             y2={stageHeight}
-                            stroke="#2d3234"
+                            stroke="var(--border)"
                             strokeWidth="12"
                             strokeLinecap="round"
                           />
@@ -703,7 +721,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                               strokeWidth="12"
                               strokeLinecap="round"
                               className="fx-pipe-fill"
-                              style={{ filter: `drop-shadow(0 0 6px ${topic.pipeColor}66)` }}
+                              style={{ filter: `drop-shadow(0 0 6px ${withAlpha(topic.pipeColor, 40)})` }}
                             />
                           )}
                         </>
@@ -731,7 +749,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                               ? topic.accentHex
                               : isShaking
                                 ? '#ba4d00'
-                                : '#2d3234';
+                                : 'var(--border)';
 
                         return (
                           <li key={node.id}>
@@ -749,7 +767,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                                   backgroundColor: ringColor,
                                   boxShadow:
                                     status === 'active'
-                                      ? `0 0 24px -4px ${topic.accentHex}70`
+                                      ? `0 0 24px -4px ${withAlpha(topic.accentHex, 44)}`
                                       : isBursting
                                         ? `0 0 32px ${topic.accentHex}`
                                         : undefined,
@@ -766,12 +784,12 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                                     'relative z-10 size-full overflow-hidden rounded-full border-0 shadow-none transition-transform active:scale-90',
                                     isBursting && 'fx-sheen',
                                     status === 'completed' && 'bg-card hover:bg-secondary',
-                                    status === 'active' && 'bg-[#07090a] hover:bg-card',
+                                    status === 'active' && 'bg-background hover:bg-card',
                                     status === 'locked' &&
-                                      'cursor-not-allowed bg-[#21292b] text-muted-foreground hover:bg-[#21292b]',
+                                      'cursor-not-allowed bg-secondary text-muted-foreground hover:bg-secondary',
                                   )}
                                   style={
-                                    status !== 'locked' ? { color: topic.accentHex } : undefined
+                                    status !== 'locked' ? { color: topic.accentTextHex } : undefined
                                   }
                                 >
                                   {renderNodeIcon(node, status)}
@@ -814,7 +832,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                                   status === 'locked' && 'text-muted-foreground',
                                 )}
                                 style={
-                                  status !== 'locked' ? { color: topic.accentHex } : undefined
+                                  status !== 'locked' ? { color: topic.accentTextHex } : undefined
                                 }
                               >
                                 {node.code}

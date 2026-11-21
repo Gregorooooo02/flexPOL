@@ -133,14 +133,29 @@ export function CoachPanel({
             <span className="truncate">Hedgie sees: {contextLabel}</span>
           </Badge>
         )}
-        <CardAction className="flex items-center gap-1">
-          <Button variant="ghost" size="icon-sm" onClick={clear} disabled={entries.length === 0 && !pending}>
-            <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+        <CardAction className="flex items-center gap-1.5">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-sm"
+            onClick={clear}
+            disabled={entries.length === 0 && !pending}
+            title="Clear conversation"
+            className="cursor-pointer text-muted-foreground hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/20"
+          >
+            <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} className="size-4" />
             <span className="sr-only">Clear conversation</span>
           </Button>
           {onClose && (
-            <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}>
-              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon-sm"
+              onClick={onClose}
+              title="Close chat"
+              className="cursor-pointer border-destructive/40"
+            >
+              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="size-4" />
               <span className="sr-only">Close chat</span>
             </Button>
           )}
@@ -208,9 +223,9 @@ export function CoachPanel({
               aria-label="Message to the coach"
               maxLength={MAX_MESSAGE_LENGTH}
               rows={1}
-              className="max-h-32"
+              className="min-h-10 max-h-32 pr-3"
             />
-            <InputGroupAddon align="inline-end">
+            <InputGroupAddon align="inline-end" className="self-end py-1">
               <InputGroupButton type="submit" variant="default" size="icon-sm" disabled={pending || !draft.trim()}>
                 {pending ? <Spinner /> : <HugeiconsIcon icon={ArrowUp02Icon} strokeWidth={2} />}
                 <span className="sr-only">Send</span>
