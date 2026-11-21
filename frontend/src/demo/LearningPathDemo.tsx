@@ -9,12 +9,33 @@ import {
 } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
+  Activity01Icon,
+  AlarmClockIcon,
+  Analytics01Icon,
+  Award01Icon,
+  BadgePercentIcon,
+  BalanceScaleIcon,
+  BankIcon,
+  BarChartIcon,
   BookOpen01Icon,
   Coins01Icon,
+  Compass01Icon,
+  Fire02Icon,
   Flag02Icon,
-  LockIcon,
+  GroupLayersIcon,
+  Home01Icon,
+  HourglassIcon,
+  Layers01Icon,
+  MoneySafeIcon,
+  PiggyBankIcon,
+  Plant01Icon,
   RefreshIcon,
+  Route01Icon,
+  SquareLock02Icon,
+  Target02Icon,
   Tick02Icon,
+  TrophyIcon,
+  UmbrellaDollarIcon,
 } from '@hugeicons/core-free-icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -108,9 +129,9 @@ function slotAt(
   const cy = firstNodeY + index * NODE_SPACING;
   if (isDesktop) {
     const centerX = stageWidth / 2;
-    const leftX = stageWidth * 0.2;
-    const rightX = stageWidth * 0.8;
-    const labelWidth = stageWidth * 0.46;
+    const leftX = stageWidth * 0.28;
+    const rightX = stageWidth * 0.72;
+    const labelWidth = stageWidth * 0.34;
     if (index === 0 || isLast) {
       return {
         cx: centerX,
@@ -270,17 +291,47 @@ function progressReducer(state: DemoProgressState, action: ProgressAction): Demo
   }
 }
 
-function renderNodeIcon(node: LearningNode, status: NodeStatus) {
-  if (status === 'completed') {
-    return <HugeiconsIcon icon={Tick02Icon} className="size-7" strokeWidth={2.5} />;
-  }
-  if (status === 'locked') {
-    return <HugeiconsIcon icon={LockIcon} className="size-5" strokeWidth={2} />;
-  }
+type NodeIcon = typeof BookOpen01Icon;
+
+const LESSON_ICONS_BY_CODE: Readonly<Record<string, NodeIcon>> = {
+  '1.1': Analytics01Icon,
+  '1.2': Target02Icon,
+  '1.3': HourglassIcon,
+  '1.4': Activity01Icon,
+  '1.5': Layers01Icon,
+  '2.1': PiggyBankIcon,
+  '2.2': BankIcon,
+  '2.3': BarChartIcon,
+  '2.4': GroupLayersIcon,
+  '2.5': BadgePercentIcon,
+  '2.6': Fire02Icon,
+  '2.7': BalanceScaleIcon,
+  '3.1': Route01Icon,
+  '3.2': Plant01Icon,
+  '3.3': Home01Icon,
+  '3.4': UmbrellaDollarIcon,
+  '3.5': AlarmClockIcon,
+  '3.6': MoneySafeIcon,
+  '3.7': Compass01Icon,
+};
+
+function getNodeIcon(node: LearningNode): NodeIcon {
   if (node.kind === 'checkpoint') {
-    return <HugeiconsIcon icon={Flag02Icon} className="size-6" strokeWidth={2.2} />;
+    if (node.code.startsWith('2.')) return Award01Icon;
+    if (node.code.startsWith('3.')) return TrophyIcon;
+    return Flag02Icon;
   }
-  return <HugeiconsIcon icon={BookOpen01Icon} className="size-6" strokeWidth={2.2} />;
+  return LESSON_ICONS_BY_CODE[node.code] ?? BookOpen01Icon;
+}
+
+function renderNodeIcon(node: LearningNode, status: NodeStatus) {
+  return (
+    <HugeiconsIcon
+      icon={getNodeIcon(node)}
+      className={cn('size-6', status === 'locked' && 'opacity-55')}
+      strokeWidth={2.2}
+    />
+  );
 }
 
 /** Loads the chapters from the backend, then shows the learning path built from them. */
@@ -516,7 +567,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
       <div className="flex min-h-0 flex-1 flex-col">
         <div
           ref={pathTrackRef}
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain pb-24"
+          className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain pb-24"
           role="region"
           aria-label="Learning path"
           tabIndex={isDesktop ? 0 : undefined}
@@ -547,58 +598,54 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
               <section
                 key={topic.id}
                 aria-labelledby={`topic-heading-${topic.id}`}
-                className="relative bg-background px-4 py-0 lg:flex lg:w-full lg:flex-none lg:flex-col lg:px-4 lg:py-0"
+                className={cn(
+                  'relative border-b border-border px-4 py-0 lg:flex lg:w-full lg:flex-none lg:flex-col lg:px-4 lg:py-0',
+                  topic.bandClassName,
+                )}
               >
-                <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-                  <div
-                    className="fx-orb-drift absolute -top-16 left-1/2 h-[28rem] w-[38rem] -translate-x-1/2 rounded-full opacity-30 blur-3xl dark:opacity-20"
-                    style={{
-                      background: `radial-gradient(circle, ${topic.pipeColor} 0%, transparent 70%)`,
-                    }}
-                  />
-                  <div
-                    className="fx-orb-drift absolute bottom-8 left-1/4 h-[22rem] w-[28rem] rounded-full opacity-20 blur-3xl dark:opacity-15"
-                    style={{
-                      background: `radial-gradient(circle, ${topic.accentHex} 0%, transparent 70%)`,
-                      animationDelay: '-8s',
-                    }}
-                  />
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 overflow-hidden"
+                  style={{
+                    backgroundImage: `radial-gradient(ellipse 70% 42% at 50% 50%, ${withAlpha(topic.pipeColor, 18)}, transparent 75%)`,
+                  }}
+                />
+
+                <div className="pointer-events-none absolute inset-x-4 inset-y-4 z-20">
+                  <div className="pointer-events-auto sticky top-4 w-60 border border-border bg-card/95 px-3.5 py-2.5 shadow-sm backdrop-blur-md sm:w-64">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Badge
+                          className="shrink-0 px-2 py-0.5 text-xs font-bold text-[#07090a]"
+                          style={{ backgroundColor: topic.accentHex }}
+                        >
+                          {topic.seriesNumber}
+                        </Badge>
+                        <h2
+                          id={`topic-heading-${topic.id}`}
+                          className="truncate font-heading text-base font-semibold tracking-tight text-foreground"
+                        >
+                          {topic.title}
+                        </h2>
+                      </div>
+                      <span
+                        className="shrink-0 font-heading text-xs font-semibold tabular-nums"
+                        style={{ color: topic.accentTextHex }}
+                      >
+                        {doneCount}/{topic.nodes.length}
+                      </span>
+                    </div>
+                    <p className="mt-1 truncate text-xs text-muted-foreground">{topic.metaLabel}</p>
+                    <Progress
+                      value={progressPct}
+                      aria-label={`${topic.title} progress`}
+                      className="mt-2 [&_[data-slot=progress-track]]:h-1"
+                      style={{ '--primary': topic.accentHex } as Record<string, string>}
+                    />
+                  </div>
                 </div>
 
                 <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center">
-                  <div className="pointer-events-none sticky top-4 z-20 flex h-0 w-full justify-start">
-                    <div className="pointer-events-auto h-fit w-fit max-w-[18rem] border border-border bg-card/92 px-3.5 py-2.5 shadow-sm backdrop-blur-md transition-all sm:max-w-xs">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex min-w-0 items-center gap-2">
-                          <Badge
-                            className="shrink-0 px-2 py-0.5 text-xs font-bold text-[#07090a]"
-                            style={{ backgroundColor: topic.accentHex }}
-                          >
-                            {topic.seriesNumber}
-                          </Badge>
-                          <h2
-                            id={`topic-heading-${topic.id}`}
-                            className="truncate font-heading text-base font-semibold tracking-tight text-foreground"
-                          >
-                            {topic.title}
-                          </h2>
-                        </div>
-                        <span
-                          className="shrink-0 font-heading text-xs font-semibold tabular-nums"
-                          style={{ color: topic.accentTextHex }}
-                        >
-                          {doneCount}/{topic.nodes.length}
-                        </span>
-                      </div>
-                      <p className="mt-1 truncate text-xs text-muted-foreground">{topic.metaLabel}</p>
-                      <Progress
-                        value={progressPct}
-                        aria-label={`${topic.title} progress`}
-                        className="mt-2 [&_[data-slot=progress-track]]:h-1"
-                        style={{ '--primary': topic.accentHex } as Record<string, string>}
-                      />
-                    </div>
-                  </div>
 
                   <div
                     className="relative z-10 shrink-0"
@@ -779,6 +826,19 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                                   {renderNodeIcon(node, status)}
                                 </Button>
 
+                                {status === 'completed' && (
+                                  <Badge
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute -bottom-2.5 left-1/2 z-20 size-6 -translate-x-1/2 justify-center rounded-full border-2 border-background text-[#07090a]"
+                                    style={{ backgroundColor: topic.pipeColor }}
+                                  >
+                                    <HugeiconsIcon
+                                      icon={Tick02Icon}
+                                      className="size-3.5!"
+                                      strokeWidth={2.6}
+                                    />
+                                  </Badge>
+                                )}
                                 {status === 'active' && (
                                   <Badge
                                     aria-hidden="true"
@@ -789,6 +849,18 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                                       icon={Coins01Icon}
                                       className="size-3.5!"
                                       strokeWidth={2.4}
+                                    />
+                                  </Badge>
+                                )}
+                                {status === 'locked' && (
+                                  <Badge
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute -bottom-2.5 left-1/2 z-20 size-6 -translate-x-1/2 justify-center rounded-full border-2 border-background bg-secondary text-muted-foreground"
+                                  >
+                                    <HugeiconsIcon
+                                      icon={SquareLock02Icon}
+                                      className="size-3.5!"
+                                      strokeWidth={2.2}
                                     />
                                   </Badge>
                                 )}
