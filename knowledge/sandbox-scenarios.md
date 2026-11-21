@@ -42,9 +42,9 @@ The first draft of this spec assumed a new portfolio engine. These scenarios are
 ### Changes from the first draft
 
 - The fictional instruments (savings, deposits, bond funds, the active fund, HypeCoin, pension accounts) are replaced by catalogue instruments plus cash.
-- Horizons longer than 10 years (Sam 15, Danuta 12, Zofia 20, Ola 25, Ewa 30) are shortened. Every horizon is still unique.
+- Horizons longer than 10 years (Sam's 15) are shortened. Every horizon is still unique.
 - Inflation, fees, tax, scripted shocks, the hype cycle and the multi-path score are removed. The score now uses the one server-seeded path the learner sees.
-- Scenario 2.4 changes theme from fees (not simulated) to regional diversification. Scenario 3.6 keeps the retirement gap but drops pension-account rules.
+- Only two scenarios per chapter are kept, the ones that use the most of the sandbox: 2.3 Marek and 2.6 Nina, 3.3 Sam and 3.5 Henryk. The codes keep their original numbers.
 
 ## 3. Shared rules
 
@@ -106,20 +106,12 @@ Instruments and shares are judged on the allocation at the start, exactly in cen
 
 | Scenario | Suitable instruments | Min. picks | Share ranges |
 |---|---|---|---|
-| 2.1 Kuba | 1013, 1015 | 0 | Cash at least 70% |
-| 2.2 Lena and Tom | 1013, 1015 | 0 | Cash at least 75% |
 | 2.3 Marek | 1013, 1015, 1017, 1018, 1010 | 1 | Broad funds (1013, 1015, 1017, 1018): at least 60%; Favourite stock (ASML) (1010): at most 10%; Cash at most 30% |
-| 2.4 Zofia | 1013, 1015, 1017, 1018 | 1 | Funds (1013, 1015, 1017, 1018): at least 70%; Europe only (EURO STOXX 50) (1017): at most 40%; Cash at most 30%; Any single fund: each at most 50% |
-| 2.5 Olek | 1013, 1010 | 0 | Cash at least 85%; The tip (ASML) (1010): at most 5% |
 | 2.6 Nina | 1013, 1014, 1015, 1017, 1018, 1019, 1020 | 1 | Cash 35%–70%; Any single fund: each at most 40% |
-| 3.1 Paula | 1013, 1015, 1017, 1018 | 1 | Cash 30%–60%; Any single fund: each at most 35% |
-| 3.2 Ewa | 1013, 1015, 1018, 1019 | 1 | Cash at most 20% |
 | 3.3 Sam | 1013, 1015, 1017, 1018 | 1 | Cash 10%–40%; Any single fund: each at most 50% |
-| 3.4 Danuta | 1013, 1015, 1017, 1018 | 1 | Cash 25%–60%; Any single fund: each at most 35% |
 | 3.5 Henryk | 1013, 1015, 1017, 1018 | 1 | Cash 25%–60%; Any single fund: each at most 30% |
-| 3.6 Ola | 1013, 1015, 1018, 1019, 1020 | 1 | Cash at most 30% |
 
-Single stocks are suitable only where the story makes a small position sensible (Marek's favourite, Olek's tip); NASDAQ 100 is left out everywhere as a one-sector bet. Each scenario's `evaluation.explanation` tells the learner why, after the run.
+Single stocks are suitable only where the story makes a small position sensible (Marek's favourite); NASDAQ 100 is left out everywhere as a one-sector bet. Each scenario's `evaluation.explanation` tells the learner why, after the run.
 
 ### Checker (acceptance test)
 
@@ -134,18 +126,10 @@ It uses JavaScript's random numbers, not Java's, so it checks the statistics, no
 
 | Scenario | Reference | Best trap |
 |---|---|---|
-| 2.1 Kuba | 92 | 44 |
-| 2.2 Lena and Tom | 95 | 47 |
 | 2.3 Marek | 91 | 44 |
-| 2.4 Zofia | 88 | 41 |
-| 2.5 Olek | 94 | 19 |
 | 2.6 Nina | 87 | 50 |
-| 3.1 Paula | 91 | 48 |
-| 3.2 Ewa | 93 | 26 |
 | 3.3 Sam | 92 | 40 |
-| 3.4 Danuta | 94 | 50 |
 | 3.5 Henryk | 87 | 45 |
-| 3.6 Ola | 89 | 44 |
 
 ## 5. Scenarios
 
@@ -165,39 +149,6 @@ Instruments are listed by catalogue id. Cash is always available. Percentages ar
 
 ### Chapter 2 — Know Your Instruments
 
-#### 2.1 "Kuba's Safety Cushion"
-
-| Field | Value |
-|---|---|
-| Lessons | 2.1 Cash and savings accounts |
-| Person | Kuba, 24, first job on a 6-month contract that may not be renewed, no savings cushion |
-| Budget / horizon | €6,000 / 1 year (365 days) |
-| Money needs | €2,500 car repair on day 120 |
-| Target / floor / max drop | €3,500 / €3,200 / 4% |
-| Weights | growth 0.5, stability 0.5 |
-| Instruments | 1013, 1015, 1001, 1010 |
-| Rules | None |
-| Reference | 80% cash, 20% 1013 (100% cash also passes) |
-| Traps | 100% 1013 (the repair may be paid by selling after a drop). 100% 1010 (one volatile stock) |
-| Debrief | An emergency fund needs to be available and stable; one year is too short to recover; here safety matters more than growth |
-
-#### 2.2 "Lena and Tom's Wedding"
-
-| Field | Value |
-|---|---|
-| Lessons | 2.2 Deposits and bonds (matching money to a date), 2.4 Funds |
-| Person | Lena and Tom, both 29, wedding on a fixed date in 2 years, venue paid on that day |
-| Budget / horizon | €18,000 / 2 years (730 days) |
-| Money needs | None (the target is the budget on the day) |
-| Target / floor / max drop | €18,000 / €17,000 / 4% |
-| Weights | growth 0.5, stability 0.5 |
-| Instruments | 1013, 1015, 1017, 1018 |
-| Rules | None |
-| Reference | 85% cash, 15% 1013 (100% cash also passes) |
-| Traps | 40% 1015 + 30% 1017 + 30% 1018 (diversified, but all shares, two years ahead of a fixed date). 100% 1017 (one region) |
-| Debrief | A fixed date close ahead needs money that keeps its value; diversification lowers risk but doesn't remove it |
-| Not simulated | Term deposits and bonds |
-
 #### 2.3 "Marek's Favourite Company"
 
 | Field | Value |
@@ -213,40 +164,6 @@ Instruments are listed by catalogue id. Cash is always available. Percentages ar
 | Reference | 35% 1015, 25% 1017, 20% 1018, 10% 1010, 10% cash (also passes: 90% 1013, 10% 1010) |
 | Traps | 100% 1010. 50% 1016 + 50% 1010 (one theme) |
 | Debrief | A single stock carries one company's full damage; a fund spreads it; a favourite stock fits as a small part |
-
-#### 2.4 "Zofia Only Buys What She Knows"
-
-| Field | Value |
-|---|---|
-| Lessons | 2.4 Funds and ETFs, 2.7 Comparing instruments |
-| Person | Zofia, 45, inherited money; a relative says to only buy big local European names |
-| Budget / horizon | €80,000 / 8 years (2,920 days) |
-| Money needs | None |
-| Target / floor / max drop | €105,000 / €80,000 / 25% |
-| Weights | growth 0.75, stability 0.25 |
-| Instruments | 1013, 1015, 1017, 1018, 1003, 1004 |
-| Rules | No single stock above 10% |
-| Reference | 40% 1015, 25% 1017, 25% 1018, 10% cash |
-| Traps | 100% 1004 (one familiar name). 90% cash + 10% 1017 (too cautious, one region) |
-| Debrief | Diversify across companies and regions; a familiar name isn't a lower risk |
-| Not simulated | Fund fees |
-
-#### 2.5 "Olek's Group-Chat Tip"
-
-| Field | Value |
-|---|---|
-| Lessons | 2.6 High-risk and speculative assets |
-| Person | Olek, 21, student; a group chat says one tech stock can't lose; tuition is paid from this money in 6 months |
-| Budget / horizon | €4,000 / 9 months (274 days) |
-| Money needs | €2,000 tuition on day 180 |
-| Target / floor / max drop | €2,000 / €1,800 / 5% |
-| Weights | growth 0.5, stability 0.5 |
-| Instruments | 1013, 1001, 1006, 1010 |
-| Rules | No single stock above 5% |
-| Reference | 95% cash, 5% 1010 (100% cash also passes) |
-| Traps | 100% 1010. 50% 1010 + 50% cash |
-| Debrief | A tip is a bet on price; never with money needed soon; if at all, keep it small |
-| Not simulated | Crypto, leverage, a hype-then-crash pattern |
 
 #### 2.6 "Nina's Home Deposit"
 
@@ -267,39 +184,6 @@ Instruments are listed by catalogue id. Cash is always available. Percentages ar
 
 ### Chapter 3 — Investing Through Life
 
-#### 3.1 "Paula's Uneven Income"
-
-| Field | Value |
-|---|---|
-| Lessons | 3.1 Your life stage changes your plan |
-| Person | Paula, 31, single parent, freelance designer with irregular income, saving for a child's school costs |
-| Budget / horizon | €12,000 / 5 years (1,825 days) |
-| Money needs | €3,000 on day 900 (two quiet months with no clients) |
-| Target / floor / max drop | €10,000 / €8,800 / 12% |
-| Weights | growth 0.3, stability 0.7 |
-| Instruments | 1013, 1015, 1017, 1018, 1008 |
-| Rules | No single stock above 10% |
-| Reference | 35% cash, 25% 1015, 20% 1017, 20% 1018 |
-| Traps | 100% 1013 ("5 years is long"). 50% 1008 + 50% 1013 |
-| Debrief | Age and horizon aren't everything; unstable income and dependents lower risk capacity |
-
-#### 3.2 "Ewa's First Salary"
-
-| Field | Value |
-|---|---|
-| Lessons | 3.2 Starting out (18–30) |
-| Person | Ewa, 23, first full-time job, no expensive debt, emergency fund built |
-| Budget / horizon | €5,000 / 10 years (3,650 days, the batch maximum) |
-| Money needs | None |
-| Target / floor / max drop | €7,500 / €5,000 / 40% |
-| Weights | growth 0.8, stability 0.2 |
-| Instruments | 1013, 1015, 1016, 1018, 1019, 1010 |
-| Rules | No single stock above 10% |
-| Reference | 30% 1015, 25% 1018, 25% 1019, 20% 1013 (also passes: 100% 1013) |
-| Traps | 100% cash. 100% 1010 |
-| Debrief | A long horizon allows a growth mix; starting early gives compounding the most time |
-| Not simulated | Monthly contributions, horizons over 10 years |
-
 #### 3.3 "Sam's University Fund"
 
 | Field | Value |
@@ -317,23 +201,6 @@ Instruments are listed by catalogue id. Cash is always available. Percentages ar
 | Debrief | Each goal gets its own horizon and mix; a cash part covers surprises |
 | Not simulated | Several goals in separate buckets |
 
-#### 3.4 "Danuta's Glide Path"
-
-| Field | Value |
-|---|---|
-| Lessons | 3.4 Approaching retirement (50+) |
-| Person | Danuta, 58, savings at their largest, retiring at 67, everything in a tech fund for years |
-| Budget / horizon | €250,000 / 9 years (3,285 days) |
-| Money needs | None |
-| Target / floor / max drop | €290,000 / €250,000 / 15% |
-| Weights | growth 0.5, stability 0.5 |
-| Instruments | 1013, 1015, 1016, 1017, 1018 |
-| Rules | None |
-| Reference | 40% cash, 25% 1015, 20% 1017, 15% 1018 |
-| Traps | 100% 1016 ("it worked so far"). 100% cash |
-| Debrief | Shift from growing to protecting gradually; part of the money stays invested |
-| Not simulated | A year-by-year glide path and bonds |
-
 #### 3.5 "Henryk Retires Next Year"
 
 | Field | Value |
@@ -350,24 +217,6 @@ Instruments are listed by catalogue id. Cash is always available. Percentages ar
 | Traps | 100% 1013. 50% 1015 + 50% 1018 (no cash buffer) |
 | Debrief | The same drop hurts more when withdrawals start; a cash buffer avoids selling at the bottom |
 | Not simulated | A scripted crash (paths are random) |
-
-#### 3.6 "Ola Minds the Gap"
-
-| Field | Value |
-|---|---|
-| Lessons | 3.5 Why invest for a pension |
-| Person | Ola, 45, expects 1,800 a month of public pension against 3,000 needed: a gap of about 288,000 over 20 years |
-| Budget / horizon | €30,000 / 9½ years (3,468 days) |
-| Money needs | None |
-| Target / floor / max drop | €45,000 / €30,000 / 35% |
-| Weights | growth 0.8, stability 0.2 |
-| Instruments | 1013, 1015, 1018, 1019, 1020 |
-| Rules | None |
-| Reference | 10% cash, 30% 1015, 20% 1018, 20% 1019, 20% 1020 |
-| Traps | 100% cash. 80% cash + 20% 1013 |
-| Result extra | The part of the €288,000 gap that the final value covers |
-| Debrief | Public pensions often cover only part; cash alone can't close a large gap |
-| Not simulated | Pension accounts (lesson 3.6): tax advantages, employer contributions, lock-up rules |
 
 ## 6. Known limits of these results
 
