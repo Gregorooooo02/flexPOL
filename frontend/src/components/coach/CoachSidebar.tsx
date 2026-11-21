@@ -240,6 +240,7 @@ function CoachChatSession({
     selectedOptionId: focus?.selectedOptionId,
     assignments: focus?.assignments,
     number: focus?.number,
+    comparisonPrediction: focus?.comparisonPrediction,
     scenarioId: focus?.scenarioId,
     allocations: focus?.allocations,
     scenarioRun: focus?.scenarioRun,

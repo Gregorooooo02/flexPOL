@@ -9,7 +9,9 @@ import java.util.Map;
  * <ul>
  * <li>{@code subchapterId} gives the coach that lesson as context;</li>
  * <li>{@code questionId} tells it which quiz question the learner is on, and {@code selectedOptionId}
- * which option they checked (or {@code assignments} for matching and sorting, or {@code number});</li>
+ * which option they checked (or {@code assignments} for matching and sorting, or {@code number}). For a question
+ * with a what-if portfolio comparison, {@code comparisonPrediction} is the portfolio id the learner predicted
+ * would lose more, sent once they have revealed the outcomes;</li>
  * <li>{@code scenarioId} tells it which sandbox scenario the learner is in, {@code allocations} their plan
  * (as in {@link ScenarioRunRequest}: the rest stays cash), and {@code scenarioRun} whether they have run
  * that plan and see its result. The server runs the plan again for the coach, so results are never
@@ -28,5 +30,6 @@ public record CoachRequest(
 		BigDecimal number,
 		Long scenarioId,
 		List<ScenarioRunRequest.Allocation> allocations,
-		Boolean scenarioRun) {
+		Boolean scenarioRun,
+		String comparisonPrediction) {
 }

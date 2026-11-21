@@ -415,6 +415,7 @@ export function LessonPage({
     selectedOptionId: currentResult ? currentAnswer?.choice.optionId : undefined,
     assignments: currentResult ? currentAnswer?.choice.assignments : undefined,
     number: currentResult ? currentAnswer?.choice.number : undefined,
+    comparisonPrediction: currentPrediction,
     answerCorrect: currentResult?.correct,
   });
 

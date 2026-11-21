@@ -61,7 +61,7 @@ class QuestionServiceTests {
 		assertThat(checked.correct()).isFalse();
 		assertThat(checked.explanation()).isNull();
 		assertThat(checked.hint()).isEqualTo(question.getAssignment().hint());
-		assertThat(coach.questionContext(1L, null, wrong, null)).contains("Holiday — placed in: Long-term", "Do not reveal")
+		assertThat(coach.questionContext(1L, null, wrong, null, null)).contains("Connect the pairs", "Holiday — placed in: Long-term", "Do not say where any card belongs")
 				.doesNotContain(question.getExplanation());
 	}
 

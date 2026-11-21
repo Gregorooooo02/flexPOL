@@ -16,6 +16,8 @@ export interface CoachFocus {
   readonly selectedOptionId?: number;
   readonly assignments?: Assignments;
   readonly number?: number;
+  /** The portfolio id the learner predicted would lose more. Leave it out until they reveal the outcomes. */
+  readonly comparisonPrediction?: string;
   /** The sandbox scenario the learner is in. */
   readonly scenarioId?: number;
   /** The learner's plan in that scenario, in euros (the rest is cash). Keep the array stable between renders. */
@@ -80,6 +82,7 @@ export function usePublishCoachFocus(focus: CoachFocus | null): void {
     selectedOptionId,
     assignments,
     number,
+    comparisonPrediction,
     scenarioId,
     allocations,
     scenarioRun,
@@ -98,6 +101,7 @@ export function usePublishCoachFocus(focus: CoachFocus | null): void {
             selectedOptionId,
             assignments,
             number,
+            comparisonPrediction,
             scenarioId,
             allocations,
             scenarioRun,
@@ -114,6 +118,7 @@ export function usePublishCoachFocus(focus: CoachFocus | null): void {
     selectedOptionId,
     assignments,
     number,
+    comparisonPrediction,
     scenarioId,
     allocations,
     scenarioRun,

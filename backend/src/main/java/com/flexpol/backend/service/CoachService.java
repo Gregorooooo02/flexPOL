@@ -98,6 +98,9 @@ public class CoachService {
 		if (request.number() != null && request.questionId() == null) {
 			throw new BadRequestException("number requires questionId");
 		}
+		if (request.comparisonPrediction() != null && request.questionId() == null) {
+			throw new BadRequestException("comparisonPrediction requires questionId");
+		}
 		if (request.allocations() != null && request.scenarioId() == null) {
 			throw new BadRequestException("allocations requires scenarioId");
 		}
@@ -116,7 +119,8 @@ public class CoachService {
 		if (request.questionId() != null) {
 			system.append(QUESTION_SECTION);
 			params.put("question", contextService.questionContext(
-					request.questionId(), request.selectedOptionId(), request.assignments(), request.number()));
+					request.questionId(), request.selectedOptionId(), request.assignments(), request.number(),
+					request.comparisonPrediction()));
 		}
 		if (request.scenarioId() != null) {
 			system.append(SCENARIO_SECTION);

@@ -59,6 +59,8 @@ export interface CoachPanelProps {
   readonly selectedOptionId?: number;
   readonly assignments?: Assignments;
   readonly number?: number;
+  /** The portfolio the learner predicted would lose more, once they have revealed a what-if comparison. */
+  readonly comparisonPrediction?: string;
   /** The sandbox scenario the learner is in, their plan (euros, the rest is cash) and whether they have run it. */
   readonly scenarioId?: number;
   readonly allocations?: readonly ScenarioAllocation[];
@@ -99,6 +101,7 @@ export function CoachPanel({
   selectedOptionId,
   assignments,
   number,
+  comparisonPrediction,
   scenarioId,
   allocations,
   scenarioRun,
@@ -123,7 +126,7 @@ export function CoachPanel({
     }
     sendToCoach(
       text,
-      { subchapterId, questionId, selectedOptionId, assignments, number, scenarioId, allocations, scenarioRun },
+      { subchapterId, questionId, selectedOptionId, assignments, number, comparisonPrediction, scenarioId, allocations, scenarioRun },
       moodForReply({ questionId, answerCorrect, scenarioStars }),
     );
     setDraft('');
