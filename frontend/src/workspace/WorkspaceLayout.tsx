@@ -72,10 +72,6 @@ export function WorkspaceLayout({
           </section>
         </div>
       </div>
-
-      <div data-coach-footer className="sticky bottom-0 z-20 border-t border-border bg-card/95 backdrop-blur-sm">
-        <div className="mx-auto w-full max-w-7xl px-4 py-3">{actionBar}</div>
-      </div>
     </div>
   );
 }

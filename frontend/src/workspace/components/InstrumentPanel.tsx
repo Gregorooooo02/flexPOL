@@ -11,6 +11,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -23,6 +31,8 @@ import type { TradePlan } from '../portfolio/portfolioReducer';
 import { AmountField } from './AmountField';
 import { MoneyValue } from './MoneyValue';
 import { PriceChart } from './PriceChart';
+
+const MOBILE_QUERY = '(max-width: 47.99rem)';
 
 interface InstrumentPanelProps {
   instrument: Instrument | null;
@@ -80,6 +90,7 @@ export function InstrumentPanel({
   chartView = 'history',
   onChartViewChange,
 }: InstrumentPanelProps) {
+  const mobile = useMediaQuery(MOBILE_QUERY);
   let action = 'Update allocation';
   if (plan?.ok) {
     action =
@@ -89,30 +100,17 @@ export function InstrumentPanel({
           ? 'Update allocation'
           : `${plan.kind === 'buy' ? 'Buy' : 'Sell'} ${formatMoney(Math.abs(plan.deltaCents))}`;
   }
-  return (
-    <Dialog
-      open={instrument !== null}
-      onOpenChange={(open) => {
-        if (!open) onClose();
-      }}
-    >
-      {instrument && (
-        <DialogContent
-          finalFocus={returnFocusRef}
-          className="max-h-[calc(100svh-2rem)] w-[calc(100%-2rem)] min-w-0 overflow-y-auto p-4 sm:max-w-2xl sm:p-6 [&>*]:min-w-0"
-        >
-          <DialogHeader className="pr-8">
-            <DialogTitle className="[overflow-wrap:anywhere]">{instrument.name}</DialogTitle>
-            <DialogDescription className="[overflow-wrap:anywhere]">
-              {instrument.description ??
-                'Explore this instrument and choose its share of your portfolio.'}
-            </DialogDescription>
-            <div className="flex flex-wrap gap-x-3 gap-y-1">
-              <Badge variant="secondary">{ASSET_LABELS[instrument.assetClass]}</Badge>
-              <Badge>{RISK_LABELS[instrument.riskLevel]} risk</Badge>
-              <Badge variant="secondary">{instrument.currency}</Badge>
-            </div>
-          </DialogHeader>
+  const badges = instrument && (
+    <div className="flex flex-wrap gap-x-3 gap-y-1">
+      <Badge variant="secondary">{ASSET_LABELS[instrument.assetClass]}</Badge>
+      <Badge>{RISK_LABELS[instrument.riskLevel]} risk</Badge>
+      <Badge variant="secondary">{instrument.currency}</Badge>
+    </div>
+  );
+  const description =
+    instrument?.description ?? 'Explore this instrument and choose its share of your portfolio.';
+  const body = instrument && (
+    <>
           {simulationChart && (
             <ToggleGroup
               aria-label="Chart data"
@@ -261,7 +259,49 @@ export function InstrumentPanel({
                 </Button>
               )}
             </DialogFooter>
-          </form>
+          </form></>
+  );
+  const handleOpenChange = (open: boolean) => {
+    if (!open) onClose();
+  };
+
+  // Phones get a bottom drawer that can be swiped away; larger screens keep the centred dialog.
+  if (mobile) {
+    return (
+      <Drawer open={instrument !== null} onOpenChange={handleOpenChange} showSwipeHandle>
+        {instrument && (
+          <DrawerContent finalFocus={returnFocusRef}>
+            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain p-4 pt-2 [&>*]:min-w-0">
+              <DrawerHeader className="gap-2 p-0 text-left">
+                <DrawerTitle className="leading-none [overflow-wrap:anywhere]">
+                  {instrument.name}
+                </DrawerTitle>
+                <DrawerDescription className="text-pretty [overflow-wrap:anywhere]">
+                  {description}
+                </DrawerDescription>
+                {badges}
+              </DrawerHeader>
+              {body}
+            </div>
+          </DrawerContent>
+        )}
+      </Drawer>
+    );
+  }
+
+  return (
+    <Dialog open={instrument !== null} onOpenChange={handleOpenChange}>
+      {instrument && (
+        <DialogContent
+          finalFocus={returnFocusRef}
+          className="max-h-[calc(100svh-2rem)] w-[calc(100%-2rem)] min-w-0 overflow-y-auto p-4 sm:max-w-2xl sm:p-6 [&>*]:min-w-0"
+        >
+          <DialogHeader className="pr-8">
+            <DialogTitle className="[overflow-wrap:anywhere]">{instrument.name}</DialogTitle>
+            <DialogDescription className="[overflow-wrap:anywhere]">{description}</DialogDescription>
+            {badges}
+          </DialogHeader>
+          {body}
         </DialogContent>
       )}
     </Dialog>

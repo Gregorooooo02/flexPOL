@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import { cn } from 'cn';
+import { Skeleton } from '@/components/ui/skeleton';
 import { formatHistoryDate } from '../history';
 import { formatMoney } from '../portfolio/money';
 
@@ -9,6 +10,8 @@ interface ValueChartProps {
   values: readonly number[];
   unit?: 'EUR' | 'INDEX';
   compact?: boolean;
+  loading?: boolean;
+  emptyMessage?: string;
 }
 
 const indexFormat = new Intl.NumberFormat('en-IE', { maximumFractionDigits: 2 });
@@ -20,9 +23,12 @@ export function ValueChart({
   values,
   unit = 'EUR',
   compact = false,
+  loading = false,
+  emptyMessage,
 }: ValueChartProps) {
   const titleId = useId();
-  if (values.length === 0 || dates.length !== values.length) return null;
+  const hasData = values.length > 0 && dates.length === values.length;
+  if (!hasData && !loading && !emptyMessage) return null;
   const width = 560;
   const height = compact ? 72 : 136;
   const low = Math.min(...values);
@@ -40,44 +46,70 @@ export function ValueChart({
   const first = values[0];
   const last = values.at(-1)!;
   return (
-    <figure className="flex min-w-0 flex-col gap-2">
+    <figure className="flex min-w-0 flex-col gap-2" aria-busy={loading}>
       {!compact && (
-        <figcaption className="flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
+        <figcaption className="flex min-h-10 flex-col gap-1 text-xs text-muted-foreground">
           <span>{label}</span>
-          <span>
-            {format(first)} → {format(last)}
-            {unit === 'INDEX' ? ' index' : ''}
-          </span>
+          {loading ? (
+            <Skeleton className="h-4 w-44 max-w-full" />
+          ) : hasData ? (
+            <span className="[overflow-wrap:anywhere]">
+              {format(first)} → {format(last)}
+              {unit === 'INDEX' ? ' index' : ''}
+            </span>
+          ) : null}
         </figcaption>
       )}
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        preserveAspectRatio="none"
-        role="img"
-        aria-labelledby={titleId}
-        className={cn('w-full text-primary', compact ? 'h-12' : 'h-32')}
-      >
-        <title id={titleId}>
-          {label}, {formatHistoryDate(dates[0])} to {formatHistoryDate(dates.at(-1)!)}:{' '}
-          {format(first)} to {format(last)}.
-        </title>
-        {values.length === 1 ? (
-          <circle cx={width / 2} cy={height / 2} r="3" fill="currentColor" />
-        ) : (
-          <path
-            d={path}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            vectorEffect="non-scaling-stroke"
-          />
-        )}
-      </svg>
-      {!compact && (
-        <p className="flex justify-between gap-2 text-xs text-muted-foreground">
-          <span>{formatHistoryDate(dates[0])}</span>
-          <span>{formatHistoryDate(dates.at(-1)!)}</span>
+      {loading ? (
+        <Skeleton className={cn('w-full', compact ? 'h-12' : 'h-32')} />
+      ) : !hasData ? (
+        <p
+          className={cn(
+            'flex items-center justify-center text-sm text-muted-foreground',
+            compact ? 'h-12' : 'h-32',
+          )}
+        >
+          {emptyMessage}
         </p>
+      ) : (
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          preserveAspectRatio="none"
+          role="img"
+          aria-labelledby={titleId}
+          className={cn('w-full text-primary', compact ? 'h-12' : 'h-32')}
+        >
+          <title id={titleId}>
+            {label}, {formatHistoryDate(dates[0])} to {formatHistoryDate(dates.at(-1)!)}:{' '}
+            {format(first)} to {format(last)}.
+          </title>
+          {values.length === 1 ? (
+            <circle cx={width / 2} cy={height / 2} r="3" fill="currentColor" />
+          ) : (
+            <path
+              d={path}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              vectorEffect="non-scaling-stroke"
+            />
+          )}
+        </svg>
+      )}
+      {!compact && (
+        <div className="flex min-h-4 justify-between gap-2 text-xs text-muted-foreground">
+          {loading ? (
+            <>
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-24" />
+            </>
+          ) : hasData ? (
+            <>
+              <span>{formatHistoryDate(dates[0])}</span>
+              <span>{formatHistoryDate(dates.at(-1)!)}</span>
+            </>
+          ) : null}
+        </div>
       )}
     </figure>
   );
