@@ -67,6 +67,11 @@ export interface CoachPanelProps {
   readonly description?: string;
   /** Starter questions shown while the conversation is empty. */
   readonly suggestions?: readonly string[];
+  /**
+   * Short screens (the mobile drawer): a small Hedgie beside the greeting instead of a large one above it,
+   * so the starter questions keep clear of the message box.
+   */
+  readonly compact?: boolean;
   /** Optional dismiss action for sidebar or dialog layouts. */
   readonly onClose?: () => void;
   /** Layout only, e.g. a height. The panel fills the height it is given. */
@@ -93,6 +98,7 @@ export function CoachPanel({
   title = 'Ask Hedgie',
   description = 'Your learning coach. Ask about any concept; Hedgie explains, but never gives real investment advice.',
   suggestions = DEFAULT_SUGGESTIONS,
+  compact = false,
   onClose,
   className,
 }: CoachPanelProps) {
@@ -169,16 +175,29 @@ export function CoachPanel({
 
       <CardContent className="flex min-h-0 flex-1 flex-col">
         {isEmpty ? (
-          <Empty className="flex-1">
-            <EmptyHeader>
-              <EmptyMedia>
-                <img src={hedgieImage('greeting')} alt="Hedgie waving hello" className="size-24" />
-              </EmptyMedia>
-              <EmptyTitle>Hi, I'm Hedgie!</EmptyTitle>
-              <EmptyDescription>
-                Stuck on something? Pick a starter question or ask me anything about it.
-              </EmptyDescription>
-            </EmptyHeader>
+          // justify-center-safe: if the greeting doesn't fit, it scrolls from the top instead of overflowing.
+          <Empty className={cn('min-h-0 flex-1 justify-center-safe overflow-y-auto', compact && 'gap-3 p-2')}>
+            {compact ? (
+              <EmptyHeader className="flex-row items-start gap-3 text-left">
+                <img src={hedgieImage('greeting')} alt="Hedgie waving hello" className="size-12 shrink-0" />
+                <div className="flex min-w-0 flex-col gap-1 rounded-2xl rounded-tl-sm bg-secondary px-3 py-2">
+                  <EmptyTitle>Hi, I'm Hedgie!</EmptyTitle>
+                  <EmptyDescription>
+                    Stuck on something? Pick a starter question or ask me anything about it.
+                  </EmptyDescription>
+                </div>
+              </EmptyHeader>
+            ) : (
+              <EmptyHeader>
+                <EmptyMedia>
+                  <img src={hedgieImage('greeting')} alt="Hedgie waving hello" className="size-24" />
+                </EmptyMedia>
+                <EmptyTitle>Hi, I'm Hedgie!</EmptyTitle>
+                <EmptyDescription>
+                  Stuck on something? Pick a starter question or ask me anything about it.
+                </EmptyDescription>
+              </EmptyHeader>
+            )}
             <EmptyContent>
               {suggestions.map((suggestion) => (
                 <Button key={suggestion} variant="outline" size="sm" onClick={() => send(suggestion)}>
