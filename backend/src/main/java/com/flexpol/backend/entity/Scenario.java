@@ -43,7 +43,7 @@ public class Scenario {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	/** Stable key from the JSON, e.g. "kuba-safety-cushion". */
+	/** Stable key from the JSON, e.g. "marek-favourite-company". */
 	@Column(nullable = false, unique = true, length = 80)
 	private String slug;
 

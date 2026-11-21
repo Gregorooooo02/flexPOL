@@ -23,8 +23,15 @@ interface ChapterGroup {
   readonly scenarios: readonly Scenario[];
 }
 
-/** Tiles grid; container queries, because the coach sidebar changes the content width. */
-const GRID_CLASS = 'grid gap-4 @2xl:grid-cols-2 @5xl:grid-cols-3';
+/**
+ * Tiles grid: each chapter has two scenarios, so at most two columns, one row per chapter. Container
+ * queries, because the coach sidebar changes the content width.
+ */
+const GRID_CLASS = 'grid gap-4 @2xl:grid-cols-2';
+
+/** Skeleton layout while loading: chapter groups of two tiles, like the seeded scenarios. */
+const LOADING_GROUPS = 2;
+const LOADING_TILES_PER_GROUP = 2;
 
 /** Lists the sandbox scenarios as tiles, grouped by chapter; a tile opens `/scenarios/:scenarioId`. */
 export function ScenariosPage() {
@@ -59,7 +66,7 @@ export function ScenariosPage() {
 
   return (
     <div className="@container flex flex-1 flex-col">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-6">
         <header className="flex flex-col gap-2">
           <h1 className="font-heading text-2xl font-semibold tracking-tight">Scenarios</h1>
           <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
@@ -155,14 +162,18 @@ function groupByChapter(scenarios: readonly Scenario[]): ChapterGroup[] {
 
 function LoadingTiles() {
   return (
-    <div role="status" aria-live="polite" className="flex flex-col gap-4">
+    <div role="status" aria-live="polite" className="flex flex-col gap-8">
       <span className="sr-only">Loading scenarios…</span>
-      <Skeleton className="h-6 w-64" />
-      <div className={GRID_CLASS} aria-hidden="true">
-        {Array.from({ length: 6 }, (_, index) => (
-          <Skeleton key={index} className="h-56" />
-        ))}
-      </div>
+      {Array.from({ length: LOADING_GROUPS }, (_, group) => (
+        <div key={group} className="flex flex-col gap-4" aria-hidden="true">
+          <Skeleton className="h-6 w-64" />
+          <div className={GRID_CLASS}>
+            {Array.from({ length: LOADING_TILES_PER_GROUP }, (_, index) => (
+              <Skeleton key={index} className="h-56" />
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

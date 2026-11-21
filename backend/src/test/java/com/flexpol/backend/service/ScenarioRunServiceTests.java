@@ -18,7 +18,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-/** Runs allocations through the seeded scenarios: 2.1 Kuba (€6,000, €2,500 repair on day 120) and 2.3 Marek. */
+/**
+ * Runs allocations through the seeded scenarios: 3.5 Henryk (€400,000, €32,000 of spending on days 365 and 730,
+ * target €340,000) and 2.3 Marek.
+ */
 @SpringBootTest
 class ScenarioRunServiceTests {
 
@@ -29,26 +32,30 @@ class ScenarioRunServiceTests {
 	private ScenarioService scenarioService;
 
 	@Test
-	void allCashPaysTheNeedFromCashWithNoDropAndMeetsTheGoal() {
-		var run = scenarioRunService.run(idOf("2.1"), new ScenarioRunRequest(List.of()));
+	void allCashPaysBothNeedsFromCashButEarnsOnlyTheMinimumStar() {
+		var run = scenarioRunService.run(idOf("3.5"), new ScenarioRunRequest(List.of()));
 
 		assertThat(run.instruments()).isEmpty();
-		assertThat(run.points().getFirst().value()).isEqualByComparingTo("6000");
-		assertThat(run.finalValue()).isEqualByComparingTo("3500");
-		assertThat(run.paidOut()).isEqualByComparingTo("2500");
+		assertThat(run.points().getFirst().value()).isEqualByComparingTo("400000");
+		assertThat(run.finalValue()).isEqualByComparingTo("336000");
+		assertThat(run.paidOut()).isEqualByComparingTo("64000");
 		assertThat(run.totalReturn()).isEqualByComparingTo("0");
 		assertThat(run.largestDrop()).isEqualByComparingTo("0");
-		assertThat(run.moneyNeeds()).singleElement().satisfies(need -> {
-			assertThat(need.paidFromCash()).isEqualByComparingTo("2500");
+		assertThat(run.moneyNeeds()).hasSize(2).allSatisfy(need -> {
+			assertThat(need.paidFromCash()).isEqualByComparingTo("32000");
 			assertThat(need.paidFromHoldings()).isEqualByComparingTo("0");
 			assertThat(need.shortfall()).isEqualByComparingTo("0");
 			assertThat(need.date()).isEqualTo(run.points().get(need.pointIndex()).date());
 		});
-		assertThat(run.goalMet()).isTrue();
-		assertThat(run.score().total()).isEqualTo(100);
-		// No growth (cash earns 0%), but the goal, the instruments (none needed) and the cash share fit.
-		assertThat(run.stars().criteria()).extracting(StarCriterion::earned).containsExactly(false, true, true, true);
-		assertThat(run.stars().stars()).isEqualTo(3);
+		assertThat(run.goalMet()).isFalse();
+		// Growth 100 × (336,000 − 310,000) / (340,000 − 310,000) ≈ 87 at weight 0.3, stability 100 at weight 0.7.
+		assertThat(run.score().growth()).isEqualTo(87);
+		assertThat(run.score().stability()).isEqualTo(100);
+		assertThat(run.score().total()).isEqualTo(96);
+		// The stars don't reward doing nothing: no growth, no goal, no fund (at least one is needed) and too much cash.
+		assertThat(run.stars().criteria()).extracting(StarCriterion::earned).containsExactly(false, false, false, false);
+		assertThat(run.stars().earned()).isZero();
+		assertThat(run.stars().stars()).isEqualTo(1);
 	}
 
 	@Test
@@ -79,29 +86,29 @@ class ScenarioRunServiceTests {
 
 	@Test
 	void theScenarioSeedGivesEveryRunTheSameMarketAndNeedsAreSoldFromHoldings() {
-		var request = new ScenarioRunRequest(List.of(new Allocation(1013L, new BigDecimal("6000.00"))));
+		var request = new ScenarioRunRequest(List.of(new Allocation(1013L, new BigDecimal("400000.00"))));
 
-		var first = scenarioRunService.run(idOf("2.1"), request);
-		var second = scenarioRunService.run(idOf("2.1"), request);
+		var first = scenarioRunService.run(idOf("3.5"), request);
+		var second = scenarioRunService.run(idOf("3.5"), request);
 
 		assertThat(second.points()).isEqualTo(first.points());
-		assertThat(first.moneyNeeds()).singleElement().satisfies(need -> {
+		assertThat(first.moneyNeeds()).hasSize(2).allSatisfy(need -> {
 			assertThat(need.paidFromCash()).isEqualByComparingTo("0");
-			assertThat(need.paidFromHoldings()).isEqualByComparingTo("2500");
+			assertThat(need.paidFromHoldings()).isEqualByComparingTo("32000");
 		});
 		var fund = first.instruments().getFirst();
 		assertThat(fund.values()).hasSameSizeAs(first.points());
-		assertThat(fund.values().getFirst()).isEqualByComparingTo("6000");
-		// No cash: the portfolio is the fund, and its contribution is what it made on top of the €6,000.
+		assertThat(fund.values().getFirst()).isEqualByComparingTo("400000");
+		// No cash: the portfolio is the fund, and its contribution is what it made on top of the €400,000.
 		assertThat(first.finalValue()).isEqualByComparingTo(fund.finalValue());
-		assertThat(fund.contribution()).isEqualByComparingTo(first.finalValue().add(first.paidOut()).subtract(new BigDecimal("6000")));
-		// The seeded evaluation: the world fund suits Kuba, but no cash at all is outside the 70–100% range.
+		assertThat(fund.contribution()).isEqualByComparingTo(first.finalValue().add(first.paidOut()).subtract(new BigDecimal("400000")));
+		// The seeded evaluation: the world fund suits Henryk, but no cash is below the 25–60% range
+		// and 100% in one fund is above the 30% cap on each fund.
 		assertThat(first.stars().unsuitableInstrumentIds()).isEmpty();
-		assertThat(first.stars().shareRanges()).singleElement().satisfies(range -> {
-			assertThat(range.label()).isEqualTo("Cash");
-			assertThat(range.share()).isEqualByComparingTo("0");
-			assertThat(range.met()).isFalse();
-		});
+		assertThat(first.stars().shareRanges()).extracting(ShareRangeResult::label).containsExactly("Cash", "Any single fund");
+		assertThat(first.stars().shareRanges()).extracting(ShareRangeResult::share)
+				.usingElementComparator(BigDecimal::compareTo).containsExactly(BigDecimal.ZERO, BigDecimal.ONE);
+		assertThat(first.stars().shareRanges()).extracting(ShareRangeResult::met).containsExactly(false, false);
 		assertThat(first.stars().explanation()).isNotBlank();
 	}
 
@@ -117,16 +124,16 @@ class ScenarioRunServiceTests {
 
 	@Test
 	void rejectsInstrumentsOutsideTheScenarioOverspendingAndFractionsOfCents() {
-		Long kuba = idOf("2.1");
+		Long henryk = idOf("3.5");
 
-		assertThatThrownBy(() -> scenarioRunService.run(kuba, new ScenarioRunRequest(List.of(
+		assertThatThrownBy(() -> scenarioRunService.run(henryk, new ScenarioRunRequest(List.of(
 				new Allocation(1020L, new BigDecimal("100"))))))
 				.isInstanceOf(BadRequestException.class);
-		assertThatThrownBy(() -> scenarioRunService.run(kuba, new ScenarioRunRequest(List.of(
-				new Allocation(1013L, new BigDecimal("3000")),
-				new Allocation(1015L, new BigDecimal("3000.01"))))))
+		assertThatThrownBy(() -> scenarioRunService.run(henryk, new ScenarioRunRequest(List.of(
+				new Allocation(1013L, new BigDecimal("200000")),
+				new Allocation(1015L, new BigDecimal("200000.01"))))))
 				.isInstanceOf(BadRequestException.class);
-		assertThatThrownBy(() -> scenarioRunService.run(kuba, new ScenarioRunRequest(List.of(
+		assertThatThrownBy(() -> scenarioRunService.run(henryk, new ScenarioRunRequest(List.of(
 				new Allocation(1013L, new BigDecimal("100.001"))))))
 				.isInstanceOf(BadRequestException.class);
 	}

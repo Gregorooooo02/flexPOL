@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-/** The scenario text for the coach, on the seeded 2.1 Kuba (€6,000, €2,500 repair on day 120) and 2.3 Marek. */
+/** The scenario text for the coach, on the seeded 3.5 Henryk (€400,000, €32,000 of spending on days 365 and 730) and 2.3 Marek. */
 @SpringBootTest
 class CoachScenarioContextServiceTests {
 
@@ -30,13 +30,14 @@ class CoachScenarioContextServiceTests {
 
 	@Test
 	void beforeARunShowsTheBriefAndPlanButNothingTheLearnerHasNotSeen() {
-		Long kuba = idOf("2.1");
-		var spec = scenarioService.getRunSpec(kuba);
+		Long henryk = idOf("3.5");
+		var spec = scenarioService.getRunSpec(henryk);
 
-		String text = contextService.scenarioContext(kuba, List.of(new Allocation(1013L, new BigDecimal("1200.00"))), false);
+		String text = contextService.scenarioContext(henryk, List.of(new Allocation(1013L, new BigDecimal("80000.00"))), false);
 
-		assertThat(text).contains("Scenario 2.1", spec.brief().goal(), "Budget: €6,000.00", "Day 120: €2,500.00")
-				.contains(": €1,200.00 (20%)", "- Cash: €4,800.00 (80%)")
+		assertThat(text).contains("Scenario 3.5", spec.brief().goal(), "Budget: €400,000.00")
+				.contains("Day 365: €32,000.00", "Day 730: €32,000.00")
+				.contains(": €80,000.00 (20%)", "- Cash: €320,000.00 (80%)")
 				.contains("have not seen a result")
 				.doesNotContain(spec.evaluation().explanation())
 				.doesNotContain("Suitable here", "Final value:");
@@ -67,11 +68,11 @@ class CoachScenarioContextServiceTests {
 
 	@Test
 	void rejectsAPlanOutsideTheScenarioAndARunWithoutAPlan() {
-		Long kuba = idOf("2.1");
+		Long henryk = idOf("3.5");
 
-		assertThatThrownBy(() -> contextService.scenarioContext(kuba, List.of(new Allocation(9999L, BigDecimal.TEN)), false))
+		assertThatThrownBy(() -> contextService.scenarioContext(henryk, List.of(new Allocation(9999L, BigDecimal.TEN)), false))
 				.isInstanceOf(BadRequestException.class);
-		assertThatThrownBy(() -> contextService.scenarioContext(kuba, null, true))
+		assertThatThrownBy(() -> contextService.scenarioContext(henryk, null, true))
 				.isInstanceOf(BadRequestException.class);
 	}
 
