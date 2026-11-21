@@ -1,0 +1,118 @@
+# Builds the HedgeFlex image (frontend bundled into the Spring Boot jar, see /Dockerfile)
+# and pushes it to Google Artifact Registry. Runs only on demand:
+# Actions > "Build Docker image" > Run workflow (or: gh workflow run docker-image.yml).
+#
+# Authentication uses Workload Identity Federation, so no service account key is stored in GitHub.
+# Repository variables (Settings > Secrets and variables > Actions > Variables):
+#   GCP_PROJECT_ID                  e.g. hedgeflex-123456
+#   GAR_LOCATION                    Artifact Registry region, e.g. europe-west1
+#   GAR_REPOSITORY                  Artifact Registry Docker repository name, e.g. hedgeflex
+#   GCP_WORKLOAD_IDENTITY_PROVIDER  projects/<number>/locations/global/workloadIdentityPools/<pool>/providers/<provider>
+#   GCP_SERVICE_ACCOUNT             <name>@<project>.iam.gserviceaccount.com (roles/artifactregistry.writer on the repository)
+
+name: Build Docker image
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Extra image tag, e.g. v1.0 or demo (optional; the commit SHA is always tagged)
+        required: false
+        default: ""
+      latest:
+        description: Also tag the image as latest
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write # for Workload Identity Federation
+
+concurrency:
+  group: docker-image-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  IMAGE_NAME: hedgeflex
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check configuration
+        env:
+          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          GAR_LOCATION: ${{ vars.GAR_LOCATION }}
+          GAR_REPOSITORY: ${{ vars.GAR_REPOSITORY }}
+          GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          EXTRA_TAG: ${{ inputs.tag }}
+        run: |
+          missing=0
+          for name in GCP_PROJECT_ID GAR_LOCATION GAR_REPOSITORY GCP_WORKLOAD_IDENTITY_PROVIDER GCP_SERVICE_ACCOUNT; do
+            if [ -z "${!name}" ]; then echo "::error::Repository variable $name is not set"; missing=1; fi
+          done
+          if [ -n "$EXTRA_TAG" ] && ! [[ "$EXTRA_TAG" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
+            echo "::error::'$EXTRA_TAG' is not a valid Docker tag"; missing=1
+          fi
+          exit $missing
+
+      - uses: actions/checkout@v5
+
+      - name: Compute image tags
+        id: tags
+        env:
+          IMAGE: ${{ vars.GAR_LOCATION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/${{ env.IMAGE_NAME }}
+          EXTRA_TAG: ${{ inputs.tag }}
+          LATEST: ${{ inputs.latest }}
+        run: |
+          {
+            echo "image=$IMAGE"
+            echo "tags<<EOF"
+            echo "$IMAGE:sha-${GITHUB_SHA::7}"
+            if [ -n "$EXTRA_TAG" ]; then echo "$IMAGE:$EXTRA_TAG"; fi
+            if [ "$LATEST" = "true" ]; then echo "$IMAGE:latest"; fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: access_token
+
+      - name: Log in to Artifact Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.GAR_LOCATION }}-docker.pkg.dev
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          # Reuse npm/Maven dependency layers between runs.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summary
+        env:
+          TAGS: ${{ steps.tags.outputs.tags }}
+        run: |
+          {
+            echo "### Pushed image"
+            echo '```'
+            echo "$TAGS"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

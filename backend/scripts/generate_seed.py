@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the H2 instrument seed from local snapshots, without network access."""
+"""Generate the instrument seed (H2 and PostgreSQL) from local snapshots, without network access."""
 
 import argparse
 import csv
@@ -187,7 +187,8 @@ def generate_section(data_dir, manifest, settings):
             if not 0 < Decimal(normalized) < Decimal("1e16"):
                 raise ValueError(f"Index does not fit NUMERIC(24,8): {instrument['file_key']}, {day}")
             rows.append(
-                f"    ({observation_id}, {instrument_id}, DATEADD('DAY', {offset}, CURRENT_DATE), "
+                # Plain date arithmetic works on both H2 and PostgreSQL.
+                f"    ({observation_id}, {instrument_id}, CURRENT_DATE {'-' if offset < 0 else '+'} {abs(offset)}, "
                 f"DATE '{day.isoformat()}', {normalized})"
             )
         observation_sql.append(
