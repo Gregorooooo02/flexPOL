@@ -16,6 +16,7 @@ public class DuelCoordinator {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DuelCoordinator.class);
 	private final DuelMatchService matchService;
+	private final DuelEvaluationWorker evaluationWorker;
 
 	@Scheduled(fixedDelayString = "${hedgeflex.duel.coordinator-delay:500ms}")
 	public void advanceDueMatches() {
@@ -26,5 +27,6 @@ public class DuelCoordinator {
 				LOG.warn("Could not advance Duel {}", matchId, error);
 			}
 		}
+		evaluationWorker.dispatchPending();
 	}
 }

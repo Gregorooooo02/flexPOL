@@ -3,16 +3,19 @@ package com.flexpol.backend.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.flexpol.backend.dto.SimulationRequest;
 import com.flexpol.backend.dto.SimulationResult;
 import com.flexpol.backend.model.SimulationContext;
+import com.flexpol.backend.model.FrozenSimulationDefinition;
 import com.flexpol.backend.simulation.SeedMixer;
 import com.flexpol.backend.simulation.SimulationEngine;
 
@@ -76,6 +79,77 @@ public class SimulationService {
 		return new SimulationResult(definition.instrumentId(), definition.currency(), initialInvestment,
 				request.durationDays(), start, trajectory.effectiveEndDate(), seed,
 				finalValue, totalReturn, trajectory.points());
+	}
+
+	/** Internal snapshot API: validate and version configuration, without generating a market. */
+	public FrozenSimulationDefinition freezeDefinition(Long instrumentId) {
+		var definition = instrumentService.getSimulationDefinition(instrumentId);
+		var configuration = definition.configuration();
+		var engine = engines.get(configuration.modelKey());
+		if (engine == null) {
+			throw new IllegalStateException("Unsupported configured simulation model: " + configuration.modelKey());
+		}
+		engine.validateParameters(configuration.parameters());
+		return new FrozenSimulationDefinition(instrumentId, definition.currency(), engine.modelKey(),
+				engine.modelVersion(), configuration.parameters());
+	}
+
+	/** Server-only common-date simulation. No catalogue reads, random seed generation or fallback. */
+	public List<SimulationResult> simulateFrozen(List<FrozenSimulationDefinition> definitions, LocalDate start,
+			int durationDays, BigDecimal baseAmount, long masterSeed) {
+		if (definitions == null || definitions.isEmpty() || definitions.size() > MAX_BATCH_SIZE || start == null
+				|| definitions.stream().anyMatch(Objects::isNull)
+				|| durationDays < 1 || durationDays > MAX_BATCH_DURATION_DAYS || baseAmount == null
+				|| baseAmount.signum() <= 0 || baseAmount.compareTo(MAX_INVESTMENT) > 0) {
+			throw new IllegalStateException("Invalid frozen simulation inputs");
+		}
+		var base = baseAmount.setScale(2, RoundingMode.UNNECESSARY);
+		var end = start.plusDays(durationDays);
+		var ids = new HashSet<Long>();
+		var results = new ArrayList<SimulationResult>();
+		List<LocalDate> dates = null;
+		String currency = definitions.getFirst().currency();
+		for (var definition : definitions) {
+			if (definition.instrumentId() == null || !ids.add(definition.instrumentId())
+					|| currency == null || !currency.equals(definition.currency())) {
+				throw new IllegalStateException("Frozen instruments must be distinct and share a currency");
+			}
+			var engine = engines.get(definition.modelKey());
+			if (engine == null || !engine.modelVersion().equals(definition.modelVersion())) {
+				throw new IllegalStateException("Frozen simulation engine version is unavailable");
+			}
+			engine.validateParameters(definition.parameters());
+			long seed = SeedMixer.derive(masterSeed, definition.instrumentId());
+			var trajectory = engine.simulate(new SimulationContext(base, start, end, seed, definition.parameters()));
+			if (trajectory == null) {
+				throw new IllegalStateException("Frozen simulation returned no trajectory");
+			}
+			var points = trajectory.points();
+			if (points == null || points.size() < 2 || points.stream().anyMatch(Objects::isNull)
+					|| !end.equals(trajectory.effectiveEndDate())
+					|| !start.equals(points.getFirst().date()) || !end.equals(points.getLast().date())
+					|| points.getFirst().investmentValue() == null
+					|| points.getFirst().investmentValue().compareTo(base) != 0) {
+				throw new IllegalStateException("Frozen simulation did not cover the requested horizon/base");
+			}
+			LocalDate previous = null;
+			for (var point : points) {
+				if (point.date() == null || (previous != null && !point.date().isAfter(previous))
+						|| point.investmentValue() == null || point.investmentValue().signum() < 0) {
+					throw new IllegalStateException("Invalid frozen simulation point");
+				}
+				previous = point.date();
+			}
+			var pointDates = points.stream().map(point -> point.date()).toList();
+			if (dates != null && !dates.equals(pointDates)) {
+				throw new IllegalStateException("Frozen simulations must align on every point date");
+			}
+			dates = pointDates;
+			var finalValue = points.getLast().investmentValue();
+			results.add(new SimulationResult(definition.instrumentId(), currency, base, durationDays, start, end, seed,
+					finalValue, finalValue.subtract(base).divide(base, 8, RoundingMode.HALF_EVEN), List.copyOf(points)));
+		}
+		return List.copyOf(results);
 	}
 
 	/**

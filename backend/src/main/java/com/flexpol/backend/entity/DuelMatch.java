@@ -46,6 +46,11 @@ public class DuelMatch {
 	@Column(nullable = false)
 	private String scenarioJson;
 
+	/** Frozen private market inputs; never mapped to a public response. */
+	@Lob
+	@Column(nullable = false)
+	private String marketJson;
+
 	@Column(nullable = false)
 	private Instant createdAt;
 
@@ -56,6 +61,16 @@ public class DuelMatch {
 	private Instant planningEndsAt;
 
 	private Instant evaluationStartedAt;
+	private Instant evaluatedAt;
+	private Instant failedAt;
+	private UUID evaluationClaimToken;
+	private Instant evaluationClaimExpiresAt;
+	@Column(nullable = false)
+	private int evaluationAttempts;
+
+	@Enumerated(EnumType.STRING)
+	@Column(length = 30)
+	private DuelFailureReason failureReason;
 	private Instant cancelledAt;
 
 	@Enumerated(EnumType.STRING)

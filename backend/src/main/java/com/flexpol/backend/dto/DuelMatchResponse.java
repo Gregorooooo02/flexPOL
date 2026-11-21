@@ -8,6 +8,7 @@ import java.util.UUID;
 import com.flexpol.backend.entity.DuelCancellationReason;
 import com.flexpol.backend.entity.DuelPhase;
 import com.flexpol.backend.entity.DuelSubmissionSource;
+import com.flexpol.backend.entity.DuelFailureReason;
 
 /** Recipient-specific snapshot. Opponent allocations and emails are never serialized here. */
 public record DuelMatchResponse(
@@ -21,6 +22,9 @@ public record DuelMatchResponse(
 		Instant evaluationStartedAt,
 		Instant cancelledAt,
 		DuelCancellationReason cancellationReason,
+		Instant evaluatedAt,
+		Instant failedAt,
+		DuelFailureReason failureReason,
 		Instant serverNow,
 		List<Player> players,
 		Portfolio ownPortfolio) {

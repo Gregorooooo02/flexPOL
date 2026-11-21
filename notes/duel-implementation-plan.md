@@ -1,13 +1,15 @@
 # 1v1 Duel: implementation plan
 
-Status: implementation in progress; scenario generation and the backend planning lifecycle are complete. Defaults below remain recommendations except where encoded in the implemented content/configuration.
+Status: implementation in progress; scenario generation, the backend planning lifecycle and shared-market evaluation are complete. Defaults below remain recommendations except where encoded in the implemented content/configuration.
 
 Implementation progress:
 
 - `DuelScenarioService`: two validated authored templates, generated classpath content, eligible-category selection, immutable brief snapshots and public Java/TypeScript contracts.
 - `DuelMatchService`: persisted shared scenario, participants and revisioned allocations; owned snapshots; atomic manual submission; UTC briefing/planning deadlines; timeout auto-lock and empty cancellation. User/match locks prevent overlapping active matches and late edits. `DuelCoordinator` is a bounded scheduled adapter; focused clock/concurrency service tests cover the lifecycle.
-- Current handoff: `EVALUATING` means immutable portfolios ready for a future evaluator, not an implemented simulation. Cancelled matches are terminal; evaluation matches still count as active. Creation and commands are internal service calls only; no HTTP entry points are exposed.
-- No queue/realtime/evaluation/replay/ranking/UI implementation yet. M1's evaluation and M2's result settlement remain incomplete. The remaining milestones below are the full-feature roadmap, not a claim that the whole Duel is playable.
+- `DuelMarketService` freezes the secret seed, engine definitions/versions, common UTC start date and valuation rule at creation. `SimulationService.simulateFrozen` evaluates detached inputs with full point-date alignment; it leaves the existing public simulation contracts unchanged.
+- `DuelEvaluationService`, `DuelEvaluationJobService` and `DuelEvaluationWorker`: bounded background delivery, expiring token claims, shared paths, cent-exact valuation, immutable results, draw/winner calculation and fail-closed recovery. Result access is participant-only and does not expose seeds/model parameters. Focused service tests include catalogue edits, duplicate/expired claims, rounding and failures.
+- Current handoff: `EVALUATING` → `EVALUATED` or `FAILED`. `EVALUATED` holds both portfolios and the computed outcome but remains active until future replay/settlement. Failed/cancelled matches release their participants. Creation, submission and result reads are internal service calls only; no HTTP entry points are exposed.
+- No queue/realtime/replay/ranking/UI implementation yet. M2's ranking settlement remains incomplete. The remaining milestones below are the full-feature roadmap, not a claim that the whole Duel is playable.
 
 ## 1. Scope and player journey
 

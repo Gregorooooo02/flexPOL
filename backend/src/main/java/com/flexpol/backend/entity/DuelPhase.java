@@ -1,6 +1,6 @@
 package com.flexpol.backend.entity;
 
-/** This slice ends at EVALUATING: no results or ranking are fabricated. */
+/** EVALUATED awaits future replay/settlement; FAILED and CANCELLED are terminal. */
 public enum DuelPhase {
-	BRIEFING, PLANNING, EVALUATING, CANCELLED
+	BRIEFING, PLANNING, EVALUATING, EVALUATED, CANCELLED, FAILED
 }

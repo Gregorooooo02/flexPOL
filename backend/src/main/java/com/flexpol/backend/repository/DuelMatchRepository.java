@@ -34,4 +34,11 @@ public interface DuelMatchRepository extends JpaRepository<DuelMatch, UUID> {
 			where p.user.id = :userId and p.match.phase in :phases
 			""")
 	boolean hasActiveMatch(Long userId, Collection<DuelPhase> phases);
+
+	@Query("""
+			select m.id from DuelMatch m where m.phase = :phase
+			and (m.evaluationClaimToken is null or m.evaluationClaimExpiresAt <= :now)
+			order by m.evaluationStartedAt, m.id
+			""")
+	List<UUID> findEvaluationIds(DuelPhase phase, Instant now, Pageable page);
 }

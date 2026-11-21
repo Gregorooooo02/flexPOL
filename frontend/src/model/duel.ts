@@ -27,7 +27,9 @@ export interface DuelAllowedInstrument {
   riskLevel: RiskLevel;
 }
 
-export type DuelPhase = 'BRIEFING' | 'PLANNING' | 'EVALUATING' | 'CANCELLED';
+export type DuelPhase = 'BRIEFING' | 'PLANNING' | 'EVALUATING' | 'EVALUATED' | 'CANCELLED' | 'FAILED';
+export type DuelFailureReason = 'EVALUATION_ERROR' | 'EVALUATION_TIMEOUT';
+export type DuelOutcome = 'WIN' | 'DRAW';
 export type DuelSubmissionSource = 'MANUAL' | 'TIMEOUT';
 export type DuelCancellationReason = 'EMPTY_PORTFOLIO';
 
@@ -71,7 +73,54 @@ export interface DuelMatch {
   evaluationStartedAt: string | null;
   cancelledAt: string | null;
   cancellationReason: DuelCancellationReason | null;
+  evaluatedAt: string | null;
+  failedAt: string | null;
+  failureReason: DuelFailureReason | null;
   serverNow: string;
   players: DuelPlayer[];
   ownPortfolio: DuelPortfolio;
+}
+
+// Mirrors DuelResultResponse: both portfolios are released only after evaluation.
+export interface DuelResult {
+  schemaVersion: number;
+  matchId: string;
+  completedAt: string;
+  evaluationVersion: string;
+  valuationVersion: string;
+  currency: string;
+  budget: number;
+  startDate: string;
+  endDate: string;
+  dates: string[];
+  outcome: DuelOutcome;
+  winnerId: number | null;
+  finalValueGap: number;
+  returnDifferencePercentagePoints: number;
+  players: DuelPlayerResult[];
+}
+
+export interface DuelPlayerResult {
+  userId: number;
+  username: string;
+  seat: number;
+  cash: number;
+  invested: number;
+  instruments: DuelInstrumentResult[];
+  values: number[];
+  finalValue: number;
+  profit: number;
+  /** Fraction, not a percentage. */
+  totalReturn: number;
+  /** Fraction, not a percentage. */
+  maxDrawdown: number;
+}
+
+export interface DuelInstrumentResult {
+  instrumentId: number;
+  name: string;
+  allocation: number;
+  values: number[];
+  finalValue: number;
+  contribution: number;
 }
