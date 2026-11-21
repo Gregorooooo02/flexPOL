@@ -20,7 +20,8 @@ export function AppLayout() {
 
   return (
     <CoachFocusProvider>
-      <div className="flex h-svh min-h-svh flex-col overflow-hidden bg-background text-foreground [--app-header-height:4.5rem]">
+      <div className="h-svh min-h-svh bg-background">
+      <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background text-foreground [--app-header-height:4.5rem]">
         <header className="sticky top-0 z-30 h-[var(--app-header-height)] shrink-0 border-b border-border bg-card/95 backdrop-blur-sm">
           <div className="mx-auto flex h-full w-full max-w-7xl items-center justify-between gap-3 px-4">
             <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -75,6 +76,7 @@ export function AppLayout() {
         <CoachSidebar>
           <Outlet />
         </CoachSidebar>
+      </div>
       </div>
     </CoachFocusProvider>
   );
