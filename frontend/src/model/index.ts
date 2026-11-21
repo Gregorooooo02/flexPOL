@@ -15,3 +15,12 @@ export type {
   SimulationConfiguration,
 } from './instrument';
 export type { SimulationPoint, SimulationRequest, SimulationResult } from './simulation';
+export type {
+  Scenario,
+  ScenarioInstrument,
+  ScenarioMoneyNeed,
+  ScenarioPersona,
+  ScenarioRule,
+  ScenarioRuleType,
+  ScenarioScoring,
+} from './scenario';
