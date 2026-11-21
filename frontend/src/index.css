@@ -248,6 +248,11 @@
   }
 }
 
+@keyframes hedgie-peek {
+  0%, 100% { transform: translateX(100%); }
+  24%, 76% { transform: translateX(0); }
+}
+
 @keyframes fx-option-pop {
   0% {
     transform: scale(0.97);
