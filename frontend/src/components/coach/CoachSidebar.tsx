@@ -169,27 +169,6 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
           else setMobileChat({ focusScopeId, open: true });
         }}
       />
-      <Button
-        type="button"
-        className="fixed right-4 bottom-4 z-40 shadow-md group-has-[[data-workspace-action-bar]]/coach:bottom-32 lg:hidden"
-        onClick={() => setMobileChat({ focusScopeId, open: true })}
-        aria-haspopup="dialog"
-      >
-        <img src={hedgieImage('greeting')} alt="" data-icon="inline-start" className="-my-1 size-6" />
-        Ask Hedgie
-      </Button>
-      {!sidebarOpen && (
-        <Button
-          type="button"
-          className="fixed right-4 bottom-4 z-40 hidden shadow-md group-has-[[data-workspace-action-bar]]/coach:bottom-28 lg:inline-flex"
-          onClick={openSidebar}
-          aria-expanded={sidebarOpen}
-          aria-controls="coach-sidebar"
-        >
-          <img src={hedgieImage('greeting')} alt="" data-icon="inline-start" className="-my-1 size-6" />
-          Ask Hedgie
-        </Button>
-      )}
     </div>
   );
 }
