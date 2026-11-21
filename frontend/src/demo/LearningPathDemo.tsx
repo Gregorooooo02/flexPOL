@@ -489,10 +489,10 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
           node={entry.node}
           topic={entry.topic}
           isCompleted={completedSet.has(entry.node.id)}
-          isTopicCompleted={isTopicCompleted(entry.topic, completedSet)}
-          nextNodeSummary={nextEntry ? `${nextEntry.node.code} (${nextEntry.node.title})` : null}
+          nextNodeKind={nextEntry?.node.kind ?? null}
           getNextWrongAnswerIndex={getNextWrongAnswerIndex}
           onComplete={handleCompleteLesson}
+          onNext={nextEntry ? () => goToView({ kind: 'lesson', nodeId: nextEntry.node.id }) : null}
           onBack={() => goToView({ kind: 'path' })}
         />
       );
