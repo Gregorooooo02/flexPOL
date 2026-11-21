@@ -19,7 +19,26 @@ export interface Question {
   options: AnswerOption[];
   assignment?: AssignmentExercise;
   comparison?: PortfolioComparison;
+  numberExercise?: NumberExercise;
 }
+
+export type NumberExercise = {
+  label: string;
+  unit: string;
+} & (
+  | { lab: NumberLab; dial: null }
+  | { lab: null; dial: { max: number; step: number } }
+);
+
+export type NumberLab = {
+  max: number;
+  step: number;
+  initial: number;
+  balance: number;
+} & (
+  | { kind: 'COMPOUNDING' | 'SHOCK'; rate: number }
+  | { kind: 'LOCKBOX'; bill: number }
+);
 
 export interface AssignmentExercise {
   mode: 'MATCH' | 'SORT';
@@ -39,7 +58,7 @@ export interface Quiz {
   quizType: QuizType;
   title: string;
   chapterId: number;
-  /** Null for control quizzes. */
+  /** Null for final quizzes. */
   subchapterId: number | null;
   /** Minimum number of correct answers to pass, if the quiz has one. */
   passMark: number | null;

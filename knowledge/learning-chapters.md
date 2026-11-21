@@ -6,7 +6,7 @@ For the hackathon MVP, **Chapter 1** is built in full. Chapters 2 and 3 appear i
 
 ## Lesson files
 
-Each subchapter has its own file, with the lesson for the user and practice questions with explanations. Practice questions can be A–D choices, matching or sorting (`assignment` blocks with a private solution and a retry hint), or a portfolio prediction before a follow-up A–D question (`comparison` blocks). Each chapter ends with a 10-question A–D final quiz covering all its subchapters.
+Each subchapter has its own file, with the lesson for the user and practice questions with explanations. Practice questions can use choices, matching and sorting (`assignment`), number dials and slider experiments (`number`), or a portfolio prediction before a follow-up exercise (`comparison`). Each chapter ends with a 10-question A–D final quiz covering all its subchapters.
 
 - **[Chapter 1 — Why Invest?](chapter-1-why-invest/)**
   - [1.1 Why investing is worth it](chapter-1-why-invest/1-1-why-investing-is-worth-it.md)

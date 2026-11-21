@@ -91,7 +91,7 @@ class LearningContentRepositoryTests {
 		assertThat(questions).hasSize(117);
 		for (Question question : questions) {
 			List<AnswerOption> options = answerOptionRepository.findByQuestionIdOrderByLabelAsc(question.getId());
-			if (question.getAssignment() != null) {
+			if (question.getAssignment() != null || question.getNumberExercise() != null) {
 				assertThat(options).isEmpty();
 			} else {
 				assertThat(options).extracting(AnswerOption::getLabel).containsExactly("A", "B", "C", "D");

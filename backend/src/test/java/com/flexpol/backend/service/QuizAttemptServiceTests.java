@@ -46,17 +46,25 @@ class QuizAttemptServiceTests {
 		var wrong = Map.of("holiday", "long");
 		var right = Map.of("holiday", "short");
 
-		service.recordAnswer(5L, user, first, null, wrong, false);
-		service.recordAnswer(5L, user, first, null, right, true);
+		service.recordAnswer(5L, user, answer(first, wrong, false));
+		service.recordAnswer(5L, user, answer(first, right, true));
 		assertThat(attempt.getAnswers()).singleElement().satisfies(answer -> {
 			assertThat(answer.getAssignments()).isEqualTo(wrong);
 			assertThat(answer.isCorrect()).isFalse();
 		});
 		verify(answers).save(any(AttemptAnswer.class));
 
-		service.recordAnswer(5L, user, second, null, right, true);
+		service.recordAnswer(5L, user, answer(second, right, true));
 		assertThat(attempt.getCompletedAt()).isNotNull();
 		assertThat(attempt.getScore()).isEqualTo(1);
 		assertThat(attempt.getPassed()).isTrue();
+	}
+
+	private static AttemptAnswer answer(Question question, Map<String, String> assignments, boolean correct) {
+		AttemptAnswer answer = new AttemptAnswer();
+		answer.setQuestion(question);
+		answer.setAssignments(assignments);
+		answer.setCorrect(correct);
+		return answer;
 	}
 }

@@ -1,6 +1,6 @@
 export type { Chapter } from './chapter';
 export type { SandboxInstrument, Subchapter, SubchapterSummary } from './subchapter';
-export type { AnswerLabel, AnswerOption, AssignmentExercise, PortfolioComparison, Question, Quiz, QuizType } from './quiz';
+export type { AnswerLabel, AnswerOption, AssignmentExercise, NumberExercise, NumberLab, PortfolioComparison, Question, Quiz, QuizType } from './quiz';
 export type { AnswerChoice, AnswerResult, AnswerSubmission, Assignments } from './answer';
 export type { ProblemDetail } from './problemDetail';
 export type { CoachRequest, CoachResponse } from './coach';

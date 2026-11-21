@@ -117,6 +117,34 @@ function validateComparison(comparison, where) {
   }
 }
 
+function validateNumber(exercise, where) {
+  const { label, unit, answer, hint, lab, dial } = exercise;
+  if (!hasText(label) || !hasText(unit) || !Number.isFinite(answer) || Math.abs(answer) > 1_000_000_000 ||
+      Number(answer.toFixed(6)) !== answer || !hasText(hint)) {
+    fail(`${where}: a number exercise needs a label, unit, answer and hint`);
+  }
+  if (Boolean(lab) === Boolean(dial)) fail(`${where}: provide a lab or a number dial`);
+  if (!lab) {
+    const {max, step} = dial;
+    if (!isNonnegativeInt(max) || !isNonnegativeInt(step) || step === 0 || max <= step || max % step !== 0 ||
+        answer < 0 || answer > max || answer % step !== 0) fail(`${where}: invalid number dial bounds or answer`);
+    return;
+  }
+  const { kind, max, step, initial, balance, rate, bill } = lab;
+  if (!["COMPOUNDING", "LOCKBOX", "SHOCK"].includes(kind) || !isNonnegativeInt(max) ||
+      !isNonnegativeInt(step) || step === 0 || max === 0 || max % step !== 0 ||
+      !isNonnegativeInt(balance) || balance === 0 || !isNonnegativeInt(initial) ||
+      initial > max || initial % step !== 0 || answer < 0 || answer > max || answer % step !== 0) {
+    fail(`${where}: invalid lab slider bounds or answer`);
+  }
+  if (kind === "LOCKBOX" && (!isNonnegativeInt(bill) || bill > balance || max > balance)) {
+    fail(`${where}: the lockbox needs a bill and amounts within the starting balance`);
+  }
+  if (kind !== "LOCKBOX" && !isPercent(rate)) fail(`${where}: the lab needs a percentage rate`);
+  if (kind === "SHOCK" && max > 100) fail(`${where}: the shock slider uses percent allocations`);
+  if (kind === "COMPOUNDING" && max > 60) fail(`${where}: the time machine is limited to 60 years`);
+}
+
 function parseQuestions(section, file, withSource) {
   const blocks = section.split(/^### Q\d+\. /m).slice(1);
   return blocks.map((block, i) => {
@@ -143,10 +171,14 @@ function parseQuestions(section, file, withSource) {
     const where = `${file} Q${i + 1}`;
     const assignment = readExercise(block, "assignment", where);
     const comparison = readExercise(block, "comparison", where);
-    if (assignment && (options.length || comparison)) fail(`${where}: an assignment replaces the options`);
-    if (withSource && (assignment || comparison)) fail(`${where}: interactive exercises are for practice quizzes`);
+    const numberExercise = readExercise(block, "number", where);
+    if (assignment && (options.length || comparison || numberExercise)) fail(`${where}: an assignment replaces the other answer types`);
+    if (numberExercise && options.length) fail(`${where}: a number exercise replaces the options`);
+    if (withSource && (assignment || comparison || numberExercise)) fail(`${where}: interactive exercises are for practice quizzes`);
     if (assignment) {
       validateAssignment(assignment, where);
+    } else if (numberExercise) {
+      validateNumber(numberExercise, where);
     } else {
       if (options.length !== 4) fail(`${where}: expected 4 options, found ${options.length}`);
       if (options.map((o) => o.label).join("") !== "ABCD") fail(`${where}: options must be A-D in order`);
@@ -154,7 +186,7 @@ function parseQuestions(section, file, withSource) {
     }
     if (comparison) validateComparison(comparison, where);
     if (!explanation) fail(`${where}: missing **Explanation:**`);
-    return { sortOrder: i + 1, prompt, explanation: capitalize(explanation), sourceCode, options, assignment, comparison };
+    return { sortOrder: i + 1, prompt, explanation: capitalize(explanation), sourceCode, options, assignment, comparison, numberExercise };
   });
 }
 
@@ -249,9 +281,10 @@ function toSql(chapters) {
         source_subchapter_id: source,
         ...(q.assignment && { assignment: q.assignment }),
         ...(q.comparison && { comparison: q.comparison }),
-      }, ["assignment", "comparison"]));
+        ...(q.numberExercise && { number_exercise: q.numberExercise }),
+      }, ["assignment", "comparison", "number_exercise"]));
       // Preserve option ids in the rest of the seed when a question becomes an assignment.
-      if (q.assignment) ids.answer_option += 4;
+      if (q.options.length === 0) ids.answer_option += 4;
       for (const o of q.options) {
         out.push(insert("answer_option", { id: next("answer_option"), question_id: qid, label: o.label, text: o.text, is_correct: o.correct }));
       }

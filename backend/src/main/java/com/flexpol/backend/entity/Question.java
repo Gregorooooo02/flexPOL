@@ -49,6 +49,9 @@ public class Question {
 	@JdbcTypeCode(SqlTypes.JSON)
 	private PortfolioComparison comparison;
 
+	@JdbcTypeCode(SqlTypes.JSON)
+	private NumberExercise numberExercise;
+
 	/** Shown to the learner after answering. */
 	@Column(length = 2000)
 	private String explanation;

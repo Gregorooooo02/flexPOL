@@ -1,5 +1,6 @@
 package com.flexpol.backend.entity;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 import jakarta.persistence.Column;
@@ -44,6 +45,9 @@ public class AttemptAnswer {
 
 	@JdbcTypeCode(SqlTypes.JSON)
 	private Map<String, String> assignments;
+
+	@Column(precision = 16, scale = 6)
+	private BigDecimal numericValue;
 
 	/** Stored at scoring time so results don't need recomputing. */
 	@Column(nullable = false)

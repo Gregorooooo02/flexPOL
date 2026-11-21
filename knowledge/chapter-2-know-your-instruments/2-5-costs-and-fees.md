@@ -60,21 +60,41 @@ A 1% fee cost about **14,200 coins**, roughly a quarter of the final value. A 2%
 
 **Explanation:** a fee taken every year reduces the base that compounding works on.
 
-### Q2. Two identical index funds: Fund A charges 0.2% a year, Fund B charges 1.5%. Which is likely better over 30 years?
-- A) Fund A ✅
-- B) Fund B
-- C) They'll end up the same.
-- D) It's impossible to say.
+### Q2. A fictional fund earns 6% a year before a fee that knocks off two percentage points. Find the first year 1,000 coins doubles at the resulting 4% rate.
 
-**Explanation:** if they hold the same investments, the cheaper one keeps more of the same return.
+```number
+{
+  "label": "Years with the fee",
+  "unit": "years",
+  "answer": 18,
+  "hint": "Find when the net balance crosses 2,000. Try one year earlier to check.",
+  "lab": {"kind": "COMPOUNDING", "max": 30, "step": 1, "initial": 0, "balance": 1000, "rate": 4}
+}
+```
 
-### Q3. What is a management fee?
-- A) A penalty for selling early
-- B) A tax on dividends
-- C) A one-time fee for opening an account
-- D) A yearly percentage charged for running a fund ✅
+**Explanation:** At 4%, the balance first reaches 2,000 in year 18. At 6% in the same toy example it would cross that mark in year 12.
 
-**Explanation:** it's usually shown as the fund's expense ratio.
+### Q3. Unpack the fees in three receipts.
+
+```assignment
+{
+  "mode": "MATCH",
+  "cards": [
+    { "id": "card-1", "text": "Management fee" },
+    { "id": "card-2", "text": "Transaction fee" },
+    { "id": "card-3", "text": "Spread" }
+  ],
+  "targets": [
+    { "id": "target-1", "text": "Buy for 101 or sell for 99" },
+    { "id": "target-2", "text": "Coins charged each time you place a trade" },
+    { "id": "target-3", "text": "A percentage of the fund charged each year" }
+  ],
+  "solution": {"card-1": "target-3", "card-2": "target-2", "card-3": "target-1"},
+  "hint": "Watch whether the cost shows up every year, with each trade, or in the quoted prices."
+}
+```
+
+**Explanation:** A management fee charges for running the fund. Transaction fees apply to trades. A spread is the gap between buy and sell prices.
 
 ### Q4. Which habit increases costs the most?
 - A) Buying an index fund and holding it for years

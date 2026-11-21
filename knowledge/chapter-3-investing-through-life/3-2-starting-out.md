@@ -53,13 +53,19 @@ Ten extra years and only 12,000 coins more paid in nearly **doubled** the result
 
 ## Control questions
 
-### Q1. In the example, why does the person who starts at 25 end up with about twice as much?
-- A) They paid lower taxes.
-- B) They had a better fund.
-- C) Their money had 10 more years to compound. ✅
-- D) They paid in twice as much money.
+### Q1. Hedgie sets aside 1,000 coins at age 25. At a fictional 6% a year, find the first year it doubles without any new deposits.
 
-**Explanation:** they paid in only 12,000 coins more, but compounding had more time to work.
+```number
+{
+  "label": "Years since age 25",
+  "unit": "years",
+  "answer": 12,
+  "hint": "Slide ahead until the balance passes 2,000, then go back one year to check.",
+  "lab": {"kind": "COMPOUNDING", "max": 22, "step": 1, "initial": 0, "balance": 1000, "rate": 6}
+}
+```
+
+**Explanation:** The balance crosses 2,000 in year 12, at age 37. Giving growth more years can make a big difference.
 
 ### Q2. What should usually come before investing?
 - A) Paying off expensive debt and building an emergency fund ✅
@@ -69,13 +75,19 @@ Ten extra years and only 12,000 coins more paid in nearly **doubled** the result
 
 **Explanation:** expensive debt and the lack of a safety net undermine any investment plan.
 
-### Q3. What does "pay yourself first" mean?
-- A) Paying yourself a salary from your investments
-- B) Paying off friends' debts first
-- C) Spending on yourself before paying bills
-- D) Setting money aside for savings and investments right after receiving income ✅
+### Q3. Hedgie automatically moves 80 coins to savings on every monthly payday. How much goes into savings in a year, before growth?
 
-**Explanation:** saving first, then spending what's left, makes saving consistent.
+```number
+{
+  "label": "Total transferred",
+  "unit": "coins",
+  "answer": 960,
+  "hint": "Count the monthly paydays in a year.",
+  "dial": { "max": 2400, "step": 40 }
+}
+```
+
+**Explanation:** 12 transfers of 80 coins add up to 960. Making the transfer on payday helps build the habit.
 
 ### Q4. A 23-year-old has a stable job, an emergency fund and a 40-year horizon for retirement. Which allocation fits best?
 - A) 100% cash

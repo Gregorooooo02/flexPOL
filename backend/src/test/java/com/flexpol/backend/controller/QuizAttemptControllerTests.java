@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.Map;
 
 import com.flexpol.backend.entity.AnswerOption;
 import com.flexpol.backend.entity.Question;
@@ -23,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Saving quiz attempts for the learner named by the X-User-Email header. Uses the seeded quizzes and
@@ -35,6 +37,7 @@ class QuizAttemptControllerTests {
 
 	private static final String JAN = "jan.kowalski@example.com";
 	private static final String ANNA = "anna.nowak@example.com";
+	private static final JsonMapper JSON = JsonMapper.builder().build();
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -61,7 +64,18 @@ class QuizAttemptControllerTests {
 				.andExpect(jsonPath("$.score").doesNotExist());
 
 		for (Question question : questions.subList(1, questions.size())) {
-			answer(question, correctOption(question), attemptId, JAN);
+			Map<String, ?> body;
+			if (question.getAssignment() != null) {
+				body = Map.of("attemptId", attemptId, "assignments", question.getAssignment().solution());
+			} else if (question.getNumberExercise() != null) {
+				body = Map.of("attemptId", attemptId, "number", question.getNumberExercise().answer());
+			} else {
+				body = Map.of("attemptId", attemptId, "optionId", correctOption(question).getId());
+			}
+			mockMvc.perform(post("/api/questions/{questionId}/answer", question.getId())
+					.contentType(MediaType.APPLICATION_JSON).header(UserHeader.NAME, JAN)
+					.content(JSON.writeValueAsString(body)))
+					.andExpect(status().isOk()).andExpect(jsonPath("$.correct").value(true));
 		}
 
 		mockMvc.perform(getAttempt(attemptId, JAN))

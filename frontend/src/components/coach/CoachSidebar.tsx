@@ -161,6 +161,7 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
       <CoachLauncher
         buttonRef={launcherRef}
         desktop={desktop}
+        docked={!desktop && focus?.dockLauncher === true}
         chatOpen={desktop ? sidebarOpen : mobileChatOpen}
         onOpen={() => {
           if (desktop) openSidebar();
@@ -197,6 +198,7 @@ function CoachChatSession({
     questionId: focus?.questionId,
     selectedOptionId: focus?.selectedOptionId,
     assignments: focus?.assignments,
+    number: focus?.number,
     answerCorrect: focus?.answerCorrect,
     contextLabel: focus?.label,
     suggestions,

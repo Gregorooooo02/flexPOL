@@ -818,21 +818,9 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (1, 
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (2, 1, 'B', 'Your coins buy more.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (3, 1, 'C', 'You have the same number of coins, but they buy less.', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (4, 1, 'D', 'You have fewer coins.', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (2, 1, 2, 'What is compounding?', 'With compounding, growth builds on earlier growth, so the effect gets stronger over time.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (5, 2, 'A', 'Earning returns on your earlier returns', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (6, 2, 'B', 'Moving money from savings into investments', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (7, 2, 'C', 'Paying fees on your investments', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (8, 2, 'D', 'Splitting money between several investments', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (3, 1, 3, 'Using the Rule of 72, how long does money take to double at an 8% yearly return?', '72 ÷ 8 = 9 years.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (9, 3, 'A', 'About 6 years', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (10, 3, 'B', 'About 9 years', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (11, 3, 'C', 'About 12 years', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (12, 3, 'D', 'About 18 years', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (4, 1, 4, 'Which statement best describes the difference between saving and investing?', 'They do different jobs. Most people need both.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (13, 4, 'A', 'Saving is always better than investing.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (14, 4, 'B', 'Saving keeps money safe and accessible; investing aims for growth but goes up and down.', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (15, 4, 'C', 'There is no difference.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (16, 4, 'D', 'Investing is always better than saving.', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (2, 1, 2, 'Hedgie puts 1,000 coins in a fictional account growing 5% a year. Find the first year with at least 2,000 coins.', 'The balance crosses 2,000 coins in year 15. The account also earns growth on the coins it gained in previous years.', NULL, JSON '{"label":"Turn the calendar","unit":"years","answer":15,"hint":"Find a year above 2,000, then move back one year to check whether you can get there earlier.","lab":{"kind":"COMPOUNDING","max":25,"step":1,"initial":0,"balance":1000,"rate":5}}');
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (3, 1, 3, 'Use the Rule of 72 to estimate how long it takes to double at 8% a year.', '72 ÷ 8 = 9 years.', NULL, JSON '{"label":"Estimated time to double","unit":"years","answer":9,"hint":"Divide 72 by the annual rate as a whole number.","dial":{"max":24,"step":1}}');
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (4, 1, 4, 'Give each story a home. Which money needs quick access, and which has time to grow?', 'Money for a bill or a repair needs to be available soon. A goal decades away has more time to ride out changes in value.', NULL, JSON '{"mode":"SORT","cards":[{"id":"repairs","text":"Emergency bike repairs"},{"id":"retire","text":"Retirement in 30 years"},{"id":"rent","text":"Rent due next month"},{"id":"future","text":"A child’s fund in 18 years"}],"targets":[{"id":"access","text":"Keep it accessible"},{"id":"growth","text":"Give it time to grow"}],"solution":{"repairs":"access","retire":"growth","rent":"access","future":"growth"},"hint":"Ask how soon a real expense could make you withdraw the money."}');
 
 -- Control questions: 1.2 Setting Goals
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (2, 1, 2, 'CONTROL', '1.2 Setting Goals — Control questions', NULL);
@@ -842,16 +830,8 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (18,
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (19, 5, 'C', '"I want 6,000 coins for a car in 3 years."', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (20, 5, 'D', '"I want to be financially free someday."', FALSE);
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (6, 2, 2, 'Sort each goal by when you will need the money.', 'Under 2 years is short-term, 2–10 years is medium-term, over 10 years is long-term.', NULL, JSON '{"mode":"SORT","cards":[{"id":"holiday","text":"Holiday in 8 months"},{"id":"retirement","text":"Retirement in 30 years"},{"id":"home","text":"Home deposit in 6 years"},{"id":"laptop","text":"Laptop in 18 months"}],"targets":[{"id":"short","text":"Short-term"},{"id":"medium","text":"Medium-term"},{"id":"long","text":"Long-term"}],"solution":{"holiday":"short","retirement":"long","home":"medium","laptop":"short"},"hint":"Start with the time left until you need the money. Try comparing all the deadlines in years."}');
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (7, 2, 3, 'Why should the goal come before choosing an instrument?', 'Money needed soon can''t wait out a drop in value; money needed in 30 years can.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (25, 7, 'A', 'It doesn''t matter which comes first.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (26, 7, 'B', 'Because instruments change every year', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (27, 7, 'C', 'Because goals are required by law', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (28, 7, 'D', 'Because the goal''s timing and amount decide how much risk the money can take', TRUE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (8, 2, 4, 'For a short-term goal, what matters most?', 'With little time, there is no room to recover from losses or to wait for a locked term to end.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (29, 8, 'A', 'Owning one exciting stock', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (30, 8, 'B', 'Safety and being able to access the money', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (31, 8, 'C', 'The highest possible return', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (32, 8, 'D', 'Locking the money away for a long time', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (7, 2, 3, 'Hedgie wants a 1,200-coin bike in eight months. How much goes in the bike jar each month if it starts empty?', 'Eight deposits of 150 coins reach the goal. A price and a deadline turn a wish into a plan.', NULL, JSON '{"label":"Monthly deposit","unit":"coins","answer":150,"hint":"Divide the price by the number of deposits.","dial":{"max":400,"step":25}}');
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (8, 2, 4, 'Match each plan to the part of the goal it makes clear.', 'A usable goal says what you want, how much it costs, and when the money will be needed.', NULL, JSON '{"mode":"MATCH","cards":[{"id":"target","text":"Save for a new bike"},{"id":"cost","text":"Set aside 1,200 coins"},{"id":"deadline","text":"Have the money by August"}],"targets":[{"id":"when","text":"When I need the money"},{"id":"why","text":"What I’m saving for"},{"id":"howmuch","text":"How much I need"}],"solution":{"target":"why","cost":"howmuch","deadline":"when"},"hint":"Look for a purpose, a price, and a deadline."}');
 
 -- Control questions: 1.3 Time Horizon and Liquidity
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (3, 1, 3, 'CONTROL', '1.3 Time Horizon and Liquidity — Control questions', NULL);
@@ -860,21 +840,9 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (33,
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (34, 9, 'B', 'How many people own an investment', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (35, 9, 'C', 'How quickly and cheaply an investment can be turned into cash', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (36, 9, 'D', 'How risky an investment is', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (10, 3, 2, 'Maya needs money in 8 months. Which instrument fits **worst**?', 'The locked term ends after she needs the money, so she would pay a penalty or miss the deadline.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (37, 10, 'A', 'A 2-year Locked-term instrument', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (38, 10, 'B', 'A mix of mostly cash with a small basket share', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (39, 10, 'C', 'Accessible Cash', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (40, 10, 'D', 'None of them; all fit equally.', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (11, 3, 3, 'Why can a long time horizon handle more volatility?', 'Long horizons don''t remove risk, but they give time for recovery.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (41, 11, 'A', 'Because inflation stops over time', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (42, 11, 'B', 'Because long-term investments have no risk', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (43, 11, 'C', 'Because prices only go up over long periods', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (44, 11, 'D', 'Because there are more years to recover from temporary drops', TRUE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (12, 3, 4, 'What is the main job of an emergency fund?', 'It''s a safety net that protects the rest of your plan.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (45, 12, 'A', 'Replacing a pension', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (46, 12, 'B', 'Covering surprise costs so you don''t have to sell investments at a bad moment', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (47, 12, 'C', 'Paying for holidays', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (48, 12, 'D', 'Earning the highest return', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (10, 3, 2, 'Maya has 2,000 coins and a 1,000-coin bill in eight months. Lock away as much as you can for two years while keeping the bill covered.', 'Locking 1,000 coins leaves exactly 1,000 available before the bill is due. The lockbox cannot help with the bill.', NULL, JSON '{"label":"Coins to lock away","unit":"coins","answer":1000,"hint":"Find the last position where Maya’s pocket still covers the bill.","lab":{"kind":"LOCKBOX","max":2000,"step":100,"initial":0,"balance":2000,"bill":1000}}');
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (11, 3, 3, 'Sort these headlines by the problem they describe.', 'A change in value is price risk. Having to wait or pay to get the money out is an access problem.', NULL, JSON '{"mode":"SORT","cards":[{"id":"quote","text":"The basket falls 12% in a week"},{"id":"term","text":"The deposit unlocks after rent is due"},{"id":"jump","text":"A share jumps and then falls back"},{"id":"fee","text":"An early withdrawal costs 50 coins"}],"targets":[{"id":"access","text":"Getting the money out"},{"id":"price","text":"Changes in the price"}],"solution":{"quote":"price","term":"access","jump":"price","fee":"access"},"hint":"Imagine you already need the money. Is the price changing, or is there something in the way of getting it?"}');
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (12, 3, 4, 'Hedgie spends 300 coins a month on essentials. Fill an emergency jar that covers three months.', 'Three months of essential spending comes to 900 coins. An emergency fund buys time when something unexpected happens.', NULL, JSON '{"label":"Emergency jar","unit":"coins","answer":900,"hint":"Multiply one month of spending by the number of months you want covered.","dial":{"max":2000,"step":100}}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (13, 3, 5, 'Match each fictional instrument to how you can get your money back.', 'Cash is already available. For the basket, you need to sell and accept the current price. The locked-term instrument trades immediate access for a higher rate.', NULL, JSON '{"mode":"MATCH","cards":[{"id":"cash","text":"Accessible Cash"},{"id":"basket","text":"Diversified market basket"},{"id":"term","text":"Locked-term instrument"}],"targets":[{"id":"sell","text":"Sell quickly at the current market price"},{"id":"penalty","text":"Wait until the term ends or pay an early withdrawal penalty"},{"id":"available","text":"Use immediately with no withdrawal cost"}],"solution":{"cash":"available","basket":"sell","term":"penalty"},"hint":"Imagine a bill is due tomorrow. For each instrument, what would you have to do before you could pay it?"}');
 
 -- Control questions: 1.4 Risk and Volatility
@@ -884,16 +852,8 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (53,
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (54, 14, 'B', 'The investment pays a fixed rate.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (55, 14, 'C', 'The price moves up and down a lot.', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (56, 14, 'D', 'The investment can''t be sold.', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (15, 4, 2, 'An investment falls 50%. How much does it need to rise to return to its starting value?', 'From 500 back to 1,000 is a 100% gain.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (57, 15, 'A', '50%', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (58, 15, 'B', '75%', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (59, 15, 'C', '100%', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (60, 15, 'D', '150%', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (16, 4, 3, 'Someone offers an investment with "high returns and no risk". What should you think?', 'Risk and return go together. A "no-risk, high-return" promise is a warning sign.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (61, 16, 'A', 'It''s normal for funds.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (62, 16, 'B', 'Great deal, invest quickly.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (63, 16, 'C', 'It''s only risky for beginners.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (64, 16, 'D', 'Be very skeptical; higher returns always come with higher risk.', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (15, 4, 2, 'A portfolio falls from 1,000 to 500 coins. What percentage gain from 500 gets it back to 1,000?', 'You need another 500 coins, which is 100% of the new 500-coin balance.', NULL, JSON '{"label":"Gain needed to recover","unit":"%","answer":100,"hint":"Calculate the gain relative to the smaller balance you have left.","dial":{"max":200,"step":5}}');
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (16, 4, 3, 'Help Hedgie sort these investment pitches.', 'Promises of big guaranteed returns and pressure to buy immediately are warning signs. Describing fees or the possibility of losses gives you information you can check.', NULL, JSON '{"mode":"SORT","cards":[{"id":"promise","text":"Guaranteed high returns, no risk"},{"id":"fee","text":"This fund charges 0.5% a year"},{"id":"rush","text":"Buy in the next 10 minutes"},{"id":"loss","text":"Your balance may fall"}],"targets":[{"id":"information","text":"Information you can use"},{"id":"flag","text":"Red flag"}],"solution":{"promise":"flag","fee":"information","rush":"flag","loss":"information"},"hint":"Look for urgency or promises too good to be true."}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (17, 4, 4, 'Alex enjoys risk but needs the money in 10 months. What should guide the plan?', 'What you can afford matters more than what you''d enjoy.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (65, 17, 'A', 'Risk tolerance, because Alex enjoys risk', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (66, 17, 'B', 'Risk capacity, because the short horizon can''t absorb large drops', TRUE);
@@ -903,31 +863,15 @@ INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subch
 
 -- Control questions: 1.5 Diversification
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (5, 1, 5, 'CONTROL', '1.5 Diversification — Control questions', NULL);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (19, 5, 1, 'What is diversification?', 'Spreading money out means no single result decides your whole outcome.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (73, 19, 'A', 'Keeping everything in cash', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (74, 19, 'B', 'Putting all your money into the best-performing stock', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (75, 19, 'C', 'Spreading money across many investments to reduce the impact of one bad result', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (76, 19, 'D', 'Moving money between accounts often', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, comparison) VALUES (20, 5, 2, 'See how the same drop affects two portfolios.', 'Half of a 60% share is a 30% loss for the whole portfolio. Half of a 10% share is a 5% loss. The stock fell by the same amount in both portfolios.', NULL, JSON '{"company":"Nova Robotics","startingBalance":10000,"dropPercent":50,"portfolios":[{"id":"a","name":"Portfolio A","exposurePercent":60,"description":"60% in Nova Robotics, 40% spread across other companies"},{"id":"b","name":"Portfolio B","exposurePercent":10,"description":"10% in Nova Robotics, 90% spread across other companies"}]}');
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (77, 20, 'A', 'Portfolio A started with more money.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (78, 20, 'B', 'Nova Robotics made up a larger share of Portfolio A.', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (79, 20, 'C', 'Nova Robotics fell by a different percentage in each portfolio.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (80, 20, 'D', 'The other companies rose in Portfolio B.', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (21, 5, 3, 'Which portfolio is most diversified?', 'C spreads money across different types of instruments that react differently to events.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (81, 21, 'A', '100% in a locked-term instrument', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (82, 21, 'B', '10 companies, all in the same industry', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (83, 21, 'C', '100% in one volatile company', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (84, 21, 'D', 'A mix of cash, a broad market basket and a locked-term instrument', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (19, 5, 1, 'Connect each portfolio to what it mostly depends on.', 'Different baskets spread risk in different ways. Holding many shares from one industry still leaves a common risk.', NULL, JSON '{"mode":"MATCH","cards":[{"id":"one","text":"Shares of one robot company"},{"id":"sector","text":"Ten energy companies"},{"id":"broad","text":"Stocks from several industries"}],"targets":[{"id":"market","text":"The wider stock market"},{"id":"business","text":"One company"},{"id":"industry","text":"One industry"}],"solution":{"one":"business","sector":"industry","broad":"market"},"hint":"Look for what all the holdings have in common."}');
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, comparison, number_exercise) VALUES (20, 5, 2, 'Predict the bigger hit, then work out the gap between the two losses.', 'Portfolio A lost 30% and B lost 5%. The gap is 25 percentage points.', NULL, JSON '{"company":"Nova Robotics","startingBalance":10000,"dropPercent":50,"portfolios":[{"id":"a","name":"Portfolio A","exposurePercent":60,"description":"60% Nova Robotics · 40% other companies"},{"id":"b","name":"Portfolio B","exposurePercent":10,"description":"10% Nova Robotics · 90% other companies"}]}', JSON '{"label":"Difference between the two losses","unit":"percentage points","answer":25,"hint":"Subtract the smaller loss percentage from the larger one.","dial":{"max":100,"step":5}}');
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (21, 5, 3, 'Nova Robotics drops 50%. Give it the biggest share you can while limiting the loss on your portfolio to 10%. Everything else holds steady.', 'A 20% stake losing half its value costs 10% of the total portfolio. A bigger stake would break the limit.', NULL, JSON '{"label":"Share in Nova Robotics","unit":"%","answer":20,"hint":"Try reducing the share until the portfolio loss is no more than 10%.","lab":{"kind":"SHOCK","max":100,"step":5,"initial":60,"balance":10000,"rate":50}}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (22, 5, 4, 'The whole market falls 20%. What happens to a well-diversified portfolio?', 'Diversification reduces risk from single events, not from market-wide drops.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (85, 22, 'A', 'It always rises.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (86, 22, 'B', 'It probably falls too, but usually less than the most concentrated portfolios.', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (87, 22, 'C', 'Nothing, diversification fully protects it.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (88, 22, 'D', 'It falls exactly 20%, always.', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (23, 5, 5, 'What is "concentration risk"?', 'The more concentrated the portfolio, the more one event can hurt it.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (89, 23, 'A', 'The risk of inflation', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (90, 23, 'B', 'The risk of high fees', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (91, 23, 'C', 'The risk of having too many investments', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (92, 23, 'D', 'The risk of depending heavily on one investment or one area', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (23, 5, 5, 'Spot the baskets that still depend heavily on a single bet.', 'A single stock or one sector leaves you exposed to common surprises. A mix of companies, industries or instrument types spreads those risks.', NULL, JSON '{"mode":"SORT","cards":[{"id":"robot","text":"100% in Nova Robotics"},{"id":"world","text":"A basket covering several markets"},{"id":"banks","text":"Eight banks in one country"},{"id":"mix","text":"Cash, a broad basket, and bonds"}],"targets":[{"id":"spread","text":"Risk spread out"},{"id":"concentrated","text":"Risk concentrated"}],"solution":{"robot":"concentrated","world":"spread","banks":"concentrated","mix":"spread"},"hint":"Many names can still be one bet if they all depend on the same thing."}');
 
 -- Final quiz: Chapter 1
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (6, 1, NULL, 'FINAL', 'Chapter 1 — Final Quiz: Why Invest?', 7);
@@ -989,29 +933,17 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (133
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (134, 34, 'B', 'Ownership of a company', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (135, 34, 'C', 'Safety and quick access to the money', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (136, 34, 'D', 'Protection against inflation', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (35, 7, 2, 'Your savings pay 1% interest and inflation is 3%. What happens to your purchasing power?', 'The real return is roughly interest minus inflation: 1% − 3% = −2%.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (137, 35, 'A', 'It shrinks by about 2% a year.', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (138, 35, 'B', 'It grows by 1% a year.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (139, 35, 'C', 'It grows by 3% a year.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (140, 35, 'D', 'It stays the same.', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (35, 7, 2, 'Your 100-coin savings balance earns 1 coin. A grocery basket that used to cost 100 now costs 103. How many coins are you short?', 'The account now has 101 coins. You need 2 more coins for the same groceries.', NULL, JSON '{"label":"Shortfall","unit":"coins","answer":2,"hint":"Find the new balance, then compare it with the new price.","dial":{"max":8,"step":1}}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (36, 7, 3, 'Which goal fits cash best?', 'An emergency fund needs safety and immediate access.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (141, 36, 'A', 'Retirement in 35 years', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (142, 36, 'B', 'Building wealth over 20 years', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (143, 36, 'C', 'A child''s studies in 18 years', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (144, 36, 'D', 'An emergency fund', TRUE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (37, 7, 4, 'Why is cash a weak choice for a 30-year goal?', 'Low growth plus inflation adds up to a large loss of purchasing power over decades.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (145, 37, 'A', 'It''s too risky.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (146, 37, 'B', 'Over long periods, inflation can eat much of its value.', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (147, 37, 'C', 'It can''t be withdrawn.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (148, 37, 'D', 'It''s illegal to hold cash that long.', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (37, 7, 4, 'Which jobs fit an accessible cash stash?', 'Cash helps with imminent spending. Over many years, rising prices can eat into its buying power.', NULL, JSON '{"mode":"SORT","cards":[{"id":"card-1","text":"Rent next week"},{"id":"card-2","text":"Retirement in 35 years"},{"id":"card-3","text":"Repair bill due today"},{"id":"card-4","text":"A child’s future in 18 years"}],"targets":[{"id":"target-1","text":"Needs accessible cash"},{"id":"target-2","text":"Has years to grow"}],"solution":{"card-1":"target-1","card-2":"target-2","card-3":"target-1","card-4":"target-2"},"hint":"Look at when each expense could arrive."}');
 
 -- Control questions: 2.2 Deposits and Bonds
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (8, 2, 7, 'CONTROL', '2.2 Deposits and Bonds — Control questions', NULL);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (38, 8, 1, 'What is a bond?', 'A bond holder is a lender, not an owner.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (149, 38, 'A', 'A share of ownership in a company', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (150, 38, 'B', 'A savings account with no term', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (151, 38, 'C', 'A loan you give to a government or company in exchange for interest', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (152, 38, 'D', 'A type of fund', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (38, 8, 1, 'Link each term to what happens behind the scenes.', 'Issuers borrow through bonds. A deposit is an agreement with the bank for a set term.', NULL, JSON '{"mode":"MATCH","cards":[{"id":"card-1","text":"Term deposit"},{"id":"card-2","text":"Bond"},{"id":"card-3","text":"Bond issuer"}],"targets":[{"id":"target-1","text":"The organisation that borrows"},{"id":"target-2","text":"A loan you make to an issuer"},{"id":"target-3","text":"Money you leave with a bank until a set date"}],"solution":{"card-1":"target-3","card-2":"target-2","card-3":"target-1"},"hint":"Find the borrower first. Then compare the loan and the bank agreement."}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (39, 8, 2, 'What usually happens if you withdraw from a term deposit early?', 'The early withdrawal penalty is the price of breaking the agreement.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (153, 39, 'A', 'You lose some or all of the interest.', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (154, 39, 'B', 'The term gets longer.', FALSE);
@@ -1027,11 +959,7 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (161
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (162, 41, 'B', 'A 1-year term deposit', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (163, 41, 'C', 'A volatile single stock', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (164, 41, 'D', 'A 5-year locked-term instrument', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (42, 8, 5, 'What is the main trade-off with locked-term instruments?', 'You give up liquidity to earn a better rate.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (165, 42, 'A', 'Ownership in exchange for dividends', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (166, 42, 'B', 'High risk for high return', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (167, 42, 'C', 'No interest at all', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (168, 42, 'D', 'A somewhat higher rate in exchange for less access to your money', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (42, 8, 5, 'A fictional deposit pays out 2,080 coins at maturity. If you leave early, you get your original 2,000 back. How much do you give up?', 'The 80-coin difference is the interest you forgo to get immediate access.', NULL, JSON '{"label":"Interest given up","unit":"coins","answer":80,"hint":"Subtract what you get today from what you would get at maturity.","dial":{"max":250,"step":10}}');
 
 -- Control questions: 2.3 Stocks
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (9, 2, 8, 'CONTROL', '2.3 Stocks — Control questions', NULL);
@@ -1040,16 +968,8 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (169
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (170, 43, 'B', 'A loan to the company', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (171, 43, 'C', 'A small piece of ownership in the company', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (172, 43, 'D', 'A guarantee of fixed interest', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (44, 9, 2, 'What is a dividend?', 'Dividends share profits with owners, though not all companies pay them.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (173, 44, 'A', 'Part of a company''s profit paid to shareholders', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (174, 44, 'B', 'A fee for buying stocks', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (175, 44, 'C', 'A tax on investments', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (176, 44, 'D', 'A type of bond', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (45, 9, 3, 'Why is a single stock riskier than a market basket?', 'With one company, any bad news hits your whole investment.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (177, 45, 'A', 'It''s not; they''re the same.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (178, 45, 'B', 'Single stocks can''t be sold.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (179, 45, 'C', 'Single stocks have higher fees by law.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (180, 45, 'D', 'The outcome depends entirely on one company.', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (44, 9, 2, 'You own 12 shares of Nova Robotics. It pays a dividend of 5 coins per share. How much arrives in your account?', '12 shares × 5 coins per share = 60 coins.', NULL, JSON '{"label":"Dividend paid","unit":"coins","answer":60,"hint":"Each of your shares earns the same amount.","dial":{"max":140,"step":5}}');
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (45, 9, 3, 'Sort the market news. Which events can hit just one company?', 'Holding many companies spreads the effect of company-specific news. A broad downturn can still hit the whole basket.', NULL, JSON '{"mode":"SORT","cards":[{"id":"card-1","text":"Nova recalls its delivery robots"},{"id":"card-2","text":"A recession cuts spending across the economy"},{"id":"card-3","text":"Nova’s factory shuts for repairs"},{"id":"card-4","text":"A broad sell-off hits most industries"}],"targets":[{"id":"target-1","text":"One company"},{"id":"target-2","text":"Wider market"}],"solution":{"card-1":"target-1","card-2":"target-2","card-3":"target-1","card-4":"target-2"},"hint":"Look at who the headline directly affects."}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (46, 9, 4, 'A company you own announces a big product failure. What is the most likely short-term effect?', 'Bad news usually lowers expectations of future profits, and the price drops.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (181, 46, 'A', 'The share price is guaranteed to stay the same.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (182, 46, 'B', 'The share price falls.', TRUE);
@@ -1063,21 +983,13 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (188
 
 -- Control questions: 2.4 Funds and ETFs
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (10, 2, 9, 'CONTROL', '2.4 Funds and ETFs — Control questions', NULL);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (48, 10, 1, 'What does a fund do?', 'Pooling lets small investors own a slice of many assets.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (189, 48, 'A', 'Keeps your money in cash', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (190, 48, 'B', 'Lends your money to a single company', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (191, 48, 'C', 'Pools money from many investors and spreads it across many investments', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (192, 48, 'D', 'Guarantees a fixed return', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (48, 10, 1, 'Connect each term to its job.', 'Investors pool assets in a fund. An ETF trades on an exchange, and an index is a benchmark a fund can follow.', NULL, JSON '{"mode":"MATCH","cards":[{"id":"card-1","text":"Investment fund"},{"id":"card-2","text":"ETF"},{"id":"card-3","text":"Market index"}],"targets":[{"id":"target-1","text":"Tracks a chosen group of investments as a benchmark"},{"id":"target-2","text":"Trades on an exchange during the day"},{"id":"target-3","text":"Pools money from many investors"}],"solution":{"card-1":"target-3","card-2":"target-2","card-3":"target-1"},"hint":"Distinguish pooling money, trading it, and measuring a market."}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (49, 10, 2, 'What does an index fund do?', 'Index funds follow an index instead of trying to beat it.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (193, 49, 'A', 'It copies a list of companies that represents a market.', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (194, 49, 'B', 'It invests only in cash.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (195, 49, 'C', 'It invests in a single company.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (196, 49, 'D', 'A manager picks the best stocks.', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (50, 10, 3, 'Why are index funds usually cheaper than actively managed funds?', 'Following a list costs much less than active research and trading.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (197, 50, 'A', 'They are smaller.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (198, 50, 'B', 'They are subsidized by the government.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (199, 50, 'C', 'They aren''t; they''re always more expensive.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (200, 50, 'D', 'They don''t need a team researching and picking investments.', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (50, 10, 3, 'Sort what the two fictional fund managers are doing.', 'Index funds follow a benchmark. Active managers select investments to try to improve on it.', NULL, JSON '{"mode":"SORT","cards":[{"id":"card-1","text":"Copies the index weights"},{"id":"card-2","text":"Picks companies expected to beat the market"},{"id":"card-3","text":"Updates holdings when the index changes"},{"id":"card-4","text":"Researches new picks and trades on its forecasts"}],"targets":[{"id":"target-1","text":"Follows the index"},{"id":"target-2","text":"Actively picks investments"}],"solution":{"card-1":"target-1","card-2":"target-2","card-3":"target-1","card-4":"target-2"},"hint":"Does the manager follow a list or decide which companies to own?"}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (51, 10, 4, 'The whole market falls 15%. What happens to a broad index fund?', 'An index fund mirrors its market, in both directions.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (201, 51, 'A', 'It rises 15%.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (202, 51, 'B', 'It falls roughly in line with the market.', TRUE);
@@ -1096,16 +1008,8 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (209
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (210, 53, 'B', 'They''re charged once, at the start.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (211, 53, 'C', 'They''re charged every year on the whole balance and compound.', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (212, 53, 'D', 'They only apply to large investors.', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (54, 11, 2, 'Two identical index funds: Fund A charges 0.2% a year, Fund B charges 1.5%. Which is likely better over 30 years?', 'If they hold the same investments, the cheaper one keeps more of the same return.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (213, 54, 'A', 'Fund A', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (214, 54, 'B', 'Fund B', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (215, 54, 'C', 'They''ll end up the same.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (216, 54, 'D', 'It''s impossible to say.', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (55, 11, 3, 'What is a management fee?', 'It''s usually shown as the fund''s expense ratio.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (217, 55, 'A', 'A penalty for selling early', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (218, 55, 'B', 'A tax on dividends', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (219, 55, 'C', 'A one-time fee for opening an account', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (220, 55, 'D', 'A yearly percentage charged for running a fund', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (54, 11, 2, 'A fictional fund earns 6% a year before a fee that knocks off two percentage points. Find the first year 1,000 coins doubles at the resulting 4% rate.', 'At 4%, the balance first reaches 2,000 in year 18. At 6% in the same toy example it would cross that mark in year 12.', NULL, JSON '{"label":"Years with the fee","unit":"years","answer":18,"hint":"Find when the net balance crosses 2,000. Try one year earlier to check.","lab":{"kind":"COMPOUNDING","max":30,"step":1,"initial":0,"balance":1000,"rate":4}}');
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (55, 11, 3, 'Unpack the fees in three receipts.', 'A management fee charges for running the fund. Transaction fees apply to trades. A spread is the gap between buy and sell prices.', NULL, JSON '{"mode":"MATCH","cards":[{"id":"card-1","text":"Management fee"},{"id":"card-2","text":"Transaction fee"},{"id":"card-3","text":"Spread"}],"targets":[{"id":"target-1","text":"Buy for 101 or sell for 99"},{"id":"target-2","text":"Coins charged each time you place a trade"},{"id":"target-3","text":"A percentage of the fund charged each year"}],"solution":{"card-1":"target-3","card-2":"target-2","card-3":"target-1"},"hint":"Watch whether the cost shows up every year, with each trade, or in the quoted prices."}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (56, 11, 4, 'Which habit increases costs the most?', 'Each trade can carry transaction fees and spreads.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (221, 56, 'A', 'Buying an index fund and holding it for years', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (222, 56, 'B', 'Buying and selling many times a month', TRUE);
@@ -1119,11 +1023,7 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (225
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (226, 57, 'B', 'Investing is only for professionals.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (227, 57, 'C', 'Investing relies on value produced over time; speculating relies mostly on price going up.', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (228, 57, 'D', 'Speculating is always illegal.', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (58, 12, 2, 'What does leverage do?', 'Borrowed money makes every move bigger, in both directions.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (229, 58, 'A', 'It multiplies both gains and losses.', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (230, 58, 'B', 'It removes fees.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (231, 58, 'C', 'It guarantees a profit.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (232, 58, 'D', 'It lowers your risk.', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (58, 12, 2, 'An asset falls 8% in a day. A fictional position amplifies the move by 2×. How large is the loss as a positive percentage?', 'The position loses 16%. The multiplier magnifies down moves too.', NULL, JSON '{"label":"Size of the loss","unit":"%","answer":16,"hint":"Double the size of the move.","dial":{"max":60,"step":2}}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (59, 12, 3, 'A social media post says: "This coin will 10x next week, buy NOW!" Which is the best reaction?', 'Urgency, huge promises and anonymous tips are classic warning signs.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (233, 59, 'A', 'Buy immediately before you miss out.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (234, 59, 'B', 'Put your emergency fund into it.', FALSE);
@@ -1134,11 +1034,7 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (237
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (238, 60, 'B', 'Only use a small amount you can afford to lose completely.', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (239, 60, 'C', 'Put all your savings in to maximize the chance of winning.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (240, 60, 'D', 'Use your emergency fund.', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (61, 12, 5, 'What is FOMO?', 'FOMO is an emotion, not a reason to invest.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (241, 61, 'A', 'A type of bond', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (242, 61, 'B', 'A tax rule', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (243, 61, 'C', 'A fund strategy', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (244, 61, 'D', 'The fear of missing out, which pushes people to buy because others are buying', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (61, 12, 5, 'Match three things Hedgie sees during a hype wave.', 'FOMO is the urge to jump in. Leverage scales moves. A hot tip still needs evidence.', NULL, JSON '{"mode":"MATCH","cards":[{"id":"card-1","text":"FOMO"},{"id":"card-2","text":"Leverage"},{"id":"card-3","text":"Hot tip"}],"targets":[{"id":"target-1","text":"An unverified claim about what will jump next"},{"id":"target-2","text":"The fear that everyone else is getting ahead"},{"id":"target-3","text":"A multiplier that magnifies gains and losses"}],"solution":{"card-1":"target-2","card-2":"target-3","card-3":"target-1"},"hint":"Separate a feeling, a tool and a claim."}');
 
 -- Control questions: 2.7 Comparing Instruments
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (13, 2, 12, 'CONTROL', '2.7 Comparing Instruments — Control questions', NULL);
@@ -1152,21 +1048,13 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (249
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (250, 63, 'B', 'Cash is always the safest choice for every goal.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (251, 63, 'C', 'Index funds are always the best choice.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (252, 63, 'D', 'Higher return always means a better instrument.', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (64, 13, 3, 'Match the goal to the instrument: an emergency fund, retirement in 30 years, a home deposit needed in exactly 2 years.', 'Each goal''s horizon and liquidity needs point to a different tool.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (253, 64, 'A', 'Index fund, cash, single stock', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (254, 64, 'B', 'Speculative asset, cash, index fund', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (255, 64, 'C', 'Single stock, term deposit, cash', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (256, 64, 'D', 'Cash, broad index fund, 2-year term deposit', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (64, 13, 3, 'Pair each goal with the best fit among these three fictional instruments.', 'Check the deadline and access needs of each goal before picking the instrument.', NULL, JSON '{"mode":"MATCH","cards":[{"id":"card-1","text":"An emergency fund"},{"id":"card-2","text":"Retirement in 30 years"},{"id":"card-3","text":"A deposit due in two years"}],"targets":[{"id":"target-1","text":"Broad market basket"},{"id":"target-2","text":"Instrument that unlocks in two years"},{"id":"target-3","text":"Accessible Cash"}],"solution":{"card-1":"target-3","card-2":"target-1","card-3":"target-2"},"hint":"Which goal could force you to withdraw tomorrow?"}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (65, 13, 4, 'What is an "allocation"?', 'An allocation is the mix of instruments in a plan.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (257, 65, 'A', 'A fee charged by a fund', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (258, 65, 'B', 'The way your money is split across different instruments', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (259, 65, 'C', 'A type of bond', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (260, 65, 'D', 'A government benefit', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (66, 13, 5, 'Which instrument fits a goal in 1 year the worst?', 'A big drop right before the deadline would leave no time to recover.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (261, 66, 'A', 'A 1-year term deposit', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (262, 66, 'B', 'Cash', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (263, 66, 'C', 'A short-term savings account', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (264, 66, 'D', 'A single volatile stock', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (66, 13, 5, 'Hedgie starts with 2,000 coins, puts 25% in a basket and 15% in bonds. How much is left in cash?', '60% of 2,000 coins remains in cash, or 1,200 coins.', NULL, JSON '{"label":"Cash left","unit":"coins","answer":1200,"hint":"Subtract the two allocated shares from 100%.","dial":{"max":3000,"step":100}}');
 
 -- Final quiz: Chapter 2
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (14, 2, NULL, 'FINAL', 'Chapter 2 — Final Quiz: Know Your Instruments', 7);
@@ -1228,16 +1116,8 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (305
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (306, 77, 'B', 'Young people''s investments can''t lose value.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (307, 77, 'C', 'They have a long horizon and future income to recover from losses.', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (308, 77, 'D', 'They pay no fees.', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (78, 15, 2, 'What is "human capital"?', 'Your ability to earn income is an asset, often the biggest one when young.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (309, 78, 'A', 'The value of your future earning power', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (310, 78, 'B', 'A type of fund', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (311, 78, 'C', 'Money in a savings account', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (312, 78, 'D', 'The number of employees at a company', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (79, 15, 3, 'Two 35-year-olds: one has a stable job and no dependents, the other has unpredictable income and three children. Who likely has the higher risk capacity?', 'Age is only one factor; stability and responsibilities matter too.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (313, 79, 'A', 'Neither can invest.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (314, 79, 'B', 'The one with three children', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (315, 79, 'C', 'They''re the same, because they''re the same age.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (316, 79, 'D', 'The one with the stable job and no dependents', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (78, 15, 2, 'Link each part of a life plan to the question it answers.', 'Horizon, future income, and existing commitments all affect the room in a plan to absorb losses.', NULL, JSON '{"mode":"MATCH","cards":[{"id":"card-1","text":"Time horizon"},{"id":"card-2","text":"Human capital"},{"id":"card-3","text":"Financial responsibilities"}],"targets":[{"id":"target-1","text":"Who or what already relies on the income?"},{"id":"target-2","text":"When will the money be needed?"},{"id":"target-3","text":"How much could the person earn through work?"}],"solution":{"card-1":"target-2","card-2":"target-3","card-3":"target-1"},"hint":"Find the deadline, the source of income and the obligations."}');
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (79, 15, 3, 'Sort what changes how long each of these people can wait after a fall.', 'A long deadline or reliable income can give someone time. Near expenses and unpredictable cash flow reduce that room.', NULL, JSON '{"mode":"SORT","cards":[{"id":"card-1","text":"Stable salary covers all bills"},{"id":"card-2","text":"Tuition is due next month"},{"id":"card-3","text":"The goal is 30 years away"},{"id":"card-4","text":"Irregular income must pay next month’s rent"}],"targets":[{"id":"target-1","text":"More room to wait"},{"id":"target-2","text":"Less room to wait"}],"solution":{"card-1":"target-1","card-2":"target-2","card-3":"target-1","card-4":"target-2"},"hint":"What could force someone to sell soon?"}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (80, 15, 4, 'Why is a large loss more dangerous near retirement?', 'With a short horizon, savings need to be used soon, and there is no salary to rebuild them.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (317, 80, 'A', 'It isn''t more dangerous.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (318, 80, 'B', 'There''s less time and less future income to recover.', TRUE);
@@ -1246,21 +1126,13 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (320
 
 -- Control questions: 3.2 Starting Out (18–30)
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (16, 3, 14, 'CONTROL', '3.2 Starting Out (18–30) — Control questions', NULL);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (81, 16, 1, 'In the example, why does the person who starts at 25 end up with about twice as much?', 'They paid in only 12,000 coins more, but compounding had more time to work.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (321, 81, 'A', 'They paid lower taxes.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (322, 81, 'B', 'They had a better fund.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (323, 81, 'C', 'Their money had 10 more years to compound.', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (324, 81, 'D', 'They paid in twice as much money.', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (81, 16, 1, 'Hedgie sets aside 1,000 coins at age 25. At a fictional 6% a year, find the first year it doubles without any new deposits.', 'The balance crosses 2,000 in year 12, at age 37. Giving growth more years can make a big difference.', NULL, JSON '{"label":"Years since age 25","unit":"years","answer":12,"hint":"Slide ahead until the balance passes 2,000, then go back one year to check.","lab":{"kind":"COMPOUNDING","max":22,"step":1,"initial":0,"balance":1000,"rate":6}}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (82, 16, 2, 'What should usually come before investing?', 'Expensive debt and the lack of a safety net undermine any investment plan.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (325, 82, 'A', 'Paying off expensive debt and building an emergency fund', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (326, 82, 'B', 'Buying a car', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (327, 82, 'C', 'Picking a hot stock', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (328, 82, 'D', 'Waiting until age 30', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (83, 16, 3, 'What does "pay yourself first" mean?', 'Saving first, then spending what''s left, makes saving consistent.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (329, 83, 'A', 'Paying yourself a salary from your investments', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (330, 83, 'B', 'Paying off friends'' debts first', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (331, 83, 'C', 'Spending on yourself before paying bills', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (332, 83, 'D', 'Setting money aside for savings and investments right after receiving income', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (83, 16, 3, 'Hedgie automatically moves 80 coins to savings on every monthly payday. How much goes into savings in a year, before growth?', '12 transfers of 80 coins add up to 960. Making the transfer on payday helps build the habit.', NULL, JSON '{"label":"Total transferred","unit":"coins","answer":960,"hint":"Count the monthly paydays in a year.","dial":{"max":2400,"step":40}}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (84, 16, 4, 'A 23-year-old has a stable job, an emergency fund and a 40-year horizon for retirement. Which allocation fits best?', 'A long horizon allows growth, and diversification controls the risk.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (333, 84, 'A', '100% cash', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (334, 84, 'B', 'Mostly a broad market basket, with a smaller steady part', TRUE);
@@ -1269,21 +1141,13 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (336
 
 -- Control questions: 3.3 Building Up (30–50)
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (17, 3, 15, 'CONTROL', '3.3 Building Up (30–50) — Control questions', NULL);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (85, 17, 1, 'Why should different goals have different allocations?', 'Money needed in 3 years and money needed in 27 years face different risks.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (337, 85, 'A', 'To make the plan look complicated', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (338, 85, 'B', 'Because the law requires it', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (339, 85, 'C', 'Because each goal has its own horizon and risk capacity', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (340, 85, 'D', 'They shouldn''t; one allocation fits everything.', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (85, 17, 1, 'Help Sam give each savings bucket a job.', 'A surprise bill calls for instant access, a renovation has a deadline, and retirement gives part of the plan a longer runway.', NULL, JSON '{"mode":"MATCH","cards":[{"id":"card-1","text":"Emergency fund"},{"id":"card-2","text":"Renovation in three years"},{"id":"card-3","text":"Retirement in 27 years"}],"targets":[{"id":"target-1","text":"Give this money a long time to grow"},{"id":"target-2","text":"Keep this money available today"},{"id":"target-3","text":"Make sure the money is available when work starts"}],"solution":{"card-1":"target-2","card-2":"target-3","card-3":"target-1"},"hint":"Start with the one that may need to be used tomorrow."}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (86, 17, 2, 'Sam needs money for a renovation in 3 years. Which allocation fits best?', 'A short-to-medium horizon needs stability and access on time.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (341, 86, 'A', 'Mostly deposits and bonds, with little or no stocks', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (342, 86, 'B', '100% in one volatile stock', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (343, 86, 'C', '100% in a 10-year locked instrument', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (344, 86, 'D', 'Speculative assets', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (87, 17, 3, 'What is "lifestyle inflation"?', 'If spending grows as fast as income, there''s nothing extra to invest.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (345, 87, 'A', 'The cost of insurance', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (346, 87, 'B', 'A type of investment fund', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (347, 87, 'C', 'Rising prices in shops', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (348, 87, 'D', 'Spending more every time income rises, so savings don''t grow', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (87, 17, 3, 'Sam gets a monthly raise of 200 coins, then adds 150 coins of new monthly expenses. How much of the raise remains?', 'Only 50 coins remain. When spending rises along with income, there is less extra to save.', NULL, JSON '{"label":"Raise left over each month","unit":"coins","answer":50,"hint":"Subtract the new expenses from the raise.","dial":{"max":200,"step":10}}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (88, 17, 4, 'Money is tight because of a new child. What''s usually better for retirement savings?', 'Keeping even a small amount invested preserves compounding time and the habit.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (349, 88, 'A', 'Stop all contributions for 10 years.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (350, 88, 'B', 'Lower contributions for a while, but keep them going.', TRUE);
@@ -1292,11 +1156,7 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (352
 
 -- Control questions: 3.4 Approaching Retirement (50+)
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (18, 3, 16, 'CONTROL', '3.4 Approaching Retirement (50+) — Control questions', NULL);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (89, 18, 1, 'What is a glide path?', 'It lowers risk step by step over many years.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (353, 89, 'A', 'A fee schedule', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (354, 89, 'B', 'A sudden switch from stocks to cash at retirement', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (355, 89, 'C', 'A gradual shift from growth-oriented to steadier investments as a target date approaches', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (356, 89, 'D', 'A type of pension', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (89, 18, 1, 'Match each point on this fictional glide path to its priority.', 'A glide path can gradually move from growth towards protecting near-term spending.', NULL, JSON '{"mode":"MATCH","cards":[{"id":"card-1","text":"Two decades before withdrawals"},{"id":"card-2","text":"Five years before withdrawals"},{"id":"card-3","text":"First year of withdrawals"}],"targets":[{"id":"target-1","text":"Draw from the cash set aside for current bills"},{"id":"target-2","text":"Put more emphasis on long-term growth"},{"id":"target-3","text":"Gradually set aside money for early withdrawals"}],"solution":{"card-1":"target-2","card-2":"target-3","card-3":"target-1"},"hint":"Think about when this part of the portfolio first has to pay a bill."}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (90, 18, 2, 'A 30% crash hits at age 30 and again at age 64. When does it usually hurt the plan more?', 'At 64 the savings are larger, withdrawals are near, and there''s little time to recover.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (357, 90, 'A', 'At 64', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (358, 90, 'B', 'At 30', FALSE);
@@ -1312,29 +1172,17 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (365
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (366, 92, 'B', 'It lets you avoid selling investments during a market drop.', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (367, 92, 'C', 'It earns the highest return.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (368, 92, 'D', 'It removes all risk.', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (93, 18, 5, 'What is sequence risk?', 'The timing of losses, not only their size, shapes the outcome.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (369, 93, 'A', 'The risk of paying fees in sequence', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (370, 93, 'B', 'The risk of choosing funds in the wrong order', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (371, 93, 'C', 'The risk of inflation over many years', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (372, 93, 'D', 'The risk that poor returns happen right before or early in retirement', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (93, 18, 5, 'A fictional 8,000-coin retirement portfolio falls 25% just before a 2,000-coin withdrawal. What is left after both events?', 'The drop leaves 6,000 coins, then the withdrawal leaves 4,000. A loss just before you start drawing money can have a lasting impact.', NULL, JSON '{"label":"Final balance","unit":"coins","answer":4000,"hint":"Apply the price drop first, then subtract the withdrawal.","dial":{"max":8000,"step":250}}');
 
 -- Control questions: 3.5 Why Invest for a Pension
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (19, 3, 17, 'CONTROL', '3.5 Why Invest for a Pension — Control questions', NULL);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (94, 19, 1, 'What is the "retirement gap"?', 'It''s the shortfall your own savings must cover.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (373, 94, 'A', 'The fee for a pension account', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (374, 94, 'B', 'The time between leaving school and starting work', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (375, 94, 'C', 'The difference between the income you''ll need in retirement and the income you''ll receive', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (376, 94, 'D', 'The age difference between retirees', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (94, 19, 1, 'Match each part of a retirement budget to the right line on the worksheet.', 'The retirement gap is the spending still to cover after pension income.', NULL, JSON '{"mode":"MATCH","cards":[{"id":"card-1","text":"Living costs"},{"id":"card-2","text":"Pension income"},{"id":"card-3","text":"Retirement gap"}],"targets":[{"id":"target-1","text":"What still needs to come from savings or other income"},{"id":"target-2","text":"What it costs to live each month"},{"id":"target-3","text":"The monthly payment you expect to receive"}],"solution":{"card-1":"target-2","card-2":"target-3","card-3":"target-1"},"hint":"Separate what goes out, what comes in and what is left to find."}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (95, 19, 2, 'Why might public pensions provide less in the future?', 'Demographic change puts pressure on public pension systems.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (377, 95, 'A', 'Because people live longer and there are fewer workers per retiree', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (378, 95, 'B', 'Because pensions are being abolished everywhere', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (379, 95, 'C', 'They will always provide more.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (380, 95, 'D', 'Because inflation is gone', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (96, 19, 3, 'You''ll need 2,500 coins a month and expect a 1,500 coin pension. What is the monthly gap?', '2,500 − 1,500 = 1,000.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (381, 96, 'A', '500 coins', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (382, 96, 'B', '1,000 coins', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (383, 96, 'C', '1,500 coins', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (384, 96, 'D', '4,000 coins', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (96, 19, 3, 'Hedgie expects to spend 2,500 coins a month and receive a 1,500-coin pension. How much must come from elsewhere each month?', '2,500 − 1,500 gives a 1,000-coin monthly gap.', NULL, JSON '{"label":"Monthly retirement gap","unit":"coins","answer":1000,"hint":"Subtract the expected pension from the expected spending.","dial":{"max":2500,"step":100}}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (97, 19, 4, 'Why is investing usually better than cash savings for closing a retirement gap?', 'Long horizons are exactly where investment growth helps most.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (385, 97, 'A', 'Investing has no risk.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (386, 97, 'B', 'Over decades, compounding can do much of the work and help beat inflation.', TRUE);
@@ -1343,16 +1191,8 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (388
 
 -- Control questions: 3.6 Pension Vehicles
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (20, 3, 18, 'CONTROL', '3.6 Pension Vehicles — Control questions', NULL);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (98, 20, 1, 'What are the three pillars of a typical pension system?', 'Retirement income usually combines these three sources.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (389, 98, 'A', 'Savings, spending and debt', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (390, 98, 'B', 'Cash, stocks and bonds', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (391, 98, 'C', 'Public pension, employer schemes and personal retirement accounts', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (392, 98, 'D', 'Young, middle-aged and retired', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (99, 20, 2, 'Your employer offers to add money to your workplace pension if you contribute too. What does skipping it usually mean?', 'Employer contributions are effectively extra pay you only get by taking part.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (393, 99, 'A', 'Leaving part of your pay unused', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (394, 99, 'B', 'Avoiding all risk', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (395, 99, 'C', 'Nothing important', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (396, 99, 'D', 'Getting a higher salary instead', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (98, 20, 1, 'Match each pension pillar to who runs or opens it.', 'The three pillars describe public, workplace and personal sources of retirement income.', NULL, JSON '{"mode":"MATCH","cards":[{"id":"card-1","text":"Public pension"},{"id":"card-2","text":"Workplace plan"},{"id":"card-3","text":"Personal retirement account"}],"targets":[{"id":"target-1","text":"An account you open yourself"},{"id":"target-2","text":"A scheme arranged through your job"},{"id":"target-3","text":"A pension run through the state system"}],"solution":{"card-1":"target-3","card-2":"target-2","card-3":"target-1"},"hint":"Think state, workplace, and individual."}');
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (99, 20, 2, 'In a fictional scheme, Hedgie adds 40 coins and the employer matches it coin for coin. How much reaches the account in total?', 'The employer’s 40 coins join Hedgie’s 40 coins. The account receives 80 in total.', NULL, JSON '{"label":"Total contributed","unit":"coins","answer":80,"hint":"Add Hedgie’s contribution and the matching one.","dial":{"max":250,"step":10}}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (100, 20, 3, 'What is a common trade-off of tax-advantaged pension accounts?', 'Tax benefits are given in return for keeping the money invested for retirement.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (397, 100, 'A', 'They can only hold cash.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (398, 100, 'B', 'They have no fees.', FALSE);
@@ -1376,11 +1216,7 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (409
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (410, 103, 'B', 'Selling everything in a crash', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (411, 103, 'C', 'The allocation changing away from its target because some investments grow faster than others', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (412, 103, 'D', 'A type of fee', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (104, 21, 2, 'Target 60/40, current value 10,000 coins, currently 75% basket / 25% bonds. How much should move from the basket to bonds?', 'The basket is 7,500 and the target is 6,000, so 1,500 coins move to bonds.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (413, 104, 'A', '500 coins', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (414, 104, 'B', '1,000 coins', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (415, 104, 'C', '1,500 coins', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (416, 104, 'D', '2,500 coins', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, number_exercise) VALUES (104, 21, 2, 'Your 10,000-coin portfolio is 75% basket and 25% bonds. Move it back to 60% basket and 40% bonds. How much should move?', 'The basket holds 7,500. Its target is 6,000, so 1,500 moves to bonds.', NULL, JSON '{"label":"Coins to move from the basket","unit":"coins","answer":1500,"hint":"Find the current and target values of the basket, then subtract.","dial":{"max":5000,"step":250}}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (105, 21, 3, 'What is a cheap way to rebalance without selling?', 'New money fixes the mix without transaction costs from selling.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (417, 105, 'A', 'Buy a speculative asset.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (418, 105, 'B', 'Open a new account.', FALSE);
@@ -1391,11 +1227,7 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (421
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (422, 106, 'B', 'Locks in the loss and may make you miss the recovery', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (423, 106, 'C', 'Protects your gains', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (424, 106, 'D', 'Rebalances your portfolio', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (107, 21, 5, 'Which event is a good reason to review your plan?', 'Life changes affect goals, horizon and risk capacity.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (425, 107, 'A', 'One bad day in the market', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (426, 107, 'B', 'A celebrity tweet about a stock', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (427, 107, 'C', 'A friend''s new car', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (428, 107, 'D', 'The birth of a child', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (107, 21, 5, 'Which updates change the plan itself?', 'A new deadline or changed income can change the plan. Daily prices and headlines can usually wait until the next planned review.', NULL, JSON '{"mode":"SORT","cards":[{"id":"card-1","text":"A goal moves from five years away to next year"},{"id":"card-2","text":"A stock jumps on a rumour today"},{"id":"card-3","text":"A job loss changes your income"},{"id":"card-4","text":"A market index falls 1% this afternoon"}],"targets":[{"id":"target-1","text":"Review the plan"},{"id":"target-2","text":"Day-to-day noise"}],"solution":{"card-1":"target-1","card-2":"target-2","card-3":"target-1","card-4":"target-2"},"hint":"Did the goal, deadline or budget change?"}');
 
 -- Final quiz: Chapter 3
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (22, 3, NULL, 'FINAL', 'Chapter 3 — Final Quiz: Investing Through Life', 7);

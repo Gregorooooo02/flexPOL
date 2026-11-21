@@ -7,8 +7,9 @@
 export type Assignments = Readonly<Record<string, string>>;
 
 export type AnswerChoice =
-  | { optionId: number; assignments?: never }
-  | { assignments: Assignments; optionId?: never };
+  | { optionId: number; assignments?: never; number?: never }
+  | { assignments: Assignments; optionId?: never; number?: never }
+  | { number: number; optionId?: never; assignments?: never };
 
 export type AnswerSubmission = AnswerChoice & { attemptId?: number };
 

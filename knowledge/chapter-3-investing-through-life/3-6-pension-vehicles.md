@@ -59,21 +59,41 @@ That makes pension accounts **low-liquidity** instruments, similar to the Locked
 
 ## Control questions
 
-### Q1. What are the three pillars of a typical pension system?
-- A) Savings, spending and debt
-- B) Cash, stocks and bonds
-- C) Public pension, employer schemes and personal retirement accounts ✅
-- D) Young, middle-aged and retired
+### Q1. Match each pension pillar to who runs or opens it.
 
-**Explanation:** retirement income usually combines these three sources.
+```assignment
+{
+  "mode": "MATCH",
+  "cards": [
+    { "id": "card-1", "text": "Public pension" },
+    { "id": "card-2", "text": "Workplace plan" },
+    { "id": "card-3", "text": "Personal retirement account" }
+  ],
+  "targets": [
+    { "id": "target-1", "text": "An account you open yourself" },
+    { "id": "target-2", "text": "A scheme arranged through your job" },
+    { "id": "target-3", "text": "A pension run through the state system" }
+  ],
+  "solution": {"card-1": "target-3", "card-2": "target-2", "card-3": "target-1"},
+  "hint": "Think state, workplace, and individual."
+}
+```
 
-### Q2. Your employer offers to add money to your workplace pension if you contribute too. What does skipping it usually mean?
-- A) Leaving part of your pay unused ✅
-- B) Avoiding all risk
-- C) Nothing important
-- D) Getting a higher salary instead
+**Explanation:** The three pillars describe public, workplace and personal sources of retirement income.
 
-**Explanation:** employer contributions are effectively extra pay you only get by taking part.
+### Q2. In a fictional scheme, Hedgie adds 40 coins and the employer matches it coin for coin. How much reaches the account in total?
+
+```number
+{
+  "label": "Total contributed",
+  "unit": "coins",
+  "answer": 80,
+  "hint": "Add Hedgie’s contribution and the matching one.",
+  "dial": { "max": 250, "step": 10 }
+}
+```
+
+**Explanation:** The employer’s 40 coins join Hedgie’s 40 coins. The account receives 80 in total.
 
 ### Q3. What is a common trade-off of tax-advantaged pension accounts?
 - A) They can only hold cash.

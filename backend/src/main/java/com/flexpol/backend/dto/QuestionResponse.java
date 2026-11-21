@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.flexpol.backend.entity.AssignmentExercise;
+import com.flexpol.backend.entity.NumberExercise;
 import com.flexpol.backend.entity.PortfolioComparison;
 import com.flexpol.backend.entity.Question;
 
@@ -17,7 +18,14 @@ public record QuestionResponse(
 		String prompt,
 		List<AnswerOptionResponse> options,
 		@JsonInclude(JsonInclude.Include.NON_NULL) AssignmentContent assignment,
-		@JsonInclude(JsonInclude.Include.NON_NULL) PortfolioComparison comparison) {
+		@JsonInclude(JsonInclude.Include.NON_NULL) PortfolioComparison comparison,
+		@JsonInclude(JsonInclude.Include.NON_NULL) NumberContent numberExercise) {
+
+	public record NumberContent(String label, String unit, NumberExercise.Lab lab, NumberExercise.Dial dial) {
+		static NumberContent from(NumberExercise exercise) {
+			return exercise == null ? null : new NumberContent(exercise.label(), exercise.unit(), exercise.lab(), exercise.dial());
+		}
+	}
 
 	/** The cards and destinations can be sent before the learner makes any assignments. */
 	public record AssignmentContent(
@@ -38,6 +46,7 @@ public record QuestionResponse(
 				question.getPrompt(),
 				question.getOptions().stream().map(AnswerOptionResponse::from).toList(),
 				AssignmentContent.from(question.getAssignment()),
-				question.getComparison());
+				question.getComparison(),
+				NumberContent.from(question.getNumberExercise()));
 	}
 }

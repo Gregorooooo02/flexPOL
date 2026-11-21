@@ -5,7 +5,7 @@ import com.flexpol.backend.entity.AnswerOption;
 import com.flexpol.backend.entity.Question;
 
 /**
- * The result of checking one answer. A wrong assignment gets a hint so the learner can retry.
+ * The result of checking one answer. A wrong exercise answer gets a hint so the learner can retry.
  */
 public record AnswerResultResponse(
 		Long questionId,
@@ -25,9 +25,9 @@ public record AnswerResultResponse(
 				null);
 	}
 
-	public static AnswerResultResponse forAssignment(Question question, boolean correct) {
+	public static AnswerResultResponse forExercise(Question question, boolean correct, String hint) {
 		return new AnswerResultResponse(question.getId(), null, correct, null,
 				correct ? question.getExplanation() : null,
-				correct ? null : question.getAssignment().hint());
+				correct ? null : hint);
 	}
 }

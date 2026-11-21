@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import type { PortfolioComparison } from '@/model';
+import './exercise.css';
 
 interface PortfolioPredictionProps {
   readonly comparison: PortfolioComparison;
@@ -19,54 +17,54 @@ export function PortfolioPrediction({ comparison, revealedPrediction, onReveal }
   const largerLoss = first.exposurePercent > second.exposurePercent ? first : second;
 
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-sm text-muted-foreground">
-        Each portfolio starts with {coins.format(startingBalance)} coins. {company} falls {dropPercent}%.
-        {' '}All other holdings stay at the same price.
-      </p>
+    <section className="exercise-surface" aria-label="Market shock">
+      <div className="exercise-top">
+        <div>
+          <h3>{company} drops {dropPercent}%</h3>
+          <p>Both portfolios start with {coins.format(startingBalance)} coins. All other prices hold steady.</p>
+        </div>
+      </div>
       {revealedPrediction === undefined ? (
         <>
-          <p className="text-sm font-semibold">Which portfolio loses more?</p>
-          <ToggleGroup aria-label="Which portfolio loses more?" variant="outline"
-            className="grid w-full grid-cols-1 items-stretch sm:grid-cols-2"
-            value={prediction ? [prediction] : []} onValueChange={(values) => setPrediction(values[0])}>
+          <div className="prediction-grid" role="group" aria-label="Which portfolio loses more?">
             {portfolios.map((portfolio) => (
-              <ToggleGroupItem key={portfolio.id} value={portfolio.id}
-                className="h-auto min-h-16 w-full flex-col items-start gap-1 px-3 py-2 text-left whitespace-normal">
-                <span>{portfolio.name}</span>
-                <span className="text-xs text-muted-foreground">{portfolio.description}</span>
-              </ToggleGroupItem>
+              <button key={portfolio.id} type="button" className="exercise-tile prediction-tile"
+                aria-pressed={prediction === portfolio.id} onClick={() => setPrediction(portfolio.id)}>
+                <strong>{portfolio.name}</strong>
+                <span>{portfolio.description}</span>
+                <span className="lab-meter" aria-hidden="true"><span style={{ width: `${portfolio.exposurePercent}%` }} /></span>
+              </button>
             ))}
-          </ToggleGroup>
-          <Button type="button" className="self-end" disabled={prediction === undefined}
-            onClick={() => { if (prediction) onReveal(prediction); }}>
-            Reveal outcomes
-          </Button>
+          </div>
+          <div className="exercise-bottom">
+            <p>Which portfolio loses more?</p>
+            <button className="exercise-action" type="button" disabled={prediction === undefined}
+              onClick={() => { if (prediction) onReveal(prediction); }}>
+              Reveal outcomes <span aria-hidden="true">↘</span>
+            </button>
+          </div>
         </>
       ) : (
-        <div className="flex flex-col gap-3" role="status">
-          <p className="text-sm">{revealedPrediction === largerLoss.id ? 'You predicted it.' : 'Compare what happened.'} {largerLoss.name} lost more.</p>
-          <div className="grid gap-2 sm:grid-cols-2">
+        <div role="status">
+          <div className="prediction-grid">
             {portfolios.map((portfolio) => {
               const lossPercent = portfolio.exposurePercent * dropPercent / 100;
               const loss = startingBalance * lossPercent / 100;
               return (
-                <Card key={portfolio.id} size="sm">
-                  <CardHeader>
-                    <CardTitle>{portfolio.name}</CardTitle>
-                    <CardDescription>{portfolio.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-1">
-                    <span className="font-semibold tabular-nums">{coins.format(startingBalance - loss)} coins left</span>
-                    <span className="text-loss tabular-nums">{loss > 0 ? '−' : ''}{coins.format(loss)} coins ({loss > 0 ? '−' : ''}{coins.format(lossPercent)}%)</span>
-                  </CardContent>
-                </Card>
+                <div key={portfolio.id} className="exercise-tile prediction-tile">
+                  <strong>{portfolio.name}</strong>
+                  <span>{coins.format(startingBalance - loss)} coins left</span>
+                  <span className="lab-meter" aria-hidden="true"><span style={{ width: `${100 - lossPercent}%` }} /></span>
+                  <strong className="prediction-loss">{loss > 0 ? '−' : ''}{coins.format(lossPercent)}%</strong>
+                </div>
               );
             })}
           </div>
-          <p className="text-sm font-semibold">What explains the difference?</p>
+          <div className="exercise-bottom">
+            <p>{revealedPrediction === largerLoss.id ? 'You predicted it.' : 'Compare what happened.'} {largerLoss.name} lost more.</p>
+          </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }

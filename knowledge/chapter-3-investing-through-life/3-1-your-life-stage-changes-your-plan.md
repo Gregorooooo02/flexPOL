@@ -55,21 +55,49 @@ Age is a starting point, not a rule. Other things matter just as much:
 
 **Explanation:** time and future income give room to recover.
 
-### Q2. What is "human capital"?
-- A) The value of your future earning power ✅
-- B) A type of fund
-- C) Money in a savings account
-- D) The number of employees at a company
+### Q2. Link each part of a life plan to the question it answers.
 
-**Explanation:** your ability to earn income is an asset, often the biggest one when young.
+```assignment
+{
+  "mode": "MATCH",
+  "cards": [
+    { "id": "card-1", "text": "Time horizon" },
+    { "id": "card-2", "text": "Human capital" },
+    { "id": "card-3", "text": "Financial responsibilities" }
+  ],
+  "targets": [
+    { "id": "target-1", "text": "Who or what already relies on the income?" },
+    { "id": "target-2", "text": "When will the money be needed?" },
+    { "id": "target-3", "text": "How much could the person earn through work?" }
+  ],
+  "solution": {"card-1": "target-2", "card-2": "target-3", "card-3": "target-1"},
+  "hint": "Find the deadline, the source of income and the obligations."
+}
+```
 
-### Q3. Two 35-year-olds: one has a stable job and no dependents, the other has unpredictable income and three children. Who likely has the higher risk capacity?
-- A) Neither can invest.
-- B) The one with three children
-- C) They're the same, because they're the same age.
-- D) The one with the stable job and no dependents ✅
+**Explanation:** Horizon, future income, and existing commitments all affect the room in a plan to absorb losses.
 
-**Explanation:** age is only one factor; stability and responsibilities matter too.
+### Q3. Sort what changes how long each of these people can wait after a fall.
+
+```assignment
+{
+  "mode": "SORT",
+  "cards": [
+    { "id": "card-1", "text": "Stable salary covers all bills" },
+    { "id": "card-2", "text": "Tuition is due next month" },
+    { "id": "card-3", "text": "The goal is 30 years away" },
+    { "id": "card-4", "text": "Irregular income must pay next month’s rent" }
+  ],
+  "targets": [
+    { "id": "target-1", "text": "More room to wait" },
+    { "id": "target-2", "text": "Less room to wait" }
+  ],
+  "solution": {"card-1": "target-1", "card-2": "target-2", "card-3": "target-1", "card-4": "target-2"},
+  "hint": "What could force someone to sell soon?"
+}
+```
+
+**Explanation:** A long deadline or reliable income can give someone time. Near expenses and unpredictable cash flow reduce that room.
 
 ### Q4. Why is a large loss more dangerous near retirement?
 - A) It isn't more dangerous.

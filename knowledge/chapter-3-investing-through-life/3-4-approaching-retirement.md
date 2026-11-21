@@ -53,13 +53,27 @@ The same percentage drop can have a much bigger effect late in the journey.
 
 ## Control questions
 
-### Q1. What is a glide path?
-- A) A fee schedule
-- B) A sudden switch from stocks to cash at retirement
-- C) A gradual shift from growth-oriented to steadier investments as a target date approaches ✅
-- D) A type of pension
+### Q1. Match each point on this fictional glide path to its priority.
 
-**Explanation:** it lowers risk step by step over many years.
+```assignment
+{
+  "mode": "MATCH",
+  "cards": [
+    { "id": "card-1", "text": "Two decades before withdrawals" },
+    { "id": "card-2", "text": "Five years before withdrawals" },
+    { "id": "card-3", "text": "First year of withdrawals" }
+  ],
+  "targets": [
+    { "id": "target-1", "text": "Draw from the cash set aside for current bills" },
+    { "id": "target-2", "text": "Put more emphasis on long-term growth" },
+    { "id": "target-3", "text": "Gradually set aside money for early withdrawals" }
+  ],
+  "solution": {"card-1": "target-2", "card-2": "target-3", "card-3": "target-1"},
+  "hint": "Think about when this part of the portfolio first has to pay a bill."
+}
+```
+
+**Explanation:** A glide path can gradually move from growth towards protecting near-term spending.
 
 ### Q2. A 30% crash hits at age 30 and again at age 64. When does it usually hurt the plan more?
 - A) At 64 ✅
@@ -85,10 +99,16 @@ The same percentage drop can have a much bigger effect late in the journey.
 
 **Explanation:** spending comes from the buffer while investments recover.
 
-### Q5. What is sequence risk?
-- A) The risk of paying fees in sequence
-- B) The risk of choosing funds in the wrong order
-- C) The risk of inflation over many years
-- D) The risk that poor returns happen right before or early in retirement ✅
+### Q5. A fictional 8,000-coin retirement portfolio falls 25% just before a 2,000-coin withdrawal. What is left after both events?
 
-**Explanation:** the timing of losses, not only their size, shapes the outcome.
+```number
+{
+  "label": "Final balance",
+  "unit": "coins",
+  "answer": 4000,
+  "hint": "Apply the price drop first, then subtract the withdrawal.",
+  "dial": { "max": 8000, "step": 250 }
+}
+```
+
+**Explanation:** The drop leaves 6,000 coins, then the withdrawal leaves 4,000. A loss just before you start drawing money can have a lasting impact.

@@ -64,29 +64,62 @@ The emergency fund is what lets your investments stay invested.
 
 **Explanation:** liquidity is about access to your money, not about return or risk.
 
-### Q2. Maya needs money in 8 months. Which instrument fits **worst**?
-- A) A 2-year Locked-term instrument ✅
-- B) A mix of mostly cash with a small basket share
-- C) Accessible Cash
-- D) None of them; all fit equally.
+### Q2. Maya has 2,000 coins and a 1,000-coin bill in eight months. Lock away as much as you can for two years while keeping the bill covered.
 
-**Explanation:** the locked term ends after she needs the money, so she would pay a penalty or miss the deadline.
+```number
+{
+  "label": "Coins to lock away",
+  "unit": "coins",
+  "answer": 1000,
+  "hint": "Find the last position where Maya’s pocket still covers the bill.",
+  "lab": {
+    "kind": "LOCKBOX",
+    "max": 2000,
+    "step": 100,
+    "initial": 0,
+    "balance": 2000,
+    "bill": 1000
+  }
+}
+```
 
-### Q3. Why can a long time horizon handle more volatility?
-- A) Because inflation stops over time
-- B) Because long-term investments have no risk
-- C) Because prices only go up over long periods
-- D) Because there are more years to recover from temporary drops ✅
+**Explanation:** Locking 1,000 coins leaves exactly 1,000 available before the bill is due. The lockbox cannot help with the bill.
 
-**Explanation:** long horizons don't remove risk, but they give time for recovery.
+### Q3. Sort these headlines by the problem they describe.
 
-### Q4. What is the main job of an emergency fund?
-- A) Replacing a pension
-- B) Covering surprise costs so you don't have to sell investments at a bad moment ✅
-- C) Paying for holidays
-- D) Earning the highest return
+```assignment
+{
+  "mode": "SORT",
+  "cards": [
+    { "id": "quote", "text": "The basket falls 12% in a week" },
+    { "id": "term", "text": "The deposit unlocks after rent is due" },
+    { "id": "jump", "text": "A share jumps and then falls back" },
+    { "id": "fee", "text": "An early withdrawal costs 50 coins" }
+  ],
+  "targets": [
+    { "id": "access", "text": "Getting the money out" },
+    { "id": "price", "text": "Changes in the price" }
+  ],
+  "solution": {"quote": "price", "term": "access", "jump": "price", "fee": "access"},
+  "hint": "Imagine you already need the money. Is the price changing, or is there something in the way of getting it?"
+}
+```
 
-**Explanation:** it's a safety net that protects the rest of your plan.
+**Explanation:** A change in value is price risk. Having to wait or pay to get the money out is an access problem.
+
+### Q4. Hedgie spends 300 coins a month on essentials. Fill an emergency jar that covers three months.
+
+```number
+{
+  "label": "Emergency jar",
+  "unit": "coins",
+  "answer": 900,
+  "hint": "Multiply one month of spending by the number of months you want covered.",
+  "dial": { "max": 2000, "step": 100 }
+}
+```
+
+**Explanation:** Three months of essential spending comes to 900 coins. An emergency fund buys time when something unexpected happens.
 
 ### Q5. Match each fictional instrument to how you can get your money back.
 
@@ -103,7 +136,7 @@ The emergency fund is what lets your investments stay invested.
     { "id": "penalty", "text": "Wait until the term ends or pay an early withdrawal penalty" },
     { "id": "available", "text": "Use immediately with no withdrawal cost" }
   ],
-  "solution": { "cash": "available", "basket": "sell", "term": "penalty" },
+  "solution": {"cash": "available", "basket": "sell", "term": "penalty"},
   "hint": "Imagine a bill is due tomorrow. For each instrument, what would you have to do before you could pay it?"
 }
 ```

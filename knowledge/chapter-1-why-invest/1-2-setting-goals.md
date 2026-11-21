@@ -80,25 +80,45 @@ Most people have several goals at once. A sensible order is:
     { "id": "medium", "text": "Medium-term" },
     { "id": "long", "text": "Long-term" }
   ],
-  "solution": { "holiday": "short", "retirement": "long", "home": "medium", "laptop": "short" },
+  "solution": {"holiday": "short", "retirement": "long", "home": "medium", "laptop": "short"},
   "hint": "Start with the time left until you need the money. Try comparing all the deadlines in years."
 }
 ```
 
 **Explanation:** under 2 years is short-term, 2–10 years is medium-term, over 10 years is long-term.
 
-### Q3. Why should the goal come before choosing an instrument?
-- A) It doesn't matter which comes first.
-- B) Because instruments change every year
-- C) Because goals are required by law
-- D) Because the goal's timing and amount decide how much risk the money can take ✅
+### Q3. Hedgie wants a 1,200-coin bike in eight months. How much goes in the bike jar each month if it starts empty?
 
-**Explanation:** money needed soon can't wait out a drop in value; money needed in 30 years can.
+```number
+{
+  "label": "Monthly deposit",
+  "unit": "coins",
+  "answer": 150,
+  "hint": "Divide the price by the number of deposits.",
+  "dial": { "max": 400, "step": 25 }
+}
+```
 
-### Q4. For a short-term goal, what matters most?
-- A) Owning one exciting stock
-- B) Safety and being able to access the money ✅
-- C) The highest possible return
-- D) Locking the money away for a long time
+**Explanation:** Eight deposits of 150 coins reach the goal. A price and a deadline turn a wish into a plan.
 
-**Explanation:** with little time, there is no room to recover from losses or to wait for a locked term to end.
+### Q4. Match each plan to the part of the goal it makes clear.
+
+```assignment
+{
+  "mode": "MATCH",
+  "cards": [
+    { "id": "target", "text": "Save for a new bike" },
+    { "id": "cost", "text": "Set aside 1,200 coins" },
+    { "id": "deadline", "text": "Have the money by August" }
+  ],
+  "targets": [
+    { "id": "when", "text": "When I need the money" },
+    { "id": "why", "text": "What I’m saving for" },
+    { "id": "howmuch", "text": "How much I need" }
+  ],
+  "solution": {"target": "why", "cost": "howmuch", "deadline": "when"},
+  "hint": "Look for a purpose, a price, and a deadline."
+}
+```
+
+**Explanation:** A usable goal says what you want, how much it costs, and when the money will be needed.

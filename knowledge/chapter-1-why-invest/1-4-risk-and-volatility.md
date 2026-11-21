@@ -62,21 +62,41 @@ They don't always match. Someone may love excitement (high tolerance) while need
 
 **Explanation:** volatility is about the size and frequency of price moves, in both directions.
 
-### Q2. An investment falls 50%. How much does it need to rise to return to its starting value?
-- A) 50%
-- B) 75%
-- C) 100% ✅
-- D) 150%
+### Q2. A portfolio falls from 1,000 to 500 coins. What percentage gain from 500 gets it back to 1,000?
 
-**Explanation:** from 500 back to 1,000 is a 100% gain.
+```number
+{
+  "label": "Gain needed to recover",
+  "unit": "%",
+  "answer": 100,
+  "hint": "Calculate the gain relative to the smaller balance you have left.",
+  "dial": { "max": 200, "step": 5 }
+}
+```
 
-### Q3. Someone offers an investment with "high returns and no risk". What should you think?
-- A) It's normal for funds.
-- B) Great deal, invest quickly.
-- C) It's only risky for beginners.
-- D) Be very skeptical; higher returns always come with higher risk. ✅
+**Explanation:** You need another 500 coins, which is 100% of the new 500-coin balance.
 
-**Explanation:** risk and return go together. A "no-risk, high-return" promise is a warning sign.
+### Q3. Help Hedgie sort these investment pitches.
+
+```assignment
+{
+  "mode": "SORT",
+  "cards": [
+    { "id": "promise", "text": "Guaranteed high returns, no risk" },
+    { "id": "fee", "text": "This fund charges 0.5% a year" },
+    { "id": "rush", "text": "Buy in the next 10 minutes" },
+    { "id": "loss", "text": "Your balance may fall" }
+  ],
+  "targets": [
+    { "id": "information", "text": "Information you can use" },
+    { "id": "flag", "text": "Red flag" }
+  ],
+  "solution": {"promise": "flag", "fee": "information", "rush": "flag", "loss": "information"},
+  "hint": "Look for urgency or promises too good to be true."
+}
+```
+
+**Explanation:** Promises of big guaranteed returns and pressure to buy immediately are warning signs. Describing fees or the possibility of losses gives you information you can check.
 
 ### Q4. Alex enjoys risk but needs the money in 10 months. What should guide the plan?
 - A) Risk tolerance, because Alex enjoys risk
@@ -101,7 +121,7 @@ They don't always match. Someone may love excitement (high tolerance) while need
     { "id": "medium", "text": "Medium volatility" },
     { "id": "high", "text": "High volatility" }
   ],
-  "solution": { "a": "high", "b": "low", "c": "medium" },
+  "solution": {"a": "high", "b": "low", "c": "medium"},
   "hint": "All three charts end where they started. Compare the size of the moves between those points."
 }
 ```

@@ -61,21 +61,41 @@ Even professional investors often fail to pick the "winners" consistently.
 
 **Explanation:** shareholders are part-owners. Bond holders are lenders.
 
-### Q2. What is a dividend?
-- A) Part of a company's profit paid to shareholders ✅
-- B) A fee for buying stocks
-- C) A tax on investments
-- D) A type of bond
+### Q2. You own 12 shares of Nova Robotics. It pays a dividend of 5 coins per share. How much arrives in your account?
 
-**Explanation:** dividends share profits with owners, though not all companies pay them.
+```number
+{
+  "label": "Dividend paid",
+  "unit": "coins",
+  "answer": 60,
+  "hint": "Each of your shares earns the same amount.",
+  "dial": { "max": 140, "step": 5 }
+}
+```
 
-### Q3. Why is a single stock riskier than a market basket?
-- A) It's not; they're the same.
-- B) Single stocks can't be sold.
-- C) Single stocks have higher fees by law.
-- D) The outcome depends entirely on one company. ✅
+**Explanation:** 12 shares × 5 coins per share = 60 coins.
 
-**Explanation:** with one company, any bad news hits your whole investment.
+### Q3. Sort the market news. Which events can hit just one company?
+
+```assignment
+{
+  "mode": "SORT",
+  "cards": [
+    { "id": "card-1", "text": "Nova recalls its delivery robots" },
+    { "id": "card-2", "text": "A recession cuts spending across the economy" },
+    { "id": "card-3", "text": "Nova’s factory shuts for repairs" },
+    { "id": "card-4", "text": "A broad sell-off hits most industries" }
+  ],
+  "targets": [
+    { "id": "target-1", "text": "One company" },
+    { "id": "target-2", "text": "Wider market" }
+  ],
+  "solution": {"card-1": "target-1", "card-2": "target-2", "card-3": "target-1", "card-4": "target-2"},
+  "hint": "Look at who the headline directly affects."
+}
+```
+
+**Explanation:** Holding many companies spreads the effect of company-specific news. A broad downturn can still hit the whole basket.
 
 ### Q4. A company you own announces a big product failure. What is the most likely short-term effect?
 - A) The share price is guaranteed to stay the same.

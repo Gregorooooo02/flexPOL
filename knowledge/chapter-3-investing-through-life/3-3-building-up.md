@@ -53,13 +53,27 @@ A common mistake is stopping retirement contributions "for a few years" to fund 
 
 ## Control questions
 
-### Q1. Why should different goals have different allocations?
-- A) To make the plan look complicated
-- B) Because the law requires it
-- C) Because each goal has its own horizon and risk capacity ✅
-- D) They shouldn't; one allocation fits everything.
+### Q1. Help Sam give each savings bucket a job.
 
-**Explanation:** money needed in 3 years and money needed in 27 years face different risks.
+```assignment
+{
+  "mode": "MATCH",
+  "cards": [
+    { "id": "card-1", "text": "Emergency fund" },
+    { "id": "card-2", "text": "Renovation in three years" },
+    { "id": "card-3", "text": "Retirement in 27 years" }
+  ],
+  "targets": [
+    { "id": "target-1", "text": "Give this money a long time to grow" },
+    { "id": "target-2", "text": "Keep this money available today" },
+    { "id": "target-3", "text": "Make sure the money is available when work starts" }
+  ],
+  "solution": {"card-1": "target-2", "card-2": "target-3", "card-3": "target-1"},
+  "hint": "Start with the one that may need to be used tomorrow."
+}
+```
+
+**Explanation:** A surprise bill calls for instant access, a renovation has a deadline, and retirement gives part of the plan a longer runway.
 
 ### Q2. Sam needs money for a renovation in 3 years. Which allocation fits best?
 - A) Mostly deposits and bonds, with little or no stocks ✅
@@ -69,13 +83,19 @@ A common mistake is stopping retirement contributions "for a few years" to fund 
 
 **Explanation:** a short-to-medium horizon needs stability and access on time.
 
-### Q3. What is "lifestyle inflation"?
-- A) The cost of insurance
-- B) A type of investment fund
-- C) Rising prices in shops
-- D) Spending more every time income rises, so savings don't grow ✅
+### Q3. Sam gets a monthly raise of 200 coins, then adds 150 coins of new monthly expenses. How much of the raise remains?
 
-**Explanation:** if spending grows as fast as income, there's nothing extra to invest.
+```number
+{
+  "label": "Raise left over each month",
+  "unit": "coins",
+  "answer": 50,
+  "hint": "Subtract the new expenses from the raise.",
+  "dial": { "max": 200, "step": 10 }
+}
+```
+
+**Explanation:** Only 50 coins remain. When spending rises along with income, there is less extra to save.
 
 ### Q4. Money is tight because of a new child. What's usually better for retirement savings?
 - A) Stop all contributions for 10 years.

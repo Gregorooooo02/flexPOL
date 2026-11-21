@@ -25,6 +25,7 @@ import { usePublishCoachFocus } from '@/components/coach/coachFocus';
 import { ApiError } from '@/config/axios';
 import type { AnswerChoice, AnswerOption, AnswerResult, Assignments, Question, Quiz } from '@/model';
 import { AssignmentQuestion } from './AssignmentQuestion';
+import { NumberQuestion } from './NumberQuestion';
 import { PortfolioPrediction } from './PortfolioPrediction';
 import { withAlpha } from './learningPath';
 import type { LearningNode, TopicDefinition } from './learningPath';
@@ -254,6 +255,7 @@ export function LessonPage({
   );
 
   const currentQuestion = step.kind === 'question' ? (questions[step.index] ?? null) : null;
+  const interactiveQuestion = Boolean(currentQuestion?.assignment || currentQuestion?.numberExercise || currentQuestion?.comparison);
   const currentAnswer = currentQuestion ? answers[currentQuestion.id] : undefined;
   const currentAssignments = (currentQuestion && placements[currentQuestion.id]) || EMPTY_ASSIGNMENTS;
   const currentPrediction = currentQuestion ? predictions[currentQuestion.id] : undefined;
@@ -413,6 +415,8 @@ export function LessonPage({
     questionId: currentQuestion?.id,
     selectedOptionId: currentResult ? currentAnswer?.choice.optionId : undefined,
     assignments: currentResult ? currentAnswer?.choice.assignments : undefined,
+    number: currentResult ? currentAnswer?.choice.number : undefined,
+    dockLauncher: interactiveQuestion,
     answerCorrect: currentResult?.correct,
   });
 
@@ -614,6 +618,7 @@ export function LessonPage({
                 exercise={currentQuestion.assignment}
                 assignments={currentAssignments}
                 locked={isAnswerLocked(currentAnswer, isScored)}
+                solved={currentResult?.correct ?? false}
                 onChange={(assignments) => setPlacements((prev) => ({ ...prev, [currentQuestion.id]: assignments }))}
                 onCheck={() => handleSubmitAnswer(currentQuestion, { assignments: currentAssignments })}
               />
@@ -627,7 +632,17 @@ export function LessonPage({
               />
             )}
 
-            {!currentQuestion.assignment && (!currentQuestion.comparison || currentPrediction !== undefined) && (
+            {currentQuestion.numberExercise && (!currentQuestion.comparison || currentPrediction !== undefined) && (
+              <NumberQuestion
+                exercise={currentQuestion.numberExercise}
+                lastValue={currentAnswer?.choice.number}
+                locked={isAnswerLocked(currentAnswer, isScored)}
+                solved={currentResult?.correct ?? false}
+                onCheck={(number) => handleSubmitAnswer(currentQuestion, { number })}
+              />
+            )}
+
+            {currentQuestion.options.length > 0 && (!currentQuestion.comparison || currentPrediction !== undefined) && (
               <div className="flex flex-col gap-2.5">
                 {currentQuestion.options.map((option) => {
                   const look = getOptionLook(option, currentAnswer, isScored);
@@ -734,8 +749,8 @@ export function LessonPage({
                         ? 'Correct!'
                         : isScored
                           ? `Not quite. The correct answer is ${correctLabel ?? '?'}.`
-                          : currentQuestion.assignment
-                            ? 'Not quite. Try adjusting your placements.'
+                          : currentResult.hint
+                            ? 'Not quite. Try again.'
                             : 'Not quite. Think it over and pick another answer.'}
                     </p>
                     {/* In practice mode the explanation would give the answer away, so it waits for a correct answer */}
@@ -826,7 +841,7 @@ export function LessonPage({
       )}
 
       <footer data-coach-footer className="sticky bottom-0 z-20 border-t border-border bg-card/90 backdrop-blur-sm">
-        <div className="mx-auto flex w-full max-w-md flex-col gap-2 px-4 py-3 lg:max-w-3xl">
+        <div className={cn('mx-auto flex w-full max-w-md flex-col gap-2 px-4 py-3 lg:max-w-3xl', interactiveQuestion && 'max-lg:pr-[4.25rem]')}>
           {step.kind === 'theory' && content && (
             <Button
               type="button"

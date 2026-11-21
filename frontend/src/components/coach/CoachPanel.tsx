@@ -58,6 +58,7 @@ export interface CoachPanelProps {
   /** The option the learner picked and had checked for `questionId`. Leave it out before they answer. */
   readonly selectedOptionId?: number;
   readonly assignments?: Assignments;
+  readonly number?: number;
   /** Whether that checked answer was right. Only picks Hedgie's face (joy or encouragement). */
   readonly answerCorrect?: boolean;
   /** Shown in the header so the learner knows what the coach can see, e.g. "Question 2/4". */
@@ -86,6 +87,7 @@ export function CoachPanel({
   questionId,
   selectedOptionId,
   assignments,
+  number,
   answerCorrect,
   contextLabel,
   title = 'Ask Hedgie',
@@ -105,7 +107,7 @@ export function CoachPanel({
     }
     sendToCoach(
       text,
-      { subchapterId, questionId, selectedOptionId, assignments },
+      { subchapterId, questionId, selectedOptionId, assignments, number },
       moodForReply({ questionId, answerCorrect }),
     );
     setDraft('');
