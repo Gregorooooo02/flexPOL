@@ -15,6 +15,7 @@ interface ChoiceFieldProps {
   options: { value: string; label: string }[];
   onChange: (value: string) => void;
   disabled?: boolean;
+  orientation?: 'vertical' | 'horizontal';
 }
 
 export function ChoiceField({
@@ -23,10 +24,11 @@ export function ChoiceField({
   options,
   onChange,
   disabled = false,
+  orientation = 'vertical',
 }: ChoiceFieldProps) {
   const id = useId();
   return (
-    <Field className="min-w-0 gap-1" data-disabled={disabled}>
+    <Field orientation={orientation} className="min-w-0 gap-1" data-disabled={disabled}>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
       <Select
         disabled={disabled}

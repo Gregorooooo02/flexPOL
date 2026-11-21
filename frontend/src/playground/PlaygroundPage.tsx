@@ -468,8 +468,20 @@ export function PlaygroundPage() {
                   ? 'Preparing market…'
                   : 'Market unavailable')
             }
-            dates={visibleDates}
-            equity={equity}
+            actions={
+              <PlaygroundActions
+                market={market}
+                replay={replay}
+                horizonYears={horizonYears}
+                blocked={selectedId !== null}
+                needsAllocation={replay.status === 'idle' && !hasHoldings}
+                unavailableReason={marketUnavailableReason}
+                onHorizonChange={changeHorizon}
+                onPlay={play}
+                onRetry={retryMarket}
+                onStartOver={startOver}
+              />
+            }
             titleRef={pageTitleRef}
           />
         }
@@ -479,7 +491,7 @@ export function PlaygroundPage() {
               <Alert>
                 <AlertTitle>Couldn’t prepare the market</AlertTitle>
                 <AlertDescription className="[overflow-wrap:anywhere]">
-                  {market.message} Your allocations are kept. Use Retry market below.
+                  {market.message} Your allocations are kept. Use Retry market in the header.
                 </AlertDescription>
               </Alert>
             )}
@@ -545,20 +557,6 @@ export function PlaygroundPage() {
             titleRef={portfolioTitleRef}
             onOpen={openInstrument}
             onRemove={removePosition}
-          />
-        }
-        actionBar={
-          <PlaygroundActions
-            market={market}
-            replay={replay}
-            horizonYears={horizonYears}
-            blocked={selectedId !== null}
-            needsAllocation={replay.status === 'idle' && !hasHoldings}
-            unavailableReason={marketUnavailableReason}
-            onHorizonChange={changeHorizon}
-            onPlay={play}
-            onRetry={retryMarket}
-            onStartOver={startOver}
           />
         }
       />
