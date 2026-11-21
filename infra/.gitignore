@@ -1,0 +1,12 @@
+# Provider binaries and local state (the real state lives in the GCS bucket).
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+# terraform.tfvars and .terraform.lock.hcl are committed on purpose.
