@@ -94,6 +94,8 @@ Each subchapter has its own file, with the lesson for the user and practice ques
 
 ---
 
-## Capstone (optional) — Ready for the Real World?
+## Final lesson — Ready for the Real World?
 
-A short wrap-up. The learner reviews their sandbox decisions, then builds a checklist of what to verify before investing real money, and what they still need to learn. This meets the success criterion "identify what they still need to understand."
+After Chapter 3's final test, complete the [final lesson](final-lesson.md): **six closed questions** covering age, goal, horizon, financial readiness, ability to wait and comfort with losses. The result shows one category to explore, a short reason and trade-off, followed by a **four-step arrow visualization** of how to proceed. No extra reflection quiz or real-money action is required.
+
+The questions, ordered decision rules and next steps live in [final-lesson.json](final-lesson.json) and are imported directly by the frontend. The capstone is a local interactive activity, not an additional database chapter or scored quiz. Answers are not saved or sent to the server or AI coach. Financial foundations and access needs override appetite for risk, and an unclear situation produces a planning step rather than an investment pick. The result is educational, not a specific product recommendation or full suitability assessment.

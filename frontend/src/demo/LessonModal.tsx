@@ -36,7 +36,7 @@ import { HedgieWrongAnswer } from './hedgie/HedgieWrongAnswer';
 import { useHedgieScene } from './hedgie/useHedgieScene';
 
 interface LessonPageProps {
-  readonly node: LearningNode;
+  readonly node: Exclude<LearningNode, { kind: 'capstone' }>;
   readonly topic: TopicDefinition;
   readonly isCompleted: boolean;
   readonly nextNodeKind: LearningNode['kind'] | null;
@@ -142,7 +142,7 @@ function checkpointSections(topic: TopicDefinition, quiz: Quiz): TheorySection[]
 }
 
 async function loadLessonContent(
-  node: LearningNode,
+  node: Exclude<LearningNode, { kind: 'capstone' }>,
   topic: TopicDefinition,
   signal: AbortSignal,
 ): Promise<LessonContent> {
@@ -425,7 +425,11 @@ export function LessonPage({
       ? currentQuestion.options.find((option) => option.id === currentResult.correctOptionId)?.label
       : undefined;
   const isPassedResult = step.kind === 'result' && step.passed;
-  const nextLabel = nextNodeKind === 'checkpoint' ? 'Final test' : 'Next lesson';
+  const nextLabel = nextNodeKind === 'checkpoint'
+    ? 'Final test'
+    : nextNodeKind === 'capstone'
+      ? 'Final lesson'
+      : 'Next lesson';
 
   return (
     <div
