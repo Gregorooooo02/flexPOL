@@ -243,7 +243,7 @@ export function HomePage() {
               using the chat button. Hedgie is a learning coach, not a financial adviser.
             </p>
           </div>
-          <img src={hedgieImage('encouragement')} alt="" className="hidden size-28 shrink-0 object-contain @md:block @3xl:size-36" />
+          <img src={hedgieImage('joy')} alt="" className="hidden size-28 shrink-0 object-contain @md:block @3xl:size-36" />
         </section>
 
         <section aria-label="Quest Arena" className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
