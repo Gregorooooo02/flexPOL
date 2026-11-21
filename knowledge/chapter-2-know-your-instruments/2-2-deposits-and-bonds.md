@@ -50,13 +50,27 @@ A **bond** is a loan you give to a government or a company. They promise to:
 
 ## Control questions
 
-### Q1. What is a bond?
-- A) A share of ownership in a company
-- B) A savings account with no term
-- C) A loan you give to a government or company in exchange for interest ✅
-- D) A type of fund
+### Q1. Link each term to what happens behind the scenes.
 
-**Explanation:** a bond holder is a lender, not an owner.
+```assignment
+{
+  "mode": "MATCH",
+  "cards": [
+    { "id": "card-1", "text": "Term deposit" },
+    { "id": "card-2", "text": "Bond" },
+    { "id": "card-3", "text": "Bond issuer" }
+  ],
+  "targets": [
+    { "id": "target-1", "text": "The organisation that borrows" },
+    { "id": "target-2", "text": "A loan you make to an issuer" },
+    { "id": "target-3", "text": "Money you leave with a bank until a set date" }
+  ],
+  "solution": {"card-1": "target-3", "card-2": "target-2", "card-3": "target-1"},
+  "hint": "Find the borrower first. Then compare the loan and the bank agreement."
+}
+```
+
+**Explanation:** Issuers borrow through bonds. A deposit is an agreement with the bank for a set term.
 
 ### Q2. What usually happens if you withdraw from a term deposit early?
 - A) You lose some or all of the interest. ✅
@@ -82,10 +96,16 @@ A **bond** is a loan you give to a government or a company. They promise to:
 
 **Explanation:** the term matches the date the money is needed.
 
-### Q5. What is the main trade-off with locked-term instruments?
-- A) Ownership in exchange for dividends
-- B) High risk for high return
-- C) No interest at all
-- D) A somewhat higher rate in exchange for less access to your money ✅
+### Q5. A fictional deposit pays out 2,080 coins at maturity. If you leave early, you get your original 2,000 back. How much do you give up?
 
-**Explanation:** you give up liquidity to earn a better rate.
+```number
+{
+  "label": "Interest given up",
+  "unit": "coins",
+  "answer": 80,
+  "hint": "Subtract what you get today from what you would get at maturity.",
+  "dial": { "max": 250, "step": 10 }
+}
+```
+
+**Explanation:** The 80-coin difference is the interest you forgo to get immediate access.

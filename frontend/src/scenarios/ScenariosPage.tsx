@@ -26,7 +26,7 @@ interface ChapterGroup {
 /** Tiles grid; container queries, because the coach sidebar changes the content width. */
 const GRID_CLASS = 'grid gap-4 @2xl:grid-cols-2 @5xl:grid-cols-3';
 
-/** Lists the sandbox scenarios as tiles, grouped by chapter. Choosing one comes later. */
+/** Lists the sandbox scenarios as tiles, grouped by chapter; a tile opens `/scenarios/:scenarioId`. */
 export function ScenariosPage() {
   const [loadState, setLoadState] = useState<LoadState>({ status: 'loading' });
   const [reloadKey, setReloadKey] = useState(0);

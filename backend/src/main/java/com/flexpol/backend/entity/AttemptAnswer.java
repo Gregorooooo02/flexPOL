@@ -1,5 +1,8 @@
 package com.flexpol.backend.entity;
 
+import java.math.BigDecimal;
+import java.util.Map;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,8 +16,10 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-/** The option a user picked for one question during an attempt. */
+/** The first answer a user submitted for one question during an attempt. */
 @Entity
 @Table(name = "attempt_answer", uniqueConstraints = @UniqueConstraint(columnNames = { "attempt_id", "question_id" }))
 @Getter
@@ -34,9 +39,15 @@ public class AttemptAnswer {
 	@JoinColumn(name = "question_id", nullable = false)
 	private Question question;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "selected_option_id", nullable = false)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "selected_option_id")
 	private AnswerOption selectedOption;
+
+	@JdbcTypeCode(SqlTypes.JSON)
+	private Map<String, String> assignments;
+
+	@Column(precision = 16, scale = 6)
+	private BigDecimal numericValue;
 
 	/** Stored at scoring time so results don't need recomputing. */
 	@Column(nullable = false)

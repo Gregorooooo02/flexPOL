@@ -54,13 +54,27 @@ An **index** is a list of companies that represents a market or a part of it, fo
 
 ## Control questions
 
-### Q1. What does a fund do?
-- A) Keeps your money in cash
-- B) Lends your money to a single company
-- C) Pools money from many investors and spreads it across many investments ✅
-- D) Guarantees a fixed return
+### Q1. Connect each term to its job.
 
-**Explanation:** pooling lets small investors own a slice of many assets.
+```assignment
+{
+  "mode": "MATCH",
+  "cards": [
+    { "id": "card-1", "text": "Investment fund" },
+    { "id": "card-2", "text": "ETF" },
+    { "id": "card-3", "text": "Market index" }
+  ],
+  "targets": [
+    { "id": "target-1", "text": "Tracks a chosen group of investments as a benchmark" },
+    { "id": "target-2", "text": "Trades on an exchange during the day" },
+    { "id": "target-3", "text": "Pools money from many investors" }
+  ],
+  "solution": {"card-1": "target-3", "card-2": "target-2", "card-3": "target-1"},
+  "hint": "Distinguish pooling money, trading it, and measuring a market."
+}
+```
+
+**Explanation:** Investors pool assets in a fund. An ETF trades on an exchange, and an index is a benchmark a fund can follow.
 
 ### Q2. What does an index fund do?
 - A) It copies a list of companies that represents a market. ✅
@@ -70,13 +84,27 @@ An **index** is a list of companies that represents a market or a part of it, fo
 
 **Explanation:** index funds follow an index instead of trying to beat it.
 
-### Q3. Why are index funds usually cheaper than actively managed funds?
-- A) They are smaller.
-- B) They are subsidized by the government.
-- C) They aren't; they're always more expensive.
-- D) They don't need a team researching and picking investments. ✅
+### Q3. Sort what the two fictional fund managers are doing.
 
-**Explanation:** following a list costs much less than active research and trading.
+```assignment
+{
+  "mode": "SORT",
+  "cards": [
+    { "id": "card-1", "text": "Copies the index weights" },
+    { "id": "card-2", "text": "Picks companies expected to beat the market" },
+    { "id": "card-3", "text": "Updates holdings when the index changes" },
+    { "id": "card-4", "text": "Researches new picks and trades on its forecasts" }
+  ],
+  "targets": [
+    { "id": "target-1", "text": "Follows the index" },
+    { "id": "target-2", "text": "Actively picks investments" }
+  ],
+  "solution": {"card-1": "target-1", "card-2": "target-2", "card-3": "target-1", "card-4": "target-2"},
+  "hint": "Does the manager follow a list or decide which companies to own?"
+}
+```
+
+**Explanation:** Index funds follow a benchmark. Active managers select investments to try to improve on it.
 
 ### Q4. The whole market falls 15%. What happens to a broad index fund?
 - A) It rises 15%.

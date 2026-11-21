@@ -18,13 +18,12 @@ export function hedgieImage(mood: HedgieMood): string {
  */
 export function moodForReply(context: {
   readonly questionId?: number;
-  readonly selectedOptionId?: number;
   readonly answerCorrect?: boolean;
 }): HedgieMood {
   if (context.questionId === undefined) {
     return 'greeting';
   }
-  if (context.selectedOptionId === undefined) {
+  if (context.answerCorrect === undefined) {
     return 'hint';
   }
   return context.answerCorrect ? 'joy' : 'encouragement';

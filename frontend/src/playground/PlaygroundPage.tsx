@@ -451,25 +451,20 @@ export function PlaygroundPage() {
             cashCents={portfolio.cashCents}
             investedCents={investedCents}
             budgetCents={portfolio.budgetCents}
-            date={tape?.dates[replay.dayIndex]}
-            dayIndex={replay.dayIndex}
-            lastIndex={tape ? lastDayIndex(tape) : 0}
-            status={
-              marketUnavailableReason ??
-              (market.status === 'ready'
-                ? replay.status === 'idle'
-                  ? hasHoldings
-                    ? 'Ready to start'
-                    : 'Build your portfolio'
-                  : replay.status === 'playing'
-                    ? 'Simulation running'
-                    : 'Simulation complete'
-                : market.status === 'loading'
-                  ? 'Preparing market…'
-                  : 'Market unavailable')
+            actions={
+              <PlaygroundActions
+                market={market}
+                replay={replay}
+                horizonYears={horizonYears}
+                blocked={selectedId !== null}
+                needsAllocation={replay.status === 'idle' && !hasHoldings}
+                unavailableReason={marketUnavailableReason}
+                onHorizonChange={changeHorizon}
+                onPlay={play}
+                onRetry={retryMarket}
+                onStartOver={startOver}
+              />
             }
-            dates={visibleDates}
-            equity={equity}
             titleRef={pageTitleRef}
           />
         }
@@ -479,7 +474,7 @@ export function PlaygroundPage() {
               <Alert>
                 <AlertTitle>Couldn’t prepare the market</AlertTitle>
                 <AlertDescription className="[overflow-wrap:anywhere]">
-                  {market.message} Your allocations are kept. Use Retry market below.
+                  {market.message} Your allocations are kept. Use Retry market in the header.
                 </AlertDescription>
               </Alert>
             )}
@@ -496,13 +491,13 @@ export function PlaygroundPage() {
               cashCents={portfolio.cashCents}
               totalCents={totalCents}
             />
-            {tape && (
-              <ValueChart
-                label="Portfolio value · simulated so far"
-                dates={visibleDates}
-                values={equity}
-              />
-            )}
+            <ValueChart
+              label="Portfolio value · simulated so far"
+              dates={visibleDates}
+              values={equity}
+              loading={market.status === 'loading'}
+              emptyMessage="Chart available when the market is ready."
+            />
             <details className="text-xs text-muted-foreground">
               <summary className="cursor-pointer py-1 focus-visible:outline-ring">
                 How this simulated market works
@@ -545,20 +540,6 @@ export function PlaygroundPage() {
             titleRef={portfolioTitleRef}
             onOpen={openInstrument}
             onRemove={removePosition}
-          />
-        }
-        actionBar={
-          <PlaygroundActions
-            market={market}
-            replay={replay}
-            horizonYears={horizonYears}
-            blocked={selectedId !== null}
-            needsAllocation={replay.status === 'idle' && !hasHoldings}
-            unavailableReason={marketUnavailableReason}
-            onHorizonChange={changeHorizon}
-            onPlay={play}
-            onRetry={retryMarket}
-            onStartOver={startOver}
           />
         }
       />

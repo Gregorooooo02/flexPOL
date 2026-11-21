@@ -1,6 +1,6 @@
 # HedgeFlex — Sandbox Scenarios (Chapters 2 and 3)
 
-**Status:** draft spec. The scenarios are seeded into the database (`node scripts/generate-content-sql.mjs`), served by `GET /api/scenarios` and listed on the `/scenarios` page; playing, evaluating and scoring them is not implemented yet. Chapter 1 keeps its own mission, "The Two-Year Goal" (see [learning-chapters.md](learning-chapters.md)), and is out of scope here.
+**Status:** draft spec. The scenarios are seeded into the database (`node scripts/generate-content-sql.mjs`), served by `GET /api/scenarios`, listed on the `/scenarios` page, and each shown on its own brief page (`/scenarios/{id}`). They are playable at `/scenarios/{id}/play`: the learner allocates, `POST /api/scenarios/{id}/runs` simulates and scores the plan as in §4, and the page replays the result. Runs aren't saved yet, and there is no coach debrief or Quest Arena ranking. Chapter 1 keeps its own mission, "The Two-Year Goal" (see [learning-chapters.md](learning-chapters.md)), and is out of scope here.
 
 > People, goals, amounts and events are fictional. Instruments come from the app's catalogue, but every price path is synthetic. Outcomes illustrate ideas from the lessons. They don't predict real returns and are not product recommendations.
 
@@ -91,12 +91,44 @@ Score = wGrowth × GrowthScore + wStability × StabilityScore − 15 × brokenRu
 - `maxDrawdown`: the largest drop the person can live with. Up to it, stability is 100; at twice that drop, stability is 0.
 - The weights add up to 1. Short horizons and fragile situations weight stability more; long horizons weight growth more.
 
+### Stars (1–5)
+
+The learner sees a star rating, calculated on the server from the same run (`defaults.stars` in the JSON):
+
+| Stars | Earned when |
+|---|---|
+| 2 | **Growth:** the final value plus the money paid out for needs is above the budget |
+| 1 | **Goal:** no shortfall and the final value reaches `target` |
+| 1 | **Right instruments:** money only in the scenario's `evaluation.suitableInstrumentIds`, in at least `evaluation.minInstruments` of them (cash is always fine; `minInstruments` 0 lets an all-cash plan earn it) |
+| 1 | **Right shares:** every `evaluation.shareRanges` entry holds. A range sums the budget share of its instruments (plus cash with `includesCash`) and needs `min ≤ share ≤ max`, inclusive; with `each: true` every listed instrument must be inside the range on its own (a per-fund cap) |
+
+Instruments and shares are judged on the allocation at the start, exactly in cents; growth and goal on the result. Every run gets at least one star. The ranges are a spectrum, not one right answer: the checker samples random allocations inside them and requires each to be a sound plan on average. Breaking an advisory rule always costs the instruments or the shares star, because every rule's suitable instruments sit in a range at least as strict as the rule.
+
+| Scenario | Suitable instruments | Min. picks | Share ranges |
+|---|---|---|---|
+| 2.1 Kuba | 1013, 1015 | 0 | Cash at least 70% |
+| 2.2 Lena and Tom | 1013, 1015 | 0 | Cash at least 75% |
+| 2.3 Marek | 1013, 1015, 1017, 1018, 1010 | 1 | Broad funds (1013, 1015, 1017, 1018): at least 60%; Favourite stock (ASML) (1010): at most 10%; Cash at most 30% |
+| 2.4 Zofia | 1013, 1015, 1017, 1018 | 1 | Funds (1013, 1015, 1017, 1018): at least 70%; Europe only (EURO STOXX 50) (1017): at most 40%; Cash at most 30%; Any single fund: each at most 50% |
+| 2.5 Olek | 1013, 1010 | 0 | Cash at least 85%; The tip (ASML) (1010): at most 5% |
+| 2.6 Nina | 1013, 1014, 1015, 1017, 1018, 1019, 1020 | 1 | Cash 35%–70%; Any single fund: each at most 40% |
+| 3.1 Paula | 1013, 1015, 1017, 1018 | 1 | Cash 30%–60%; Any single fund: each at most 35% |
+| 3.2 Ewa | 1013, 1015, 1018, 1019 | 1 | Cash at most 20% |
+| 3.3 Sam | 1013, 1015, 1017, 1018 | 1 | Cash 10%–40%; Any single fund: each at most 50% |
+| 3.4 Danuta | 1013, 1015, 1017, 1018 | 1 | Cash 25%–60%; Any single fund: each at most 35% |
+| 3.5 Henryk | 1013, 1015, 1017, 1018 | 1 | Cash 25%–60%; Any single fund: each at most 30% |
+| 3.6 Ola | 1013, 1015, 1018, 1019, 1020 | 1 | Cash at most 30% |
+
+Single stocks are suitable only where the story makes a small position sensible (Marek's favourite, Olek's tip); NASDAQ 100 is left out everywhere as a one-sector bet. Each scenario's `evaluation.explanation` tells the learner why, after the run.
+
 ### Checker (acceptance test)
 
 One path means luck plays a part: an all-in single stock can win a single run. Scenarios are therefore calibrated on average over many seeds. `scripts/check-sandbox-scenarios.mjs`:
 
 - validates the JSON (unique ids, budgets, horizons, people and seeds; horizons within 1–3,650 days; known instrument ids; shares in 5% steps adding up to 1; weights adding up to 1; floor below or equal to target, and so on);
 - reimplements the GBM engine's math (same parameters from `data.sql`, one step per weekday, `dt = 1/periodsPerYear`) and the evaluation above, then checks that over 1,000 seeds each scenario's **reference allocation scores ≥ 80 on average** and **each trap scores ≤ 50**.
+- checks the star data: suitable and range instruments are allowed, ranges are in 5% steps with `min < max`, the reference and also-acceptable allocations earn the instruments and shares stars, every trap misses at least one of them, and every rule is covered by a range at least as strict;
+- samples up to 24 allocations inside each scenario's spectrum (suitable instruments, every range met) and checks over 300 seeds that **even the worst of them scores ≥ 60 on average**, so no plan that earns both stars is a bad plan. It also prints the average stars per allocation.
 
 It uses JavaScript's random numbers, not Java's, so it checks the statistics, not exact results. Current results (2,000 seeds):
 
@@ -352,10 +384,10 @@ Instruments are listed by catalogue id. Cash is always available. Percentages ar
 
 | Part | Contents |
 |---|---|
-| `defaults` | Currency, share step, `cash` (key `CASH`, 0% interest), rule penalty points, `evaluation` (endpoint, seed rule, money-need point, withdrawal order, drawdown basis) and `acceptance` thresholds |
+| `defaults` | Currency, share step, `cash` (key `CASH`, 0% interest), rule penalty points, `evaluation` (endpoint, seed rule, money-need point, withdrawal order, drawdown basis), `acceptance` thresholds (including the spectrum check) and `stars` (the star weights and rules) |
 | `catalogue` | The catalogue ids the scenarios may use, with name, asset class and risk level (copied from `data.sql`, for validation and for people reading the file) |
 | `scenarios` | One object per scenario |
-| `version`, `disclaimer` | File version (2) and the learner-facing disclaimer |
+| `version`, `disclaimer` | File version (3, which added `evaluation` and `defaults.stars`) and the learner-facing disclaimer |
 
 Scenario fields:
 
@@ -367,8 +399,9 @@ Scenario fields:
 - `instrumentIds`: catalogue ids the learner may pick (cash is always available)
 - `rules`: `MAX_SHARE_EACH` (no listed instrument above `maxShare`) or `MAX_TOTAL_SHARE` (the listed instruments together at most `maxShare`), each with `instrumentIds` and `label`
 - `scenarioSeed`, `referenceAllocation`, `alsoAcceptable`, `traps` (`label`, `allocation`, `why`), `debriefPoints`, `notSimulated`, optional `retirementGap`
+- `evaluation`: `suitableInstrumentIds`, `minInstruments`, `shareRanges` (`label`, `includesCash`, `instrumentIds`, `min`, `max`, optional `each`) and `explanation`, for the star rating
 
-Allocations are maps from `"CASH"` or a catalogue id (as a string) to a share. `scenarioSeed`, `referenceAllocation`, `alsoAcceptable`, `traps` and `debriefPoints` aren't sent to the frontend before submission, like the correct quiz answers. After the run they go to the AI coach as context.
+Allocations are maps from `"CASH"` or a catalogue id (as a string) to a share. `scenarioSeed`, `referenceAllocation`, `alsoAcceptable`, `traps`, `debriefPoints` and `evaluation` aren't sent to the frontend before submission, like the correct quiz answers. After the run they go to the AI coach as context.
 
 ### Endpoints (proposal)
 
@@ -379,6 +412,8 @@ Allocations are maps from `"CASH"` or a catalogue id (as a string) to a share. `
 | `POST /api/scenarios/{scenarioId}/runs` | Body `{ "allocations": [ { "instrumentId": 1015, "amount": 7000.00 } ] }`; the rest is cash. Runs the batch and returns the evaluation. With `X-User-Email` the run is saved, so retries can be compared and Quest Arena can rank them |
 
 400 if the amounts exceed the budget or use an instrument the scenario doesn't allow. The response contains the score and its parts, broken rules, final value, growth, largest drop, money needs (paid from cash / from holdings, shortfall), the weekday value path for the replay chart, each instrument's contribution, and the previous run's score.
+
+**Built so far:** `GET /api/scenarios` (without the `chapterId` filter), `GET /api/scenarios/{scenarioId}` and `POST /api/scenarios/{scenarioId}/runs` with everything above except saving: runs aren't stored, so the previous run's score is kept by the page (`/scenarios/{id}/play`) instead of returned by the server. The largest drop adds back the money actually paid, so a shortfall doesn't soften it; the checker adds the full amount, which only differs after a shortfall (where growth is already 0).
 
 ## 8. What's needed to build it
 

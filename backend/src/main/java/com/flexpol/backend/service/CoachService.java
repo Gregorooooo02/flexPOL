@@ -87,6 +87,12 @@ public class CoachService {
 		if (request.selectedOptionId() != null && request.questionId() == null) {
 			throw new BadRequestException("selectedOptionId requires questionId");
 		}
+		if (request.assignments() != null && request.questionId() == null) {
+			throw new BadRequestException("assignments requires questionId");
+		}
+		if (request.number() != null && request.questionId() == null) {
+			throw new BadRequestException("number requires questionId");
+		}
 		String requestedConversation = request.conversationId() == null ? null : normalize(request.conversationId());
 
 		// Context goes in as template parameters, so braces in lesson or question text are never parsed.
@@ -98,7 +104,8 @@ public class CoachService {
 		}
 		if (request.questionId() != null) {
 			system.append(QUESTION_SECTION);
-			params.put("question", contextService.questionContext(request.questionId(), request.selectedOptionId()));
+			params.put("question", contextService.questionContext(
+					request.questionId(), request.selectedOptionId(), request.assignments(), request.number()));
 		}
 		// After the context checks, so a rejected request doesn't leave an empty conversation behind.
 		String conversation = conversationService.resolve(requestedConversation, userEmail);

@@ -6,4 +6,4 @@ export { askCoach } from './coachApi';
 export { loginUser } from './userApi';
 export { getInstrumentHistory, getInstruments } from './instrumentApi';
 export { simulateBatch } from './simulationApi';
-export { getScenario, getScenarios } from './scenarioApi';
+export { getScenario, getScenarios, runScenario } from './scenarioApi';

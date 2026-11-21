@@ -1,7 +1,7 @@
 export type { Chapter } from './chapter';
 export type { SandboxInstrument, Subchapter, SubchapterSummary } from './subchapter';
-export type { AnswerLabel, AnswerOption, Question, Quiz, QuizType } from './quiz';
-export type { AnswerResult, AnswerSubmission } from './answer';
+export type { AnswerLabel, AnswerOption, AssignmentExercise, NumberExercise, NumberLab, PortfolioComparison, Question, Quiz, QuizType } from './quiz';
+export type { AnswerChoice, AnswerResult, AnswerSubmission, Assignments } from './answer';
 export type { ProblemDetail } from './problemDetail';
 export type { CoachRequest, CoachResponse } from './coach';
 export type { LoginRequest, User } from './user';
@@ -24,3 +24,16 @@ export type {
   ScenarioRuleType,
   ScenarioScoring,
 } from './scenario';
+export type {
+  ScenarioAllocation,
+  ScenarioInstrumentRun,
+  ScenarioMoneyNeedRun,
+  ScenarioRunPoint,
+  ScenarioRunRequest,
+  ScenarioRunResponse,
+  ScenarioScore,
+  ScenarioStarRating,
+  ShareRangeResult,
+  StarCriterion,
+  StarCriterionKey,
+} from './scenarioRun';

@@ -7,10 +7,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -49,7 +50,8 @@ public class Subchapter {
 	private String sandboxInstrument;
 
 	/** Body of the lesson as Markdown, rendered by the frontend. */
-	@Lob
+	// text on PostgreSQL; @Lob would map to a large-object oid there
+	@JdbcTypeCode(SqlTypes.LONG32VARCHAR)
 	@Column(nullable = false)
 	private String lessonMarkdown;
 }

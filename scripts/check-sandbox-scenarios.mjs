@@ -72,6 +72,67 @@ for (const s of data.scenarios) {
   checkAllocation(s, s.referenceAllocation, "reference");
   s.alsoAcceptable.forEach((a, i) => checkAllocation(s, a, `alsoAcceptable ${i + 1}`));
   s.traps.forEach((t) => checkAllocation(s, t.allocation, `trap "${t.label}"`));
+  checkEvaluation(s);
+}
+
+// The star evaluation (defaults.stars): which instruments suit the person, and the share ranges.
+function checkEvaluation(s) {
+  const e = s.evaluation;
+  if (!e) return errors.push(`${s.code}: evaluation is missing`);
+  const onStep = (x) => Math.abs(x / step - Math.round(x / step)) <= EPS;
+  for (const id of e.suitableInstrumentIds) if (!s.instrumentIds.includes(id)) errors.push(`${s.code}: suitable instrument ${id} isn't allowed`);
+  if (new Set(e.suitableInstrumentIds).size !== e.suitableInstrumentIds.length) errors.push(`${s.code}: suitable instruments repeat`);
+  if (!Number.isInteger(e.minInstruments) || e.minInstruments < 0 || e.minInstruments > e.suitableInstrumentIds.length)
+    errors.push(`${s.code}: minInstruments must be 0–${e.suitableInstrumentIds.length}`);
+  if (!e.explanation?.trim()) errors.push(`${s.code}: evaluation explanation is missing`);
+  if (!e.shareRanges.length) errors.push(`${s.code}: at least one share range is needed`);
+  for (const r of e.shareRanges) {
+    if (!r.label?.trim()) errors.push(`${s.code}: a share range has no label`);
+    if (!r.includesCash && !r.instrumentIds.length) errors.push(`${s.code} range "${r.label}": no cash and no instruments`);
+    if (r.each && (r.includesCash || r.min !== 0)) errors.push(`${s.code} range "${r.label}": a per-instrument (each) range needs min 0 and no cash`);
+    for (const id of r.instrumentIds) if (!s.instrumentIds.includes(id)) errors.push(`${s.code} range "${r.label}": ${id} isn't allowed`);
+    if (!(r.min >= 0 && r.min <= r.max && r.max <= 1) || !onStep(r.min) || !onStep(r.max))
+      errors.push(`${s.code} range "${r.label}": needs 0 ≤ min ≤ max ≤ 1 in ${step} steps`);
+    // A spectrum, not one right answer.
+    if (r.max - r.min < step - EPS) errors.push(`${s.code} range "${r.label}": min and max are equal; give a range`);
+  }
+  const stars = (alloc) => ({ assets: rightAssets(s, alloc), shares: rightShares(s, alloc) });
+  for (const [what, alloc] of [["reference", s.referenceAllocation], ...s.alsoAcceptable.map((a, i) => [`alsoAcceptable ${i + 1}`, a])]) {
+    const st = stars(alloc);
+    if (!st.assets || !st.shares) errors.push(`${s.code} ${what}: must earn the assets and shares stars (assets ${st.assets}, shares ${st.shares})`);
+  }
+  for (const t of s.traps) {
+    const st = stars(t.allocation);
+    if (st.assets && st.shares) errors.push(`${s.code} trap "${t.label}": earns both the assets and shares stars`);
+  }
+  // Breaking an advisory rule must cost a star: each suitable instrument a rule covers sits in one
+  // range that is at least as strict as the rule.
+  for (const rule of s.rules) {
+    const covered = rule.instrumentIds.filter((id) => e.suitableInstrumentIds.includes(id));
+    if (!covered.length) continue;
+    // A range's total caps every subset too, so it is strict enough for both rule types.
+    const strict = e.shareRanges.some(
+      (r) => !r.includesCash && covered.every((id) => r.instrumentIds.includes(id)) && r.max <= rule.maxShare + EPS &&
+        (!r.each || rule.type === "MAX_SHARE_EACH"),
+    );
+    if (!strict) errors.push(`${s.code} rule "${rule.label}": suitable instruments ${covered.join(", ")} need a share range with max ≤ ${rule.maxShare}`);
+  }
+}
+
+/** Assets star: money only in suitable instruments, in at least minInstruments of them. */
+function rightAssets(s, alloc) {
+  const invested = Object.keys(alloc).filter((k) => k !== "CASH" && alloc[k] > 0).map(Number);
+  return invested.every((id) => s.evaluation.suitableInstrumentIds.includes(id)) && invested.length >= s.evaluation.minInstruments;
+}
+
+/** Shares star: every range holds (inclusive); an `each` range applies to every listed instrument on its own. */
+function rightShares(s, alloc) {
+  const within = (r, share) => share >= r.min - EPS && share <= r.max + EPS;
+  return s.evaluation.shareRanges.every((r) => {
+    if (r.each) return r.instrumentIds.every((id) => within(r, alloc[String(id)] ?? 0));
+    const share = (r.includesCash ? alloc.CASH ?? 0 : 0) + r.instrumentIds.reduce((a, id) => a + (alloc[String(id)] ?? 0), 0);
+    return within(r, share);
+  });
 }
 
 if (errors.length) {
@@ -137,7 +198,15 @@ function runOnce(s, alloc) {
   const clamp = (x) => Math.min(1, Math.max(0, x));
   const growth = shortfall ? 0 : 100 * clamp((finalValue - s.floor) / (s.target - s.floor));
   const stability = 100 * clamp(1 - Math.max(0, drop - s.maxDrawdown) / s.maxDrawdown);
-  return { finalValue, drop, growth, stability, goal: !shortfall && finalValue >= s.target };
+  return { finalValue, drop, growth, stability, goal: !shortfall && finalValue >= s.target, gained: finalValue + withdrawn > s.budget };
+}
+
+/** Stars for one run (defaults.stars): 2 for growth, 1 each for goal, assets and shares, at least the minimum. */
+function starsFor(s, alloc, run) {
+  const w = data.defaults.stars;
+  const earned = (run.gained ? w.growth : 0) + (run.goal ? w.goal : 0) +
+    (rightAssets(s, alloc) ? w.assets : 0) + (rightShares(s, alloc) ? w.shares : 0);
+  return Math.max(w.minimum, earned);
 }
 
 function brokenRules(s, alloc) {
@@ -149,28 +218,56 @@ function brokenRules(s, alloc) {
   }).length;
 }
 
-function evaluate(s, alloc) {
+function evaluate(s, alloc, seeds = SEEDS) {
   state = s.scenarioSeed >>> 0;
   spare = null;
-  const runs = Array.from({ length: SEEDS }, () => runOnce(s, alloc));
+  const runs = Array.from({ length: seeds }, () => runOnce(s, alloc));
   const penalty = brokenRules(s, alloc) * data.defaults.rulePenaltyPoints;
   const scores = runs.map((r) => Math.min(100, Math.max(0, s.weights.growth * r.growth + s.weights.stability * r.stability - penalty)));
   const finals = runs.map((r) => r.finalValue).sort((a, b) => a - b);
   const quantile = (p) => finals[Math.floor(p * (finals.length - 1))];
   return {
-    score: scores.reduce((a, b) => a + b, 0) / SEEDS,
-    goal: runs.filter((r) => r.goal).length / SEEDS,
+    score: scores.reduce((a, b) => a + b, 0) / seeds,
+    goal: runs.filter((r) => r.goal).length / seeds,
+    stars: runs.reduce((a, r) => a + starsFor(s, alloc, r), 0) / seeds,
     p5: quantile(0.05),
     median: quantile(0.5),
     p95: quantile(0.95),
-    medianDrop: runs.map((r) => r.drop).sort((a, b) => a - b)[Math.floor(SEEDS / 2)],
+    medianDrop: runs.map((r) => r.drop).sort((a, b) => a - b)[Math.floor(seeds / 2)],
     penalty,
   };
 }
 
+// Random allocations (in share steps) that earn the assets and shares stars: the "right" spectrum.
+let sampleState = 7;
+const sampleUniform = () => (sampleState = (Math.imul(sampleState, 1103515245) + 12345) >>> 0) / 4294967296;
+function sampleSpectrum(s, count) {
+  const units = Math.round(1 / step);
+  const found = new Map();
+  sampleState = (s.scenarioSeed ^ 0x5bd1e995) >>> 0;
+  for (let attempt = 0; attempt < 20000 && found.size < count; attempt++) {
+    const pool = s.evaluation.suitableInstrumentIds.filter(() => sampleUniform() < 0.6);
+    const keys = ["CASH", ...pool.map(String)];
+    // Dirichlet(1) weights, rounded to whole steps with the largest remainders.
+    const weights = keys.map(() => -Math.log(1 - sampleUniform()));
+    const sum = weights.reduce((a, b) => a + b, 0);
+    const raw = weights.map((w) => (w / sum) * units);
+    const whole = raw.map(Math.floor);
+    let left = units - whole.reduce((a, b) => a + b, 0);
+    raw.map((r, i) => [r - whole[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (left > 0) { whole[i]++; left--; } });
+    const alloc = {};
+    keys.forEach((k, i) => { if (whole[i] > 0) alloc[k] = Math.round(whole[i] * step * 100) / 100; });
+    const key = JSON.stringify(Object.entries(alloc).sort());
+    if (!found.has(key) && rightAssets(s, alloc) && rightShares(s, alloc)) found.set(key, alloc);
+  }
+  return [...found.values()];
+}
+
+const describe = (alloc) => Object.entries(alloc).map(([k, v]) => `${k}:${Math.round(v * 100)}%`).join(" ");
+
 // ---------- report ----------
 
-const { referenceMinMeanScore, trapMaxMeanScore } = data.defaults.acceptance;
+const { referenceMinMeanScore, trapMaxMeanScore, spectrumSeeds, spectrumSamples, spectrumMinMeanScore } = data.defaults.acceptance;
 const money = (n) => Math.round(n).toLocaleString("en-US").padStart(9);
 let failures = 0;
 for (const s of data.scenarios) {
@@ -185,11 +282,22 @@ for (const s of data.scenarios) {
     const ok = shouldPass ? e.score >= referenceMinMeanScore : e.score <= trapMaxMeanScore;
     if (!ok) failures++;
     console.log(
-      `  ${ok ? "ok  " : "FAIL"} ${label.padEnd(30)} score ${e.score.toFixed(1).padStart(5)}  goal ${(e.goal * 100).toFixed(0).padStart(3)}%` +
+      `  ${ok ? "ok  " : "FAIL"} ${label.padEnd(30)} score ${e.score.toFixed(1).padStart(5)}  stars ${e.stars.toFixed(1)}  goal ${(e.goal * 100).toFixed(0).padStart(3)}%` +
         `  p5 ${money(e.p5)}  median ${money(e.median)}  p95 ${money(e.p95)}  median drop ${(e.medianDrop * 100).toFixed(1)}%` +
         (e.penalty ? `  rules −${e.penalty}` : ""),
     );
   }
+  // Every allocation inside the spectrum should be a sound plan, not only the reference.
+  const spectrum = sampleSpectrum(s, spectrumSamples).map((alloc) => ({ alloc, e: evaluate(s, alloc, spectrumSeeds) }));
+  const worst = spectrum.reduce((a, b) => (b.e.score < a.e.score ? b : a), spectrum[0]);
+  const ok = spectrum.length > 0 && worst.e.score >= spectrumMinMeanScore;
+  if (!ok) failures++;
+  const meanScore = spectrum.reduce((a, b) => a + b.e.score, 0) / Math.max(1, spectrum.length);
+  const meanStars = spectrum.reduce((a, b) => a + b.e.stars, 0) / Math.max(1, spectrum.length);
+  console.log(
+    `  ${ok ? "ok  " : "FAIL"} ${`spectrum (${spectrum.length} samples)`.padEnd(30)} score mean ${meanScore.toFixed(1)}, worst ${worst ? worst.e.score.toFixed(1) : "–"}` +
+      `  stars mean ${meanStars.toFixed(1)}${worst ? `  worst: ${describe(worst.alloc)}` : ""}`,
+  );
 }
 console.log(`\n${data.scenarios.length} scenarios, ${SEEDS} seeds each: ${failures ? `${failures} acceptance failure(s)` : "all acceptance checks passed"}`);
 process.exit(failures ? 1 : 0);

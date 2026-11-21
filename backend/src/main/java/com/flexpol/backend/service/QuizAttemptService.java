@@ -3,7 +3,6 @@ package com.flexpol.backend.service;
 import java.time.Instant;
 
 import com.flexpol.backend.dto.QuizAttemptResponse;
-import com.flexpol.backend.entity.AnswerOption;
 import com.flexpol.backend.entity.AttemptAnswer;
 import com.flexpol.backend.entity.Question;
 import com.flexpol.backend.entity.Quiz;
@@ -59,8 +58,10 @@ public class QuizAttemptService {
 	 * is complete. Runs in the caller's transaction ({@link QuestionService}).
 	 */
 	@Transactional
-	public void recordAnswer(Long attemptId, User user, Question question, AnswerOption selected) {
-		QuizAttempt attempt = findOwned(attemptId, user);
+	public void recordAnswer(Long attemptId, User user, AttemptAnswer answer) {
+		QuizAttempt attempt = attemptRepository.findOwnedForUpdate(attemptId, user.getId())
+				.orElseThrow(() -> new ResourceNotFoundException("Quiz attempt", attemptId));
+		Question question = answer.getQuestion();
 		if (!attempt.getQuiz().getId().equals(question.getQuiz().getId())) {
 			throw new BadRequestException("Question " + question.getId() + " is not part of quiz attempt " + attemptId);
 		}
@@ -68,16 +69,12 @@ public class QuizAttemptService {
 			return;
 		}
 		boolean alreadyAnswered = attempt.getAnswers().stream()
-				.anyMatch(answer -> answer.getQuestion().getId().equals(question.getId()));
+				.anyMatch(saved -> saved.getQuestion().getId().equals(question.getId()));
 		if (alreadyAnswered) {
 			return;
 		}
 
-		AttemptAnswer answer = new AttemptAnswer();
 		answer.setAttempt(attempt);
-		answer.setQuestion(question);
-		answer.setSelectedOption(selected);
-		answer.setCorrect(selected.isCorrect());
 		attempt.getAnswers().add(answerRepository.save(answer));
 
 		if (attempt.getAnswers().size() >= attempt.getQuiz().getQuestions().size()) {

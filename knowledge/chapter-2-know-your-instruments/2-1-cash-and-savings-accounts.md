@@ -53,13 +53,19 @@ Cash means money in your wallet, in a current account or in a **savings account*
 
 **Explanation:** low risk and high liquidity are what make cash useful.
 
-### Q2. Your savings pay 1% interest and inflation is 3%. What happens to your purchasing power?
-- A) It shrinks by about 2% a year. ✅
-- B) It grows by 1% a year.
-- C) It grows by 3% a year.
-- D) It stays the same.
+### Q2. Your 100-coin savings balance earns 1 coin. A grocery basket that used to cost 100 now costs 103. How many coins are you short?
 
-**Explanation:** the real return is roughly interest minus inflation: 1% − 3% = −2%.
+```number
+{
+  "label": "Shortfall",
+  "unit": "coins",
+  "answer": 2,
+  "hint": "Find the new balance, then compare it with the new price.",
+  "dial": { "max": 8, "step": 1 }
+}
+```
+
+**Explanation:** The account now has 101 coins. You need 2 more coins for the same groceries.
 
 ### Q3. Which goal fits cash best?
 - A) Retirement in 35 years
@@ -69,10 +75,24 @@ Cash means money in your wallet, in a current account or in a **savings account*
 
 **Explanation:** an emergency fund needs safety and immediate access.
 
-### Q4. Why is cash a weak choice for a 30-year goal?
-- A) It's too risky.
-- B) Over long periods, inflation can eat much of its value. ✅
-- C) It can't be withdrawn.
-- D) It's illegal to hold cash that long.
+### Q4. Which jobs fit an accessible cash stash?
 
-**Explanation:** low growth plus inflation adds up to a large loss of purchasing power over decades.
+```assignment
+{
+  "mode": "SORT",
+  "cards": [
+    { "id": "card-1", "text": "Rent next week" },
+    { "id": "card-2", "text": "Retirement in 35 years" },
+    { "id": "card-3", "text": "Repair bill due today" },
+    { "id": "card-4", "text": "A child’s future in 18 years" }
+  ],
+  "targets": [
+    { "id": "target-1", "text": "Needs accessible cash" },
+    { "id": "target-2", "text": "Has years to grow" }
+  ],
+  "solution": {"card-1": "target-1", "card-2": "target-2", "card-3": "target-1", "card-4": "target-2"},
+  "hint": "Look at when each expense could arrive."
+}
+```
+
+**Explanation:** Cash helps with imminent spending. Over many years, rising prices can eat into its buying power.

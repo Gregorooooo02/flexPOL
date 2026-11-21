@@ -72,13 +72,19 @@ A short written plan makes it easier to stay calm:
 
 **Explanation:** different returns slowly change the mix.
 
-### Q2. Target 60/40, current value 10,000 coins, currently 75% basket / 25% bonds. How much should move from the basket to bonds?
-- A) 500 coins
-- B) 1,000 coins
-- C) 1,500 coins ✅
-- D) 2,500 coins
+### Q2. Your 10,000-coin portfolio is 75% basket and 25% bonds. Move it back to 60% basket and 40% bonds. How much should move?
 
-**Explanation:** the basket is 7,500 and the target is 6,000, so 1,500 coins move to bonds.
+```number
+{
+  "label": "Coins to move from the basket",
+  "unit": "coins",
+  "answer": 1500,
+  "hint": "Find the current and target values of the basket, then subtract.",
+  "dial": { "max": 5000, "step": 250 }
+}
+```
+
+**Explanation:** The basket holds 7,500. Its target is 6,000, so 1,500 moves to bonds.
 
 ### Q3. What is a cheap way to rebalance without selling?
 - A) Buy a speculative asset.
@@ -96,10 +102,24 @@ A short written plan makes it easier to stay calm:
 
 **Explanation:** selling turns a temporary drop into a permanent loss.
 
-### Q5. Which event is a good reason to review your plan?
-- A) One bad day in the market
-- B) A celebrity tweet about a stock
-- C) A friend's new car
-- D) The birth of a child ✅
+### Q5. Which updates change the plan itself?
 
-**Explanation:** life changes affect goals, horizon and risk capacity.
+```assignment
+{
+  "mode": "SORT",
+  "cards": [
+    { "id": "card-1", "text": "A goal moves from five years away to next year" },
+    { "id": "card-2", "text": "A stock jumps on a rumour today" },
+    { "id": "card-3", "text": "A job loss changes your income" },
+    { "id": "card-4", "text": "A market index falls 1% this afternoon" }
+  ],
+  "targets": [
+    { "id": "target-1", "text": "Review the plan" },
+    { "id": "target-2", "text": "Day-to-day noise" }
+  ],
+  "solution": {"card-1": "target-1", "card-2": "target-2", "card-3": "target-1", "card-4": "target-2"},
+  "hint": "Did the goal, deadline or budget change?"
+}
+```
+
+**Explanation:** A new deadline or changed income can change the plan. Daily prices and headlines can usually wait until the next planned review.

@@ -1,12 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode, RefObject } from 'react';
 import { usePanelRef } from 'react-resizable-panels';
+import { useLocation } from 'react-router';
 import { cn } from 'cn';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -44,6 +41,8 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
   const focusScopeId = focus?.scopeId ?? 'general';
   const sidebarRef = usePanelRef();
   const launcherRef = useRef<HTMLButtonElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
+  const { pathname } = useLocation();
   const transitionTimeout = useRef<number | undefined>(undefined);
   const hasOpenedSidebar = useRef(false);
   const [desktop, setDesktop] = useState(() => window.matchMedia(DESKTOP_MEDIA_QUERY).matches);
@@ -86,6 +85,12 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
     window.requestAnimationFrame(() => launcherRef.current?.focus({ preventScroll: true }));
   }
 
+  // A new route starts at the top. The content panel around <main> is what scrolls, and it
+  // would otherwise keep the previous page's position (e.g. a scenario opened from far down the list).
+  useLayoutEffect(() => {
+    mainRef.current?.parentElement?.scrollTo({ top: 0 });
+  }, [pathname]);
+
   useEffect(() => {
     const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
     const handleMediaChange = () => {
@@ -110,6 +115,7 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
   );
 
   return (
+    // group/coach: a page with a sticky footer marked data-coach-footer lifts the floating launcher above it.
     <div className="group/coach relative flex min-h-0 flex-1 flex-col">
       <ResizablePanelGroup
         orientation="horizontal"
@@ -117,7 +123,9 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
         className={cn('min-h-0 flex-1', isTransitioning && 'fx-coach-sidebar-transition')}
       >
         <ResizablePanel defaultSize="100%" minSize="40%" className="min-w-0">
-          <main className="relative flex h-full min-h-0 flex-col">{children}</main>
+          <main ref={mainRef} className="relative flex h-full min-h-0 flex-col">
+            {children}
+          </main>
         </ResizablePanel>
         <ResizableHandle
           withHandle
@@ -153,6 +161,7 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
       <CoachLauncher
         buttonRef={launcherRef}
         desktop={desktop}
+        docked={!desktop && focus?.dockLauncher === true}
         chatOpen={desktop ? sidebarOpen : mobileChatOpen}
         onOpen={() => {
           if (desktop) openSidebar();
@@ -188,6 +197,8 @@ function CoachChatSession({
     subchapterId: focus?.subchapterId,
     questionId: focus?.questionId,
     selectedOptionId: focus?.selectedOptionId,
+    assignments: focus?.assignments,
+    number: focus?.number,
     answerCorrect: focus?.answerCorrect,
     contextLabel: focus?.label,
     suggestions,
@@ -208,20 +219,16 @@ function CoachChatSession({
           className="h-full min-h-0 shadow-none ring-0"
         />
       </aside>
-      <Dialog open={mobileChatOpen} onOpenChange={onMobileChatOpenChange}>
-        <DialogContent
-          className="h-[min(40rem,85svh)] p-0 lg:hidden"
-          finalFocus={launcherRef}
-          showCloseButton={false}
-        >
-          <DialogTitle className="sr-only">AI coach</DialogTitle>
+      <Drawer open={mobileChatOpen} onOpenChange={onMobileChatOpenChange} showSwipeHandle>
+        <DrawerContent className="h-[85svh] lg:hidden" finalFocus={launcherRef}>
+          <DrawerTitle className="sr-only">AI coach</DrawerTitle>
           <CoachPanel
             {...panelProps}
             onClose={() => onMobileChatOpenChange(false)}
-            className="h-full min-h-0"
+            className="min-h-0 flex-1 rounded-none shadow-none ring-0"
           />
-        </DialogContent>
-      </Dialog>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 }

@@ -54,29 +54,84 @@ Diversification **reduces** risk. It doesn't **remove** it.
 
 ## Control questions
 
-### Q1. What is diversification?
-- A) Keeping everything in cash
-- B) Putting all your money into the best-performing stock
-- C) Spreading money across many investments to reduce the impact of one bad result ✅
-- D) Moving money between accounts often
+### Q1. Connect each portfolio to what it mostly depends on.
 
-**Explanation:** spreading money out means no single result decides your whole outcome.
+```assignment
+{
+  "mode": "MATCH",
+  "cards": [
+    { "id": "one", "text": "Shares of one robot company" },
+    { "id": "sector", "text": "Ten energy companies" },
+    { "id": "broad", "text": "Stocks from several industries" }
+  ],
+  "targets": [
+    { "id": "market", "text": "The wider stock market" },
+    { "id": "business", "text": "One company" },
+    { "id": "industry", "text": "One industry" }
+  ],
+  "solution": {"one": "business", "sector": "industry", "broad": "market"},
+  "hint": "Look for what all the holdings have in common."
+}
+```
 
-### Q2. One company in your portfolio falls 50%. It made up 10% of your money. Roughly how much does your total portfolio fall from this?
-- A) 0%
-- B) 5% ✅
-- C) 10%
-- D) 50%
+**Explanation:** Different baskets spread risk in different ways. Holding many shares from one industry still leaves a common risk.
 
-**Explanation:** 50% of a 10% share = 5% of the total.
+### Q2. Predict the bigger hit, then work out the gap between the two losses.
 
-### Q3. Which portfolio is most diversified?
-- A) 100% in a locked-term instrument
-- B) 10 companies, all in the same industry
-- C) 100% in one volatile company
-- D) A mix of cash, a broad market basket and a locked-term instrument ✅
+```comparison
+{
+  "company": "Nova Robotics",
+  "startingBalance": 10000,
+  "dropPercent": 50,
+  "portfolios": [
+    {
+      "id": "a",
+      "name": "Portfolio A",
+      "exposurePercent": 60,
+      "description": "60% Nova Robotics · 40% other companies"
+    },
+    {
+      "id": "b",
+      "name": "Portfolio B",
+      "exposurePercent": 10,
+      "description": "10% Nova Robotics · 90% other companies"
+    }
+  ]
+}
+```
 
-**Explanation:** C spreads money across different types of instruments that react differently to events.
+```number
+{
+  "label": "Difference between the two losses",
+  "unit": "percentage points",
+  "answer": 25,
+  "hint": "Subtract the smaller loss percentage from the larger one.",
+  "dial": { "max": 100, "step": 5 }
+}
+```
+
+**Explanation:** Portfolio A lost 30% and B lost 5%. The gap is 25 percentage points.
+
+### Q3. Nova Robotics drops 50%. Give it the biggest share you can while limiting the loss on your portfolio to 10%. Everything else holds steady.
+
+```number
+{
+  "label": "Share in Nova Robotics",
+  "unit": "%",
+  "answer": 20,
+  "hint": "Try reducing the share until the portfolio loss is no more than 10%.",
+  "lab": {
+    "kind": "SHOCK",
+    "max": 100,
+    "step": 5,
+    "initial": 60,
+    "balance": 10000,
+    "rate": 50
+  }
+}
+```
+
+**Explanation:** A 20% stake losing half its value costs 10% of the total portfolio. A bigger stake would break the limit.
 
 ### Q4. The whole market falls 20%. What happens to a well-diversified portfolio?
 - A) It always rises.
@@ -86,10 +141,24 @@ Diversification **reduces** risk. It doesn't **remove** it.
 
 **Explanation:** diversification reduces risk from single events, not from market-wide drops.
 
-### Q5. What is "concentration risk"?
-- A) The risk of inflation
-- B) The risk of high fees
-- C) The risk of having too many investments
-- D) The risk of depending heavily on one investment or one area ✅
+### Q5. Spot the baskets that still depend heavily on a single bet.
 
-**Explanation:** the more concentrated the portfolio, the more one event can hurt it.
+```assignment
+{
+  "mode": "SORT",
+  "cards": [
+    { "id": "robot", "text": "100% in Nova Robotics" },
+    { "id": "world", "text": "A basket covering several markets" },
+    { "id": "banks", "text": "Eight banks in one country" },
+    { "id": "mix", "text": "Cash, a broad basket, and bonds" }
+  ],
+  "targets": [
+    { "id": "spread", "text": "Risk spread out" },
+    { "id": "concentrated", "text": "Risk concentrated" }
+  ],
+  "solution": {"robot": "concentrated", "world": "spread", "banks": "concentrated", "mix": "spread"},
+  "hint": "Many names can still be one bet if they all depend on the same thing."
+}
+```
+
+**Explanation:** A single stock or one sector leaves you exposed to common surprises. A mix of companies, industries or instrument types spreads those risks.
