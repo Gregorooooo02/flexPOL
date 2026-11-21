@@ -82,13 +82,18 @@ export function HomePage() {
 
   return (
     <div
-      className="@container flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain [scrollbar-width:none] [--primary:#f8d860] [--ring:var(--topic-1-pipe)]"
+      className="@container relative isolate flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain [scrollbar-width:none] [--primary:#f8d860] [--ring:var(--topic-1-pipe)]"
       style={{
         backgroundImage:
           'radial-gradient(ellipse at 96% 0%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 46%), radial-gradient(ellipse at 4% 58%, color-mix(in srgb, var(--topic-2-accent) 8%, transparent), transparent 42%)',
       }}
     >
-      <div className="mx-auto flex w-full max-w-[90rem] flex-col gap-14 px-6 py-10 @2xl:px-10 @3xl:gap-16 @3xl:px-14 @3xl:py-14">
+      <div aria-hidden="true" className="home-particle-field pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        {Array.from({ length: 28 }, (_, index) => (
+          <span key={index} className="home-particle" />
+        ))}
+      </div>
+      <div className="relative z-10 mx-auto flex w-full max-w-[90rem] flex-col gap-14 px-6 py-10 @2xl:px-10 @3xl:gap-16 @3xl:px-14 @3xl:py-14">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex min-w-0 flex-col gap-2">
             <p className={`${eyebrow} text-accent-foreground`}>Your next chapter</p>
