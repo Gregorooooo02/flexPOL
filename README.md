@@ -10,7 +10,7 @@ HedgeFlex is a gamified app that takes beginner self-directed investors from bit
 
 ## Technology Stack
 
-Spring Boot, Spring Data JPA, Spring AI, React, React Router, Tailwind CSS, shadcn/ui on Base UI, Three.js, react-markdown, Flyway, Terraform, OpenAI API.
+Java 25, Spring Boot, Spring Data JPA, Spring AI, OpenAI API, PostgreSQL (Supabase), Flyway, React, TypeScript, Vite, React Router, Tailwind CSS, shadcn/ui on Base UI, Three.js, react-markdown, Docker, Terraform.
 
 ## Project Overview
 
@@ -24,18 +24,18 @@ HedgeFlex is a safe place to go from knowledge to action. It combines three thin
 
 - **Duolingo-style learning path**: short lessons with interactive practice and a final test per chapter.
 - **Hedgie, an AI learning coach** that sees what the learner sees (the lesson, the question, their checked answer, their plan and their run result) and gives hints before answers.
-- **A virtual-money sandbox** where learners plan investments for fictional personas at different life stages (a young investor, a home deposit, a child's university fund, retirement next year).
+- **A virtual-money sandbox** where learners plan investments for fictional personas at different life stages (an engineer tempted to go all-in on one stock, a home deposit, a child's university fund, retirement next year).
 
-What makes it different is how plans are judged. A plan is not ranked by how much money it made but by how well it fits the persona's goal, time horizon and cash needs. Every learner gets the same simulated market, and the 1–5 star rating explains each star: growth, reaching the goal, suitable instruments, sensible shares. A lucky gamble still scores badly, and a well-built plan is rewarded even in a weak market. The learner is rated on the quality of the plan, not on luck.
+What makes it different is how plans are judged. Rather than ranking plans by return alone, the 1–5 star rating splits outcome from plan fit — 2 stars for growth, 1 for reaching the goal, 1 for suitable instruments and 1 for sensible shares — and explains each criterion. Every learner gets the same simulated market, so a lucky gamble still loses stars for poor fit and gets called out on why, while a sound plan still earns its plan-fit stars even in a weak market.
 
 ### THE WORKING PROTOTYPE
 
 Everything below is implemented and running on Google Cloud Run:
 
 - **Guest login** (mock, no password) and a Home page with the course overview.
-- **Learning path**: 3 chapters (*Why Invest?*, *Know Your Instruments*, *Investing Through Life*), 19 lessons and 117 questions. Question types include multiple choice, card sorting and matching, number dials, slider "labs" (Time machine, The lockbox, Crash test) and what-if portfolio comparisons where the learner predicts which portfolio loses more before revealing it. Practice quizzes allow retries with hints; chapter tests are scored with a pass mark. Quiz attempts are saved per learner. A 3D Hedgie mascot celebrates finished lessons and reacts to wrong answers.
-- **Scenarios (Sandbox mode)**: 4 personas, each with a brief (budget, horizon, money needs on given days, allowed instruments, rules). The learner allocates the budget, runs the plan, watches it replay in the scenario's simulated market while planned bills are paid, and gets a star rating with the reason for every star. **Change plan** lets them retry on the same market and compare with the previous run.
-- **AI coach**: available in a resizable sidebar on desktop and a drawer on mobile. It explains concepts, gives hints without giving away the answer, and after a scenario run debriefs the result with ideas to test.
+- **Learning path**: 3 chapters (*Why Invest?*, *Know Your Instruments*, *Investing Through Life*), 19 lessons, 117 questions, and a final *"Ready for the real world?"* reflection (6 private, client-only questions that suggest an educational starting point and 4 next steps). Question types include multiple choice, card sorting and matching, number dials, slider "labs" (Time machine, The lockbox, Crash test) and a what-if portfolio comparison where the learner predicts which portfolio loses more before revealing it. Practice quizzes allow retries with hints; chapter tests are scored with a pass mark, and quiz attempts are saved per learner. A 3D Hedgie mascot celebrates finished lessons, reacts to wrong answers and launches the coach on desktop.
+- **Scenarios (Sandbox mode)**: 4 personas with briefs (budget, horizon, allowed instruments, plus planned money needs and advisory rules where they apply). The learner allocates the budget, runs the plan, watches it replay in the scenario's simulated market while planned bills are paid, and gets a star rating with the reason for every star. **Change plan** lets them retry on the same market and see how their star rating changed from the previous run.
+- **AI coach**: available in a resizable sidebar on desktop and a drawer on mobile (answers in English or Polish). It explains concepts, gives hints without giving away the answer, and after a scenario run debriefs the result with ideas to test.
 - **Playground**: EUR 10,000 and a catalogue of 20 real instruments (12 stocks, 8 ETFs) with historical charts, replayed on a synthetic future, with trading during the replay and no scoring.
 - Light and dark theme, responsive layout for desktop and mobile.
 
@@ -45,11 +45,11 @@ Everything below is implemented and running on Google Cloud Run:
 
 **Key decisions:**
 
-- **The server is the source of truth.** Correct answers, explanations, market seeds and scoring data never reach the browser before the learner submits. Simulations (geometric Brownian motion with reproducible seeds) and star scoring run on the server, so every learner and retry gets the same market.
+- **The server is the source of truth.** Correct answers, explanations, market seeds, debrief points and hidden evaluation criteria (suitable instruments and target share ranges) never reach the browser before the learner submits. Simulations (geometric Brownian motion with reproducible seeds) and star scoring run on the server, so every learner and retry gets the same market.
 - **An honest AI coach.** The coach uses Spring AI with the OpenAI API. Instead of asking the model to compute anything, the backend builds its context from server-side data: the question as shown on screen, how much it may reveal at this moment, and for scenarios the actual run result recomputed on the server. The model explains numbers but never invents them. Conversations are stored in the database and belong to the learner.
-- **Verified scoring.** A checker script runs every scenario on many random markets and confirms that good reference plans score at least 80, trap plans at most 50, and that breaking a rule always costs a star.
+- **Verified scoring.** A checker script validates every scenario across 1,000 random markets on an internal 0–100 quality score (mean ≥ 80 for reference plans, ≤ 50 for traps, and ≥ 60 across sampled allocations in the target ranges) and statically verifies that breaking an advisory rule prevents earning full plan-fit stars.
 
-**Built upon:** Spring Boot, Spring Data JPA, Spring AI, React, React Router, Tailwind CSS, shadcn/ui on Base UI, Three.js, react-markdown, Flyway, Terraform and the OpenAI API.
+**Built upon:** Java 25, Spring Boot, Spring Data JPA, Spring AI, OpenAI API, PostgreSQL (Supabase), Flyway, React, TypeScript, Vite, React Router, Tailwind CSS, shadcn/ui on Base UI, Three.js, react-markdown, Docker and Terraform.
 
 **Created by our team during the hackathon:** all learning content and scenarios, the content pipeline, the simulation and scenario evaluation engine, the star rating, the quiz and exercise system, the coach's context and safety logic, the investing workspace (Sandbox and Playground), the Hedgie mascot and its art, and the cloud infrastructure.
 
@@ -63,10 +63,10 @@ Everything below is implemented and running on Google Cloud Run:
 
 **Achieved:** a complete, deployed learning loop: lesson → interactive quiz → scenario plan → simulated market → star rating → AI debrief → improved plan.
 
-**Validation:** JUnit tests for the backend services (content, quiz attempts, simulations, scenario runs and star boundaries, the coach's context), the scenario checker script that proves the scoring rewards good plans and punishes trap plans, frontend type checking and linting on every build, and manual testing on desktop and mobile.
+**Validation:** 15 JUnit test classes covering backend content, quiz attempts, simulations, scenario runs, star boundaries and coach context; the scenario checker script across 1,000 simulated markets; TypeScript type checking (`tsc -b`) on every frontend build plus `oxlint` linting; and manual testing on desktop and mobile.
 
-**Most proud of:** an AI coach that knows exactly what the learner sees, gives hints before answers, and never invents a number, combined with a rating that teaches that a good plan matters more than a lucky result.
+**Most proud of:** an AI coach that knows exactly what the learner sees, gives hints before answers, and never invents a number, combined with a transparent rating that separates plan fit from market luck.
 
-**Current limitations:** mock login without passwords; learning-path progress is not restored after a refresh; instruments in a simulation move independently (no correlation); four scenarios only; no testing with real learners yet.
+**Current limitations:** mock login without passwords; learning-path progress resets on refresh or navigation and scenario runs are not saved; instruments in a simulation move independently (no correlation); four scenarios only; no testing with real learners yet.
 
 **Next:** real accounts and saved progress, the Quest Arena and leaderboard, more scenarios and life stages, correlated market simulation, and user testing with beginner investors to measure how their confidence and decisions change.
