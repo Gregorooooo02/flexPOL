@@ -230,7 +230,7 @@ function createInitialProgress(
   const first = path.flatNodes[0]?.node;
   const completedSet = new Set(completedList);
   const nextEntry = path.flatNodes.find(({ node }) => !completedSet.has(node.id));
-  const banner: BannerState = warningMessage
+  const banner: DemoBanner = warningMessage
     ? { tone: 'locked', message: warningMessage }
     : nextEntry
       ? completedList.length > 0

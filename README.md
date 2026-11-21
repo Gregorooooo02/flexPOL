@@ -32,7 +32,7 @@ What makes it different is how plans are judged. Rather than ranking plans by re
 
 Everything below is implemented and running on Google Cloud Run:
 
-- **Guest login** (mock, no password) and a Home page with the course overview.
+- **Guest login** (mock, no password) and a Home page with the course overview, next learning step, and a personal 0–100 learning-level indicator based on completed lessons, final quizzes, and scenarios.
 - **Learning path**: 3 chapters (*Why Invest?*, *Know Your Instruments*, *Investing Through Life*), 19 lessons, 117 questions, and a final *"Ready for the real world?"* reflection (6 private, client-only questions that suggest an educational starting point and 4 next steps). Question types include multiple choice, card sorting and matching, number dials, slider "labs" (Time machine, The lockbox, Crash test) and a what-if portfolio comparison where the learner predicts which portfolio loses more before revealing it. Practice quizzes allow retries with hints; chapter tests are scored with a pass mark, and quiz attempts are saved per learner. A 3D Hedgie mascot celebrates finished lessons, reacts to wrong answers and launches the coach on desktop.
 - **Scenarios (Sandbox mode)**: 4 personas with briefs (budget, horizon, allowed instruments, plus planned money needs and advisory rules where they apply). The learner allocates the budget, runs the plan, watches it replay in the scenario's simulated market while planned bills are paid, and gets a star rating with the reason for every star. **Change plan** lets them retry on the same market and see how their star rating changed from the previous run.
 - **AI coach**: available in a resizable sidebar on desktop and a drawer on mobile (answers in English or Polish). It explains concepts, gives hints without giving away the answer, and after a scenario run debriefs the result with ideas to test.
@@ -67,6 +67,6 @@ Everything below is implemented and running on Google Cloud Run:
 
 **Most proud of:** an AI coach that knows exactly what the learner sees, gives hints before answers, and never invents a number, combined with a transparent rating that separates plan fit from market luck.
 
-**Current limitations:** mock login without passwords; learning-path progress resets on refresh or navigation and scenario runs are not saved; instruments in a simulation move independently (no correlation); four scenarios only; no testing with real learners yet.
+**Current limitations:** mock login without passwords; learning and scenario completion progress is saved per learner only in browser localStorage, not synced across devices; in-progress scenario plans and runs are not saved; instruments in a simulation move independently (no correlation); four scenarios only; no testing with real learners yet.
 
-**Next:** real accounts and saved progress, the Quest Arena and leaderboard, more scenarios and life stages, correlated market simulation, and user testing with beginner investors to measure how their confidence and decisions change.
+**Next:** real accounts and server-synced progress, the Quest Arena and leaderboard, more scenarios and life stages, correlated market simulation, and user testing with beginner investors to measure how their confidence and decisions change.
