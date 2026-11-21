@@ -11,7 +11,7 @@ export function ToolsPage() {
   const [search] = useSearchParams();
   const source = readJourneySource(search) ?? { kind: 'tools' as const };
   return (
-    <JourneyPage status="active" activeLabel="Practical tools" title="Practical tools" description="Use the goal planner and emergency buffer, or build your goal and risk worksheet. Fee impact remains a preview.">
+    <JourneyPage status="active" activeLabel="Practical tools" title="Practical tools" description="Use the goal planner, emergency buffer and fee comparison, or build your goal and risk worksheet. Your inputs stay in this session.">
       <div className="grid gap-5 @2xl:grid-cols-2">
         {TOOL_IDS.map((id) => (
           <Card key={id}>

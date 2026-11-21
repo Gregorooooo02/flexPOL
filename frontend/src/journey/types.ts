@@ -7,6 +7,16 @@ export type JourneySource =
   | { readonly kind: 'chapter'; readonly number: number }
   | { readonly kind: 'scenario'; readonly slug: string };
 
+export interface JourneyHandoff {
+  readonly source: JourneySource;
+  readonly actionIds: readonly string[];
+}
+
+export interface SavedJourneyStep {
+  readonly actionId: string;
+  readonly source: JourneySource;
+}
+
 export interface LearningCompletion {
   readonly nodeId: string;
   readonly provenance: 'practice' | 'final-quiz' | 'demo';

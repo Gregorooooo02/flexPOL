@@ -1,6 +1,6 @@
 # Financial Tools — Calculation Contract
 
-Status: implemented for M3 goal/buffer tools; fee arithmetic remains the contract for M5, whose UI is still a preview.
+Status: implemented for all three calculators (M3 goal/buffer and M5 fee comparison). Inputs and results remain session-only.
 
 ## Shared conventions
 
@@ -79,6 +79,8 @@ Display separately:
 Equal fees must produce equal values; zero fees must produce no deductions. Negative gross returns remain supported within the shared limits. Options share all assumptions except the annual fee. Exclude transaction fees, spreads, fixed charges, entry/exit fees, and taxes prominently.
 
 Lower modeled fees do not imply better risk, returns, service, protection, or suitability.
+
+If any option or the no-fee reference exceeds safe currency precision, reject the complete comparison with an actionable error, not partial results. The A-minus-B difference is signed, not a product ranking. End-value gaps include deductions and their effect on later compounding; with negative gross returns that is not always simply “lost growth”.
 
 ## Reference arithmetic for manual verification during implementation
 

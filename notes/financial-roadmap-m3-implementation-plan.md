@@ -1,6 +1,6 @@
 # Milestone 3 — Goal Planner and Emergency Buffer
 
-Status: implemented. Two working calculators and guarded roadmap application are available; fees, persistence and completion-screen handoffs remain later milestones.
+Status: implemented (M3 scope). Fees and completion-screen handoffs are covered separately by M4–M5; persistence/export remains M6.
 
 Parent plan: [Financial Roadmap and Practical Tools](financial-roadmap-plan.md).
 Numerical source of truth: [Calculation contract](financial-tools-calculation-contract.md).

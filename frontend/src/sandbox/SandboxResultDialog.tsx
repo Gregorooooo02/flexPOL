@@ -32,6 +32,7 @@ export function SandboxResultDialog({
   onOpenChange,
   onChangePlan,
   onAskCoach,
+  onApply,
 }: {
   open: boolean;
   scenario: Scenario;
@@ -42,6 +43,7 @@ export function SandboxResultDialog({
   onChangePlan: () => void;
   /** Closes the popup and asks Hedgie for feedback on this run. */
   onAskCoach: () => void;
+  onApply: () => void;
 }) {
   const { stars } = run;
   const gainCents = Math.round((run.finalValue + run.paidOut - run.budget) * 100);
@@ -193,7 +195,8 @@ export function SandboxResultDialog({
           predict real returns and isn&apos;t investment advice.
         </p>
 
-        <DialogFooter>
+        <DialogFooter className="sm:flex-wrap">
+          <Button type="button" variant="outline" onClick={onApply}>Apply this to your life</Button>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Close
           </Button>

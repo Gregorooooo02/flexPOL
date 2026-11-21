@@ -2,7 +2,8 @@ import type { BufferPlan, GoalBrief, GoalProfile, RoadmapAction, RoadmapSetupDra
 import { preserveBufferPlan } from '@/roadmap/bufferPlan';
 import { isBufferInput, isGoalInput } from '@/tools/validation';
 import type { BufferInput, GoalPlannerInput, ToolDraft, ToolDrafts } from '@/tools/types';
-import type { JourneySource, LearningCompletion, LearningSessionState } from './types';
+import type { JourneySource, LearningCompletion, LearningSessionState, SavedJourneyStep } from './types';
+import { PRACTICAL_CONNECTIONS } from './connections.generated';
 
 export interface JourneySessionState {
   readonly goal: GoalBrief | null;
@@ -13,6 +14,7 @@ export interface JourneySessionState {
   readonly setupDraft: RoadmapSetupDraft | null;
   readonly roadmapSource: JourneySource | null;
   readonly bufferPlan: BufferPlan | null;
+  readonly savedSteps: readonly SavedJourneyStep[];
 }
 
 export type JourneySessionAction =
@@ -27,6 +29,8 @@ export type JourneySessionAction =
   | { type: 'apply-goal-inputs'; expectedGoalId: string; input: GoalPlannerInput; today: string }
   | { type: 'save-buffer'; expectedGoalId: string; expectedGoalSavedCents: number | undefined; input: BufferInput; source: JourneySource; separationConfirmed: true }
   | { type: 'select-action'; action: RoadmapAction }
+  | { type: 'save-journey-step'; actionId: string; source: JourneySource }
+  | { type: 'dismiss-saved-step'; actionId: string }
   | { type: 'update-action'; goalId: string; actionId: string; status?: RoadmapAction['status']; reflection?: string }
   | { type: 'complete-learning'; completions: readonly LearningCompletion[] }
   | { type: 'resume-learning'; nodeId: string }
@@ -42,6 +46,7 @@ export function createJourneySession(): JourneySessionState {
     setupDraft: null,
     roadmapSource: null,
     bufferPlan: null,
+    savedSteps: [],
   };
 }
 
@@ -83,6 +88,20 @@ export function journeySessionReducer(state: JourneySessionState, action: Journe
       if (action.action.goalId !== state.goal?.id || state.actions.some((existing) =>
         existing.goalId === action.action.goalId && existing.actionId === action.action.actionId)) return state;
       return { ...state, actions: [...state.actions, action.action] };
+    case 'save-journey-step': {
+      if (!PRACTICAL_CONNECTIONS.some((candidate) => candidate.id === action.actionId)) return state;
+      if (state.goal) {
+        const goalId = state.goal.id;
+        const existing = state.actions.some((task) => task.goalId === goalId && task.actionId === action.actionId);
+        return { ...state,
+          actions: existing ? state.actions : [...state.actions, { goalId: state.goal.id, actionId: action.actionId, source: state.savedSteps.find((step) => step.actionId === action.actionId)?.source ?? action.source, status: 'todo' }],
+          savedSteps: state.savedSteps.filter((step) => step.actionId !== action.actionId),
+        };
+      }
+      return state.savedSteps.some((step) => step.actionId === action.actionId) ? state : { ...state, savedSteps: [...state.savedSteps, { actionId: action.actionId, source: action.source }] };
+    }
+    case 'dismiss-saved-step':
+      return { ...state, savedSteps: state.savedSteps.filter((step) => step.actionId !== action.actionId) };
     case 'update-action':
       if (action.goalId !== state.goal?.id) return state;
       return {

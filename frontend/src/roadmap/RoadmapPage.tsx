@@ -18,6 +18,7 @@ import { ProfileObservations } from './components/ProfileObservations';
 import { SuggestedActions } from './components/SuggestedActions';
 import { RoadmapActionCard } from './components/RoadmapActionCard';
 import { BufferSummary } from './components/BufferSummary';
+import { SavedJourneySteps } from '@/journey/SavedJourneySteps';
 import type { RoadmapAction } from './types';
 
 const GROUPS: readonly { value: RoadmapAction['status']; label: string }[] = [
@@ -59,6 +60,7 @@ export function RoadmapPage() {
   return (
     <JourneyPage status="active" title="My Roadmap" description="Clarify one goal, understand your constraints, and choose a practical next step. Your plan stays in this session; it is not investment advice.">
       <p role="status" className="sr-only">{announcement}</p>
+      <SavedJourneySteps />
       {state.setupDraft && (
         <Alert role="note">
           <AlertTitle>You have an unfinished worksheet</AlertTitle>
@@ -128,8 +130,8 @@ export function RoadmapPage() {
         <h2 id="explore-further" className="font-heading text-2xl font-semibold">Explore further</h2>
         <div className="flex flex-wrap gap-2"><Link to="/learning" className={buttonVariants({ variant: 'outline' })}>Learning path</Link><Link to="/scenarios" className={buttonVariants({ variant: 'outline' })}>Fictional scenarios</Link><Link to={withJourneySource('/tools', { kind: 'roadmap' })} className={buttonVariants({ variant: 'outline' })}>Practical tools</Link></div>
       </section>
-      {(goal || state.setupDraft) && <div><Button type="button" variant="ghost" onClick={() => setClearOpen(true)}>Clear my roadmap</Button></div>}
-      <ConfirmRoadmapDialog open={clearOpen} onOpenChange={setClearOpen} title="Clear your personal roadmap?" description="This clears your goal, profile, worksheet draft, tasks, reflections, and personal tool drafts for this session. Your learning progress will remain. This cannot be undone." confirmLabel="Clear my roadmap" cancelLabel="Keep my roadmap" onConfirm={() => { dispatch({ type: 'clear-roadmap' }); setClearOpen(false); setBrowse(false); setAnnouncement('Your personal roadmap was cleared. Learning progress was kept.'); }} />
+      {(goal || state.setupDraft || state.savedSteps.length > 0) && <div><Button type="button" variant="ghost" onClick={() => setClearOpen(true)}>Clear my roadmap</Button></div>}
+      <ConfirmRoadmapDialog open={clearOpen} onOpenChange={setClearOpen} title="Clear your personal roadmap?" description="This clears your goal, profile, worksheet draft, tasks, saved learning steps, reflections, and personal tool drafts for this session. Your learning progress will remain. This cannot be undone." confirmLabel="Clear my roadmap" cancelLabel="Keep my roadmap" onConfirm={() => { dispatch({ type: 'clear-roadmap' }); setClearOpen(false); setBrowse(false); setAnnouncement('Your personal roadmap was cleared. Learning progress was kept.'); }} />
     </JourneyPage>
   );
 }

@@ -18,11 +18,11 @@ export const TOOL_DEFINITIONS = {
     limitation: 'There is no universal target. Money needed for another goal must not be counted twice. This is not a pension adequacy or sustainable retirement withdrawal calculator.',
   },
   'fee-impact': {
-    available: false,
+    available: true,
     title: 'Fee impact',
     description: 'Compare how two annual percentage fees change an illustrative long-term outcome.',
     inputs: ['Starting amount and monthly contribution', 'Years and one shared assumed gross return', 'Annual percentage fees for options A and B'],
     outputs: ['Illustrative ending values', 'Modeled fees deducted', 'The difference in ending value, including forgone growth'],
-    limitation: 'The first model will exclude transaction fees, spreads, fixed charges, entry/exit fees, and taxes. Lower fees alone do not make a product better or suitable.',
+    limitation: 'This model excludes transaction fees, spreads, fixed charges, entry/exit fees, and taxes. Lower fees alone do not make a product better or suitable.',
   },
 } as const satisfies Record<ToolId, { available: boolean; title: string; description: string; inputs: readonly string[]; outputs: readonly string[]; limitation: string }>;

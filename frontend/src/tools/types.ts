@@ -45,10 +45,31 @@ export interface BufferInput {
   targetMonths: number;
 }
 
+export interface FeeImpactDraft {
+  tool: 'fee-impact';
+  source: JourneySource;
+  initialAmount: string;
+  monthlyContribution: string;
+  years: string;
+  annualReturn: string;
+  feeA: string;
+  feeB: string;
+}
+
+export interface FeeInput {
+  initialCents: number;
+  monthlyContributionCents: number;
+  years: number;
+  /** Effective annual fractions, not percentage points. */
+  annualReturn: number;
+  feeA: number;
+  feeB: number;
+}
+
 /** Editable text is deliberately separate from validated goal facts (integer cents). */
 export type ToolDraft =
   | GoalPlannerDraft
   | EmergencyBufferDraft
-  | { tool: 'fee-impact'; initialAmount: string; monthlyContribution: string; years: string; annualReturn: string; feeA: string; feeB: string };
+  | FeeImpactDraft;
 
 export type ToolDrafts = Partial<{ [K in ToolId]: Extract<ToolDraft, { tool: K }> }>;

@@ -48,6 +48,8 @@ import { SandboxBrief } from './SandboxBrief';
 import { SandboxHeader } from './SandboxHeader';
 import { SandboxResult } from './SandboxResult';
 import { SandboxResultDialog } from './SandboxResultDialog';
+import { JourneyHandoffCard } from '@/journey/JourneyHandoffCard';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const DEFAULT_FILTERS: InstrumentFilters = { search: '', assetClass: 'ALL', risk: 'ALL' };
 /** What "Ask Hedgie for feedback" sends for the learner after a run. */
@@ -151,6 +153,7 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
   const [replay, setReplay] = useState<ReplayState>(createReplay);
   const [previousStars, setPreviousStars] = useState<number | null>(null);
   const [resultOpen, setResultOpen] = useState(false);
+  const [handoffOpen, setHandoffOpen] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const replayRef = useRef(replay);
   const replayStartedAt = useRef(0);
@@ -302,6 +305,7 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
   const askCoach = useAskCoach();
   function askForFeedback() {
     setResultOpen(false);
+    setHandoffOpen(false);
     askCoach(FEEDBACK_REQUEST);
   }
 
@@ -426,6 +430,7 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
     if (run.status !== 'ready' || replayRef.current.status !== 'finished') return;
     setPreviousStars(run.data.stars.stars);
     setResultOpen(false);
+    setHandoffOpen(false);
     setRun({ status: 'idle' });
     updateReplay(createReplay());
     setSelectedId(null);
@@ -475,6 +480,7 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
                 titleRef={resultTitleRef}
                 onOpenDetails={() => setResultOpen(true)}
                 onAskCoach={askForFeedback}
+                onApply={() => { setResultOpen(false); setHandoffOpen(true); }}
               />
             )}
             {run.status === 'error' && (
@@ -583,7 +589,17 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
           onOpenChange={setResultOpen}
           onChangePlan={changePlan}
           onAskCoach={askForFeedback}
+          onApply={() => { setResultOpen(false); setHandoffOpen(true); }}
         />
+      )}
+      {phase === 'finished' && run.status === 'ready' && (
+        <Dialog open={handoffOpen} onOpenChange={setHandoffOpen}>
+          <DialogContent finalFocus={resultTitleRef} className="max-h-[calc(100svh-2rem)] overflow-y-auto sm:max-w-2xl">
+            <DialogHeader><DialogTitle>Your next real-world step</DialogTitle><DialogDescription>The result and Change plan remain available while you save a step here. Opening a tool will ask you to confirm leaving this run.</DialogDescription></DialogHeader>
+            <JourneyHandoffCard source={{ kind: 'scenario', slug: scenario.slug }} sandbox />
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setHandoffOpen(false)}>Back to result</Button></DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
       <p role="status" aria-live="polite" className="sr-only">
         {announcement}

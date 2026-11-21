@@ -18,11 +18,13 @@ export function SandboxResult({
   titleRef,
   onOpenDetails,
   onAskCoach,
+  onApply,
 }: {
   run: ScenarioRunResponse;
   titleRef?: Ref<HTMLHeadingElement>;
   onOpenDetails: () => void;
   onAskCoach: () => void;
+  onApply: () => void;
 }) {
   const { stars } = run;
   return (
@@ -58,6 +60,7 @@ export function SandboxResult({
           ))}
         </ul>
         <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={onApply}>Apply this to your life</Button>
           <Button type="button" variant="outline" size="sm" onClick={onOpenDetails}>
             See full result
           </Button>

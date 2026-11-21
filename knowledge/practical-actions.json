@@ -67,5 +67,14 @@
       "scenarioSlugs": ["henryk-retires-next-year"],
       "destination": { "kind": "profile", "id": "review" }
     }
+  ],
+  "handoffs": [
+    { "source": { "kind": "chapter", "number": 1 }, "actionIds": ["define-one-goal", "review-goal-risk", "check-withdrawal-conditions"] },
+    { "source": { "kind": "chapter", "number": 2 }, "actionIds": ["find-annual-charges", "research-holdings"] },
+    { "source": { "kind": "chapter", "number": 3 }, "actionIds": ["review-after-life-change", "define-one-goal", "check-withdrawal-conditions"] },
+    { "source": { "kind": "scenario", "slug": "marek-favourite-company" }, "actionIds": ["research-holdings"] },
+    { "source": { "kind": "scenario", "slug": "nina-home-deposit" }, "actionIds": ["define-one-goal", "review-goal-risk"] },
+    { "source": { "kind": "scenario", "slug": "sam-university-fund" }, "actionIds": ["define-one-goal"] },
+    { "source": { "kind": "scenario", "slug": "henryk-retires-next-year" }, "actionIds": ["check-withdrawal-conditions", "review-after-life-change"] }
   ]
 }

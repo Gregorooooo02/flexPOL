@@ -42,6 +42,7 @@ import {
   getPreviousNodeBefore,
   getTopicCompletedCount,
   isTopicCompleted,
+  isTopicEarned,
   withAlpha,
 } from './learningPath';
 import type { LearningNode, LearningPath, NodeStatus } from './learningPath';
@@ -411,16 +412,19 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
       dispatch({ type: 'complete-learning', completions: [{ nodeId, provenance }] });
       const nextSet = new Set([...completedSet, nodeId]);
       const nextStep = getNextNodeAfter(path, nodeId);
+      const chapterEarned = isTopicEarned(entry.topic, { ...state.learning.completions, [nodeId]: { nodeId, provenance } });
       setBanner({
         tone: 'gold',
         message: provenance === 'demo'
           ? `Demo shortcut: module ${entry.node.code} unlocked as completed, not recorded as a passed lesson or test.`
-          : isTopicCompleted(entry.topic, nextSet)
+          : chapterEarned
           ? `Chapter ${entry.topic.title} completed.${nextStep ? ` Module ${nextStep.node.code} is next.` : ''}`
+          : isTopicCompleted(entry.topic, nextSet)
+          ? `Module ${entry.node.code} passed. This chapter still includes demo-completed modules.`
           : `Completed: ${entry.node.code}.${nextStep ? ` Module ${nextStep.node.code} is next.` : ''}`,
       });
     },
-    [path, dispatch, completedSet],
+    [path, dispatch, completedSet, state.learning.completions],
   );
 
   const handleCompleteCurrentTopic = useCallback(() => {
@@ -451,7 +455,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
           node={entry.node}
           topic={entry.topic}
           isCompleted={completedSet.has(entry.node.id)}
-          isTopicCompleted={isTopicCompleted(entry.topic, completedSet)}
+          isTopicEarned={isTopicEarned(entry.topic, state.learning.completions)}
           nextNodeSummary={nextEntry ? `${nextEntry.node.code} (${nextEntry.node.title})` : null}
           getNextWrongAnswerIndex={getNextWrongAnswerIndex}
           onComplete={handleCompleteLesson}

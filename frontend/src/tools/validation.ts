@@ -1,6 +1,6 @@
 import { parseAmountInput } from '@/workspace/portfolio/money';
 import { addCalendarMonths, isCalendarDate } from '@/roadmap/calendar';
-import type { BufferInput, EmergencyBufferDraft, GoalAssumptions, GoalPlannerDraft, GoalPlannerInput } from './types';
+import type { BufferInput, EmergencyBufferDraft, FeeImpactDraft, FeeInput, GoalAssumptions, GoalPlannerDraft, GoalPlannerInput } from './types';
 
 export type ToolErrors = Partial<Record<string, string>>;
 export const MAX_AMOUNT_CENTS = 100_000_000_000;
@@ -13,12 +13,12 @@ function amount(raw: string, field: string, errors: ToolErrors): number | null {
   return cents;
 }
 
-function rate(raw: string, field: string, minimum: number, errors: ToolErrors): number | null {
+function rate(raw: string, field: string, minimum: number, errors: ToolErrors, maximum = 50): number | null {
   const text = raw.trim();
   const pattern = minimum < 0 ? /^-?\d+(?:[.,]\d{1,4})?$/ : /^\d+(?:[.,]\d{1,4})?$/;
   const percent = pattern.test(text) && text.length <= 20 ? Number(text.replace(',', '.')) : NaN;
-  if (!Number.isFinite(percent) || percent < minimum || percent > 50) {
-    errors[field] = `Enter an annual percentage from ${minimum} to 50, up to four decimal places; no grouping.`;
+  if (!Number.isFinite(percent) || percent < minimum || percent > maximum) {
+    errors[field] = `Enter an annual percentage from ${minimum} to ${maximum}, up to four decimal places; no grouping.`;
     return null;
   }
   return percent / 100;
@@ -59,5 +59,26 @@ export function validateBufferTool(draft: EmergencyBufferDraft) {
   if (!Number.isInteger(targetMonths) || targetMonths > 60) errors.targetMonths = 'Choose a whole number of months from 0 to 60. This is your choice, not a recommendation.';
   const input: BufferInput | null = monthlyExpensesCents !== null && accessibleSavingsCents !== null && earmarkedExpensesCents !== null && !errors.targetMonths
     ? { monthlyExpensesCents, accessibleSavingsCents, earmarkedExpensesCents, targetMonths } : null;
+  return { errors, input };
+}
+
+export function isFeeInput(input: FeeInput): boolean {
+  return isToolAmount(input.initialCents) && isToolAmount(input.monthlyContributionCents)
+    && Number.isInteger(input.years) && input.years >= 1 && input.years <= 50
+    && Number.isFinite(input.annualReturn) && input.annualReturn >= -0.9 && input.annualReturn <= 0.5
+    && [input.feeA, input.feeB].every((fee) => Number.isFinite(fee) && fee >= 0 && fee <= 0.2);
+}
+
+export function validateFeeTool(draft: FeeImpactDraft) {
+  const errors: ToolErrors = {};
+  const initialCents = amount(draft.initialAmount, 'initialAmount', errors);
+  const monthlyContributionCents = amount(draft.monthlyContribution, 'monthlyContribution', errors);
+  const years = /^\d{1,2}$/.test(draft.years.trim()) ? Number(draft.years.trim()) : NaN;
+  if (!Number.isInteger(years) || years < 1 || years > 50) errors.years = 'Choose a whole number of years from 1 to 50.';
+  const annualReturn = rate(draft.annualReturn, 'annualReturn', -90, errors);
+  const feeA = rate(draft.feeA, 'feeA', 0, errors, 20);
+  const feeB = rate(draft.feeB, 'feeB', 0, errors, 20);
+  const input: FeeInput | null = initialCents !== null && monthlyContributionCents !== null && annualReturn !== null && feeA !== null && feeB !== null && !errors.years
+    ? { initialCents, monthlyContributionCents, years, annualReturn, feeA, feeB } : null;
   return { errors, input };
 }

@@ -1,6 +1,6 @@
 # Milestone 2 — Goal, Profile, and Actionable Roadmap
 
-Status: implemented. M2 is session-only; calculators and completion-screen handoff buttons remain later milestones.
+Status: implemented (M2 scope). Calculators and completion-screen handoffs are covered separately by M3–M5; personal data remains session-only.
 
 Parent plan: [Financial Roadmap and Practical Tools](financial-roadmap-plan.md).
 

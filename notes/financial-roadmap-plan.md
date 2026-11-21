@@ -1,6 +1,6 @@
 # Financial Roadmap and Practical Tools — Implementation Plan
 
-Status: M1 foundation, M2 goal/profile roadmap, and M3 goal/buffer tools implemented. M4–M6 remain planned; fee calculation, persistent storage, and completion handoff CTAs are not implemented yet.
+Status: M1–M5 implemented, including lesson/sandbox handoffs, the Home roadmap entry, all three calculators and generic concept help. M6 remains: optional device persistence, export and final polish. All personal planning data is still session-only.
 
 ## 1. Product decision
 
@@ -281,6 +281,8 @@ Acceptance: changing a timeline or expense input predictably updates results, ze
 
 ### M4 — Connect Learning and Sandbox
 
+Implemented: see [M4–M5 implementation notes](financial-roadmap-m4-m5-implementation-notes.md).
+
 - Add chapter completion cards and selected lesson-level links.
 - Add sandbox result links, leave-state explanation, and save-and-stay action.
 - Show source-specific introductions in destination tools and useful reverse links.
@@ -291,6 +293,8 @@ Acceptance: both chapter → tool → action and sandbox → profile/tool → ro
 **First demonstrable release: M1–M4.** This is a vertical slice, not the end of the agreed scope.
 
 ### M5 — Fee calculator and full connection coverage
+
+Implemented: see [M4–M5 implementation notes](financial-roadmap-m4-m5-implementation-notes.md).
 
 - Add the simplified annual-fee comparison and research action.
 - Complete mappings for all three chapters and current sandboxes.

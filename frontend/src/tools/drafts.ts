@@ -1,6 +1,6 @@
 import type { JourneySource } from '@/journey/types';
 import type { GoalBrief } from '@/roadmap/types';
-import type { BufferInput, EmergencyBufferDraft, GoalPlannerDraft } from './types';
+import type { BufferInput, EmergencyBufferDraft, FeeImpactDraft, GoalPlannerDraft } from './types';
 
 export function emptyGoalDraft(source: JourneySource): GoalPlannerDraft {
   return { tool: 'goal-planner', source, target: '', goalDate: '', dateInputInvalid: false, saved: '', monthlyContribution: '', returnEnabled: false, inflationEnabled: false, annualReturn: '', inflation: '' };
@@ -8,6 +8,10 @@ export function emptyGoalDraft(source: JourneySource): GoalPlannerDraft {
 
 export function emptyBufferDraft(source: JourneySource): EmergencyBufferDraft {
   return { tool: 'emergency-buffer', source, monthlyExpenses: '', accessibleSavings: '', earmarkedExpenses: '', targetMonths: '' };
+}
+
+export function emptyFeeDraft(source: JourneySource): FeeImpactDraft {
+  return { tool: 'fee-impact', source, initialAmount: '', monthlyContribution: '', years: '', annualReturn: '', feeA: '', feeB: '' };
 }
 
 export function goalDraftFromSaved(draft: GoalPlannerDraft, goal: GoalBrief): GoalPlannerDraft {

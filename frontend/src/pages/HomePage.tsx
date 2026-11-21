@@ -21,6 +21,7 @@ import { ApiError } from '@/config/axios';
 import type { Chapter } from '@/model';
 import { STARTING_BUDGET_CENTS } from '@/playground/config';
 import { formatMoney } from '@/workspace/portfolio/money';
+import { HomeRoadmapCard } from './HomeRoadmapCard';
 
 type CourseState =
   | { status: 'loading' }
@@ -96,6 +97,8 @@ export function HomePage() {
             Learn. Practice. Grow.
           </p>
         </header>
+
+        <HomeRoadmapCard />
 
         <section aria-label="Your learning journey" className="grid gap-6 @3xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] @3xl:gap-7">
           <Card className="min-w-0 gap-0 border border-border border-l-2 border-l-primary bg-primary/10 py-0">

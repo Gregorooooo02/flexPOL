@@ -31,6 +31,7 @@ export function GoalPlannerPage() {
   const navigate = useNavigate();
   const [initialDraft] = useState(() => emptyGoalDraft(readJourneySource(search) ?? { kind: 'tools' }));
   const draft = state.toolDrafts['goal-planner'] ?? initialDraft;
+  const source = readJourneySource(search) ?? draft.source;
   const [errors, setErrors] = useState<ToolErrors>({});
   const [calculation, setCalculation] = useState<{ result: Result; assumptionError: string | null } | null>(null);
   const [loadTarget, setLoadTarget] = useState<GoalBrief | null>(null);
@@ -38,7 +39,7 @@ export function GoalPlannerPage() {
   const [notice, setNotice] = useState('');
 
   function change(changes: Partial<GoalPlannerDraft>) {
-    dispatch({ type: 'set-tool-draft', draft: { ...draft, ...changes } });
+    dispatch({ type: 'set-tool-draft', draft: { ...draft, ...changes, source } });
     setCalculation(null); setApplyTarget(null); setErrors({}); setNotice('Inputs changed. Calculate again to see a current result.');
   }
   function calculate() {
@@ -70,13 +71,13 @@ export function GoalPlannerPage() {
   function startRoadmap() {
     const result = freshResult();
     if (!result || state.setupDraft || state.goal) return;
-    const setup = createSetupDraft(crypto.randomUUID(), draft.source, null, null);
+    const setup = createSetupDraft(crypto.randomUUID(), source, null, null);
     dispatch({ type: 'start-setup', draft: { ...setup, targetAmount: (result.input.targetCents / 100).toFixed(2), goalDate: result.input.goalDate, savedAmount: (result.input.savedCents / 100).toFixed(2), monthlyContribution: (result.input.monthlyContributionCents / 100).toFixed(2) } });
-    navigate(withJourneySource('/roadmap/setup', draft.source));
+    navigate(withJourneySource('/roadmap/setup', source));
   }
 
   return (
-    <JourneyPage status="active" activeLabel="Practical calculator" source={draft.source} title="Goal planner" description="Explore what a target, date, savings, and monthly contributions add up to. Start with contributions alone; no roadmap or return assumption is required.">
+    <JourneyPage status="active" activeLabel="Practical calculator" source={source} title="Goal planner" description="Explore what a target, date, savings, and monthly contributions add up to. Start with contributions alone; no roadmap or return assumption is required.">
       <Alert role="note"><AlertTitle>Your inputs stay exploratory</AlertTitle><AlertDescription>Returning restores inputs, not a saved calculation. Calculate again after changes or returning. Nothing updates your roadmap until you explicitly apply it.</AlertDescription></Alert>
       {state.goal && <div className="flex flex-col items-start gap-2"><p className="text-sm text-muted-foreground">Optionally copy the saved target, date, savings, and contribution. Unsaved worksheet edits are never loaded.</p><Button type="button" variant="outline" onClick={() => {
         const goal = state.goal;
@@ -99,10 +100,10 @@ export function GoalPlannerPage() {
         <GoalPlannerResult result={calculation.result} assumptionError={calculation.assumptionError} />
         <ToolDraftConflict />
         {!state.setupDraft && <div><Button type="button" onClick={() => { if (!freshResult()) return; if (state.goal) setApplyTarget({ ...state.goal }); else startRoadmap(); }}>{state.goal ? 'Use these inputs in my roadmap' : 'Create a roadmap from these inputs'}</Button></div>}
-        <ToolRoadmapActions actionId="define-one-goal" source={draft.source} />
+        <ToolRoadmapActions actionId="define-one-goal" source={source} />
       </>}
       <Alert role="note"><AlertTitle>Know what is not modelled</AlertTitle><AlertDescription>{TOOL_DEFINITIONS['goal-planner'].limitation} Changing a contribution or timeline is an idea to explore, not a recommendation.</AlertDescription></Alert>
-      <RelatedLearning tool="goal-planner" source={draft.source} />
+      <RelatedLearning tool="goal-planner" source={source} />
       {loadTarget && <ToolConfirmDialog open onOpenChange={(open) => { if (!open) setLoadTarget(null); }} title="Replace these tool inputs?" description="This replaces target, date, savings, and contribution in the calculator, not your saved roadmap. Optional assumptions are kept. Any displayed result is cleared." confirmLabel="Load saved goal values" onConfirm={() => loadGoal(loadTarget)}>
         <ResultFacts facts={[
           ['Saved target', loadTarget.targetCents === undefined ? 'Not provided' : formatMoney(loadTarget.targetCents)], ['Saved date', loadTarget.goalDate ?? 'Not provided'],

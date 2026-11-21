@@ -1,6 +1,6 @@
 # Milestone 1 — Roadmap Foundation: Implementation Plan
 
-Status: implemented (foundation only). Verification is recorded below; later milestones remain unimplemented.
+Status: implemented (foundation scope). Verification is recorded below; subsequent milestone status is tracked in the parent plan.
 
 Parent plan: [Financial Roadmap and Practical Tools](financial-roadmap-plan.md).
 

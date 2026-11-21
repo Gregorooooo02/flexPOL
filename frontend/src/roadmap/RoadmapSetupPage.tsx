@@ -35,6 +35,7 @@ function SetupForm({ draft }: { readonly draft: RoadmapSetupDraft }) {
   const location = useLocation();
   const navigate = useNavigate();
   const section = readProfileSection(search);
+  const source = readJourneySource(search) ?? draft.source;
   const step = section ? sectionStep(section) : draft.step;
   const [errors, setErrors] = useState<SetupErrors>({});
   const focusField = useRef<string | null>(null);
@@ -61,7 +62,7 @@ function SetupForm({ draft }: { readonly draft: RoadmapSetupDraft }) {
   function goTo(section: ProfileSection, fieldToFocus: string | null = null) {
     focusField.current = fieldToFocus;
     update({ step: sectionStep(section) });
-    navigate(withJourneySource(`/roadmap/setup?section=${section}`, draft.source));
+    navigate(withJourneySource(`/roadmap/setup?section=${section}`, source));
   }
   function showErrors(nextErrors: SetupErrors) {
     setErrors(nextErrors);
@@ -80,7 +81,7 @@ function SetupForm({ draft }: { readonly draft: RoadmapSetupDraft }) {
     const result = validateDraft(draft, localToday(), state.goal);
     if (!result.valid) { showErrors(result.errors); return; }
     dispatch({ type: 'save-roadmap', goal: result.goal, profile: result.profile });
-    navigate(withJourneySource('/roadmap', draft.source));
+    navigate(withJourneySource('/roadmap', source));
   }
   function discard() {
     dispatch({ type: 'discard-setup' });
@@ -89,7 +90,7 @@ function SetupForm({ draft }: { readonly draft: RoadmapSetupDraft }) {
   const titles: Record<SetupStep, string> = { goal: '1. Your goal', constraints: '2. Your constraints', review: '3. Review your plan' };
 
   return (
-    <JourneyPage status="active" source={draft.source} title="Your goal and risk worksheet" description="Only a goal name is required. Leave other details open, or choose Not sure. Draft edits stay separate from your saved plan until you confirm.">
+    <JourneyPage status="active" source={source} title="Your goal and risk worksheet" description="Only a goal name is required. Leave other details open, or choose Not sure. Draft edits stay separate from your saved plan until you confirm.">
       <nav aria-label="Worksheet steps" className="flex flex-wrap gap-2">
         {(['goal', 'constraints', 'review'] as const).map((value) => (
           <Button key={value} type="button" variant={step === value ? 'secondary' : 'outline'} aria-current={step === value ? 'step' : undefined} onClick={() => goTo(value === 'constraints' ? 'liquidity' : value)}>{titles[value]}</Button>
@@ -111,7 +112,7 @@ function SetupForm({ draft }: { readonly draft: RoadmapSetupDraft }) {
         </CardContent>
       </Card>
       <div className="flex flex-wrap gap-2">
-        <Link to={withJourneySource('/roadmap', draft.source)} className={buttonVariants({ variant: 'outline' })}>Return to roadmap, keep draft</Link>
+        <Link to={withJourneySource('/roadmap', source)} className={buttonVariants({ variant: 'outline' })}>Return to roadmap, keep draft</Link>
         <Button type="button" variant="ghost" onClick={() => draftHasChanges(draft, state.goal, state.profile) ? setDiscardOpen(true) : discard()}>Discard changes</Button>
       </div>
       <ConfirmRoadmapDialog open={discardOpen} onOpenChange={setDiscardOpen} title="Discard worksheet changes?" description="Your unsaved edits will be cleared. Your last saved goal, profile, tasks, and learning progress will remain." confirmLabel="Discard changes" onConfirm={discard} />

@@ -25,6 +25,7 @@ import { usePublishCoachFocus } from '@/components/coach/coachFocus';
 import { ApiError } from '@/config/axios';
 import type { AnswerChoice, AnswerOption, AnswerResult, Assignments, Question, Quiz } from '@/model';
 import type { LearningCompletion } from '@/journey/types';
+import { JourneyHandoffCard } from '@/journey/JourneyHandoffCard';
 import { AssignmentQuestion } from './AssignmentQuestion';
 import { NumberQuestion } from './NumberQuestion';
 import { PortfolioPrediction } from './PortfolioPrediction';
@@ -39,7 +40,7 @@ interface LessonPageProps {
   readonly node: LearningNode;
   readonly topic: TopicDefinition;
   readonly isCompleted: boolean;
-  readonly isTopicCompleted: boolean;
+  readonly isTopicEarned: boolean;
   readonly nextNodeSummary: string | null;
   readonly getNextWrongAnswerIndex: () => number;
   readonly onComplete: (nodeId: string, provenance: LearningCompletion['provenance']) => void;
@@ -205,7 +206,7 @@ export function LessonPage({
   node,
   topic,
   isCompleted,
-  isTopicCompleted,
+  isTopicEarned,
   nextNodeSummary,
   getNextWrongAnswerIndex,
   onComplete,
@@ -804,7 +805,7 @@ export function LessonPage({
               <CardDescription className="mt-1 text-foreground/85">
                 {step.demo
                   ? 'This demo shortcut unlocks the path. It is not evidence that you passed the lesson or test.'
-                  : isTopicCompleted
+                  : isTopicEarned
                   ? nextNodeSummary
                     ? `Chapter ${topic.title} completed. The path now leads to module ${nextNodeSummary}.`
                     : `Chapter ${topic.title} completed. Every module on the path is completed.`
@@ -814,6 +815,15 @@ export function LessonPage({
               </CardDescription>
             </CardHeader>
           </Card>
+        )}
+
+        {step.kind === 'result' && step.passed && !step.demo && (
+          <section id="completion-next-steps" tabIndex={-1} className="[scroll-margin-top:calc(var(--app-header-height)+6rem)]">
+            <JourneyHandoffCard
+              source={node.kind === 'checkpoint' ? { kind: 'chapter', number: Number(topic.seriesNumber) } : { kind: 'lesson', code: node.code }}
+              chapterEarned={node.kind === 'checkpoint' && isTopicEarned}
+            />
+          </section>
         )}
 
         {step.kind === 'result' && !step.passed && (
@@ -921,6 +931,11 @@ export function LessonPage({
 
           {step.kind === 'result' && step.passed && (
             <>
+              {!step.demo && <Button type="button" size="lg" onClick={() => {
+                const nextSteps = document.getElementById('completion-next-steps');
+                nextSteps?.focus({ preventScroll: true });
+                nextSteps?.scrollIntoView({ block: 'start' });
+              }}>Apply this to your life</Button>}
               <Button
                 type="button"
                 size="lg"
@@ -928,7 +943,7 @@ export function LessonPage({
                 style={{ backgroundColor: topic.accentHex, color: '#07090a' }}
                 onClick={onBack}
               >
-                Back to the path
+                {node.kind === 'checkpoint' && nextNodeSummary ? 'Continue learning' : 'Back to the path'}
               </Button>
             </>
           )}

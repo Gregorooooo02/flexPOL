@@ -12,7 +12,7 @@ import { AuthenticatedJourneyLayout } from './journey/AuthenticatedJourneyLayout
 import { RoadmapPage } from './roadmap/RoadmapPage';
 import { RoadmapSetupPage } from './roadmap/RoadmapSetupPage';
 import { ToolsPage } from './tools/ToolsPage';
-import { ToolPageShell } from './tools/ToolPageShell';
+import { FeeImpactPage } from './tools/FeeImpactPage';
 import { GoalPlannerPage } from './tools/GoalPlannerPage';
 import { EmergencyBufferPage } from './tools/EmergencyBufferPage';
 
@@ -35,7 +35,7 @@ export function App() {
             <Route path="tools" element={<ToolsPage />} />
             <Route path="tools/goal-planner" element={<GoalPlannerPage />} />
             <Route path="tools/emergency-buffer" element={<EmergencyBufferPage />} />
-            <Route path="tools/fee-impact" element={<ToolPageShell tool="fee-impact" />} />
+            <Route path="tools/fee-impact" element={<FeeImpactPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

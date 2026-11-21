@@ -1,4 +1,5 @@
 import type { Chapter } from '@/model';
+import type { LearningCompletion } from '@/journey/types';
 
 export type NodeKind = 'lesson' | 'checkpoint';
 export type NodeStatus = 'completed' | 'active' | 'locked';
@@ -155,6 +156,11 @@ export function isTopicCompleted(
   completedIds: ReadonlySet<string>,
 ): boolean {
   return topic.nodes.every((node) => completedIds.has(node.id));
+}
+
+/** Demo shortcuts may unlock the path, but never count as earned chapter completion. */
+export function isTopicEarned(topic: TopicDefinition, completions: Readonly<Record<string, LearningCompletion>>): boolean {
+  return topic.nodes.every((node) => completions[node.id] !== undefined && completions[node.id].provenance !== 'demo');
 }
 
 export function getTopicCompletedCount(
