@@ -37,6 +37,9 @@ import lombok.RequiredArgsConstructor;
 public class ScenarioRunService {
 
 	private static final int FRACTION_SCALE = 6;
+	/** Star weights from defaults.stars in knowledge/sandbox-scenarios.json. */
+	private static final int GROWTH_STARS = 2;
+	private static final int MIN_STARS = 1;
 
 	private final ScenarioService scenarioService;
 	private final SimulationService simulationService;
@@ -55,7 +58,8 @@ public class ScenarioRunService {
 			items.add(new SimulationRequest(timelineId, brief.budget(), brief.durationDays(), spec.seed() + timelineId));
 		}
 		var results = simulationService.simulateBatch(items);
-		return evaluate(brief, allocations, allocations.isEmpty() ? List.of() : results, results.getFirst());
+		return evaluate(brief, spec.evaluation(), allocations, allocations.isEmpty() ? List.of() : results,
+				results.getFirst());
 	}
 
 	/** Allocations in request order. Rejects unknown or repeated instruments, bad amounts and overspending. */
@@ -98,8 +102,8 @@ public class ScenarioRunService {
 	 * Walks the shared timeline. {@code results} holds one path per allocation (in the same order),
 	 * or nothing for an all-cash run; {@code timeline} provides the dates either way.
 	 */
-	private static ScenarioRunResponse evaluate(ScenarioResponse brief, Map<Long, BigDecimal> allocations,
-			List<SimulationResult> results, SimulationResult timeline) {
+	private static ScenarioRunResponse evaluate(ScenarioResponse brief, ScenarioRunSpec.Evaluation evaluation,
+			Map<Long, BigDecimal> allocations, List<SimulationResult> results, SimulationResult timeline) {
 		var scoring = brief.scoring();
 		var dates = timeline.points().stream().map(point -> point.date()).toList();
 		var start = timeline.startDate();
@@ -193,10 +197,67 @@ public class ScenarioRunService {
 				.divide(brief.budget(), FRACTION_SCALE, RoundingMode.HALF_EVEN);
 		boolean goalMet = !shortfall && finalValue.compareTo(scoring.target()) >= 0;
 
+		boolean grew = finalValue.add(paidOutCents).compareTo(brief.budget()) > 0;
+
 		return new ScenarioRunResponse(brief.id(), brief.currency(), brief.budget(), brief.durationDays(),
 				start, timeline.endDate(), points, instruments, needRuns, finalValue, paidOutCents, totalReturn,
 				BigDecimal.valueOf(largestDrop).setScale(FRACTION_SCALE, RoundingMode.HALF_EVEN), goalMet,
-				score(brief, allocations, finalValue.doubleValue(), largestDrop, shortfall));
+				score(brief, allocations, finalValue.doubleValue(), largestDrop, shortfall),
+				stars(evaluation, allocations, brief.budget(), grew, goalMet));
+	}
+
+	/**
+	 * The 1–5 star rating (defaults.stars in knowledge/sandbox-scenarios.json, mirrored by
+	 * scripts/check-sandbox-scenarios.mjs). Assets and shares are judged on the allocation at the
+	 * start, exactly, in cents; growth and goal on the run's result.
+	 */
+	static ScenarioRunResponse.StarRating stars(ScenarioRunSpec.Evaluation evaluation, Map<Long, BigDecimal> allocations,
+			BigDecimal budget, boolean grew, boolean goalMet) {
+		var suitable = Set.copyOf(evaluation.suitableInstrumentIds());
+		List<Long> unsuitable = allocations.keySet().stream().filter(id -> !suitable.contains(id)).toList();
+		boolean rightAssets = unsuitable.isEmpty() && allocations.size() >= evaluation.minInstruments();
+
+		BigDecimal cash = budget.subtract(allocations.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add));
+		List<ScenarioRunResponse.ShareRangeResult> ranges = evaluation.shareRanges().stream()
+				.map(range -> shareRange(range, allocations, cash, budget))
+				.toList();
+		boolean rightShares = ranges.stream().allMatch(ScenarioRunResponse.ShareRangeResult::met);
+
+		var criteria = List.of(
+				new ScenarioRunResponse.StarCriterion(ScenarioRunResponse.StarCriterionKey.GROWTH, GROWTH_STARS, grew),
+				new ScenarioRunResponse.StarCriterion(ScenarioRunResponse.StarCriterionKey.GOAL, 1, goalMet),
+				new ScenarioRunResponse.StarCriterion(ScenarioRunResponse.StarCriterionKey.ASSETS, 1, rightAssets),
+				new ScenarioRunResponse.StarCriterion(ScenarioRunResponse.StarCriterionKey.SHARES, 1, rightShares));
+		int earned = criteria.stream().filter(ScenarioRunResponse.StarCriterion::earned)
+				.mapToInt(ScenarioRunResponse.StarCriterion::stars).sum();
+
+		return new ScenarioRunResponse.StarRating(Math.max(MIN_STARS, earned), earned, criteria,
+				evaluation.suitableInstrumentIds(), evaluation.minInstruments(), unsuitable, ranges,
+				evaluation.explanation());
+	}
+
+	/** Compares amounts with {@code share × budget}, so 70% of €6,000 is exactly €4,200. */
+	private static ScenarioRunResponse.ShareRangeResult shareRange(ScenarioRunSpec.ShareRange range,
+			Map<Long, BigDecimal> allocations, BigDecimal cash, BigDecimal budget) {
+		BigDecimal low = range.min().multiply(budget);
+		BigDecimal high = range.max().multiply(budget);
+		BigDecimal amount;
+		boolean met;
+		if (range.each()) {
+			var amounts = range.instrumentIds().stream()
+					.map(id -> allocations.getOrDefault(id, BigDecimal.ZERO))
+					.toList();
+			amount = amounts.stream().max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+			met = amounts.stream().allMatch(value -> value.compareTo(low) >= 0 && value.compareTo(high) <= 0);
+		} else {
+			amount = range.instrumentIds().stream()
+					.map(id -> allocations.getOrDefault(id, BigDecimal.ZERO))
+					.reduce(range.includesCash() ? cash : BigDecimal.ZERO, BigDecimal::add);
+			met = amount.compareTo(low) >= 0 && amount.compareTo(high) <= 0;
+		}
+		BigDecimal share = amount.divide(budget, FRACTION_SCALE, RoundingMode.HALF_EVEN);
+		return new ScenarioRunResponse.ShareRangeResult(range.label(), range.includesCash(), range.each(),
+				range.instrumentIds(), range.min(), range.max(), share, met);
 	}
 
 	private static ScenarioRunResponse.Score score(ScenarioResponse brief, Map<Long, BigDecimal> allocations,

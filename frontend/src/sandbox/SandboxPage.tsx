@@ -39,6 +39,7 @@ import type { SandboxPhase } from './SandboxActions';
 import { SandboxBrief } from './SandboxBrief';
 import { SandboxHeader } from './SandboxHeader';
 import { SandboxResult } from './SandboxResult';
+import { SandboxResultDialog } from './SandboxResultDialog';
 
 const DEFAULT_FILTERS: InstrumentFilters = { search: '', assetClass: 'ALL', risk: 'ALL' };
 /** Before a run every price is 1, so a holding's units are its cents (as in the Playground). */
@@ -138,7 +139,8 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
   const [chartView, setChartView] = useState<'history' | 'simulation'>('history');
   const [run, setRun] = useState<RunState>({ status: 'idle' });
   const [replay, setReplay] = useState<ReplayState>(createReplay);
-  const [previousScore, setPreviousScore] = useState<number | null>(null);
+  const [previousStars, setPreviousStars] = useState<number | null>(null);
+  const [resultOpen, setResultOpen] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const replayRef = useRef(replay);
   const replayStartedAt = useRef(0);
@@ -226,7 +228,8 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
       if (next.dayIndex === current.dayIndex && next.status === current.status) return;
       updateReplay(next);
       if (next.status === 'finished') {
-        setAnnouncement('Simulation complete. Your result and score are shown above the plan.');
+        setAnnouncement('Simulation complete. Your result is shown in a dialog.');
+        setResultOpen(true);
       }
     };
     const timer = window.setInterval(tick, 100);
@@ -243,10 +246,6 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
       window.removeEventListener('focus', tick);
     };
   }, [replay.status, timeline, updateReplay]);
-
-  useEffect(() => {
-    if (replay.status === 'finished') resultTitleRef.current?.focus({ preventScroll: false });
-  }, [replay.status]);
 
   const phase: SandboxPhase =
     run.status === 'submitting'
@@ -394,7 +393,8 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
 
   function changePlan() {
     if (run.status !== 'ready' || replayRef.current.status !== 'finished') return;
-    setPreviousScore(run.data.score.total);
+    setPreviousStars(run.data.stars.stars);
+    setResultOpen(false);
     setRun({ status: 'idle' });
     updateReplay(createReplay());
     setSelectedId(null);
@@ -409,18 +409,6 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
       : catalogue.status === 'error'
         ? 'Load the instruments to build your plan.'
         : undefined;
-  const status =
-    unavailableReason ??
-    (phase === 'submitting'
-      ? 'Simulating the scenario’s market…'
-      : phase === 'playing'
-        ? 'Simulation running · plan locked'
-        : phase === 'finished'
-          ? 'Simulation complete'
-          : hasHoldings
-            ? 'Ready to run'
-            : 'Build your plan · unallocated money stays as cash');
-
   return (
     <>
       <WorkspaceLayout
@@ -432,19 +420,26 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
             investedCents={totalCents - cashCents}
             budgetCents={budgetCents}
             paidOutCents={paidOutCents}
-            date={timeline?.dates[dayIndex]}
-            dayIndex={dayIndex}
-            lastIndex={timeline?.lastIndex ?? 0}
-            status={status}
-            dates={visibleDates}
-            equity={equity}
+            actions={
+              <SandboxActions
+                scenarioId={scenario.id}
+                phase={phase}
+                canRun={catalogue.status === 'ready' && selectedId === null}
+                hasHoldings={hasHoldings}
+                failed={run.status === 'error'}
+                unavailableReason={unavailableReason}
+                onRun={runSimulation}
+                onChangePlan={changePlan}
+                onShowResult={() => setResultOpen(true)}
+              />
+            }
             titleRef={pageTitleRef}
           />
         }
         notice={
           <div className="flex flex-col gap-5">
             {phase === 'finished' && run.status === 'ready' && (
-              <SandboxResult scenario={scenario} run={run.data} previousScore={previousScore} titleRef={resultTitleRef} />
+              <SandboxResult run={run.data} titleRef={resultTitleRef} onOpenDetails={() => setResultOpen(true)} />
             )}
             {run.status === 'error' && (
               <Alert>
@@ -501,18 +496,6 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
             onRemove={removePosition}
           />
         }
-        actionBar={
-          <SandboxActions
-            scenarioId={scenario.id}
-            phase={phase}
-            canRun={catalogue.status === 'ready' && selectedId === null}
-            hasHoldings={hasHoldings}
-            failed={run.status === 'error'}
-            unavailableReason={unavailableReason}
-            onRun={runSimulation}
-            onChangePlan={changePlan}
-          />
-        }
       />
       <InstrumentPanel
         instrument={selectedInstrument}
@@ -554,6 +537,17 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
           ) : undefined
         }
       />
+      {run.status === 'ready' && (
+        <SandboxResultDialog
+          open={resultOpen && phase === 'finished'}
+          scenario={scenario}
+          run={run.data}
+          previousStars={previousStars}
+          finalFocus={resultTitleRef}
+          onOpenChange={setResultOpen}
+          onChangePlan={changePlan}
+        />
+      )}
       <p role="status" aria-live="polite" className="sr-only">
         {announcement}
       </p>

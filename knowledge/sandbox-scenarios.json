@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "disclaimer": "All people, goals, amounts and events are fictional. Instruments come from the app's catalogue, but every price path is synthetic: each instrument is simulated independently with the same expected return and its own volatility. Outcomes illustrate ideas from the lessons. They don't predict real returns and are not product recommendations.",
   "defaults": {
     "currency": "EUR",
@@ -25,7 +25,21 @@
     "acceptance": {
       "seeds": 1000,
       "referenceMinMeanScore": 80,
-      "trapMaxMeanScore": 50
+      "trapMaxMeanScore": 50,
+      "spectrumSeeds": 300,
+      "spectrumSamples": 24,
+      "spectrumMinMeanScore": 60
+    },
+    "stars": {
+      "growth": 2,
+      "goal": 1,
+      "assets": 1,
+      "shares": 1,
+      "minimum": 1,
+      "growthRule": "final value plus money paid out is above the budget",
+      "goalRule": "no shortfall and the final value reaches the target",
+      "assetsRule": "money only in evaluation.suitableInstrumentIds, in at least evaluation.minInstruments of them (cash is always fine)",
+      "sharesRule": "every evaluation.shareRanges entry holds: the share of the budget in its instruments (plus cash when includesCash) is between min and max, inclusive; with each: true, every listed instrument's own share must be in the range instead"
     }
   },
   "catalogue": [
@@ -214,6 +228,23 @@
           "why": "A single volatile stock can be far down exactly when the repair is due."
         }
       ],
+      "evaluation": {
+        "suitableInstrumentIds": [
+          1013,
+          1015
+        ],
+        "minInstruments": 0,
+        "shareRanges": [
+          {
+            "label": "Cash",
+            "includesCash": true,
+            "instrumentIds": [],
+            "min": 0.7,
+            "max": 1
+          }
+        ],
+        "explanation": "The repair is due in four months and the job may not last, so most of the money belongs in cash. Up to about 30% can go into a broad fund such as the world or S&P 500 fund. Single stocks swing too much for an emergency fund."
+      },
       "debriefPoints": [
         "An emergency fund needs to be available, and its value shouldn't swing.",
         "One year is too short to recover from a drop.",
@@ -283,6 +314,23 @@
           "why": "All the money in one market's ups and downs, right before a fixed date."
         }
       ],
+      "evaluation": {
+        "suitableInstrumentIds": [
+          1013,
+          1015
+        ],
+        "minInstruments": 0,
+        "shareRanges": [
+          {
+            "label": "Cash",
+            "includesCash": true,
+            "instrumentIds": [],
+            "min": 0.75,
+            "max": 1
+          }
+        ],
+        "explanation": "The wedding date is fixed and only two years away, so nearly all of the money should keep its value in cash. A small part, up to a quarter, can go into a broad world or S&P 500 fund. One region or emerging markets add risk the couple doesn't need."
+      },
       "debriefPoints": [
         "A fixed date close ahead calls for money that keeps its value.",
         "Diversification lowers risk but doesn't remove it.",
@@ -370,6 +418,47 @@
           "why": "Looks spread out, but it is all one volatile theme, half of it in one company."
         }
       ],
+      "evaluation": {
+        "suitableInstrumentIds": [
+          1013,
+          1015,
+          1017,
+          1018,
+          1010
+        ],
+        "minInstruments": 1,
+        "shareRanges": [
+          {
+            "label": "Broad funds",
+            "includesCash": false,
+            "instrumentIds": [
+              1013,
+              1015,
+              1017,
+              1018
+            ],
+            "min": 0.6,
+            "max": 1
+          },
+          {
+            "label": "Favourite stock (ASML)",
+            "includesCash": false,
+            "instrumentIds": [
+              1010
+            ],
+            "min": 0,
+            "max": 0.1
+          },
+          {
+            "label": "Cash",
+            "includesCash": true,
+            "instrumentIds": [],
+            "min": 0,
+            "max": 0.3
+          }
+        ],
+        "explanation": "Six years and a stable job allow mostly investing. The bulk belongs in broad funds across regions, and the favourite company fits as a small part, up to 10%. Going all in, or doubling up on tech with the NASDAQ fund, ties the money to one theme."
+      },
       "debriefPoints": [
         "A single stock carries the full damage of one company's problems.",
         "A fund spreads the money across many companies.",
@@ -448,6 +537,59 @@
           "why": "Far too cautious for 8 years, and the small invested part depends on one region."
         }
       ],
+      "evaluation": {
+        "suitableInstrumentIds": [
+          1013,
+          1015,
+          1017,
+          1018
+        ],
+        "minInstruments": 1,
+        "shareRanges": [
+          {
+            "label": "Funds",
+            "includesCash": false,
+            "instrumentIds": [
+              1013,
+              1015,
+              1017,
+              1018
+            ],
+            "min": 0.7,
+            "max": 1
+          },
+          {
+            "label": "Europe only (EURO STOXX 50)",
+            "includesCash": false,
+            "instrumentIds": [
+              1017
+            ],
+            "min": 0,
+            "max": 0.4
+          },
+          {
+            "label": "Cash",
+            "includesCash": true,
+            "instrumentIds": [],
+            "min": 0,
+            "max": 0.3
+          },
+          {
+            "label": "Any single fund",
+            "includesCash": false,
+            "instrumentIds": [
+              1013,
+              1015,
+              1017,
+              1018
+            ],
+            "min": 0,
+            "max": 0.5,
+            "each": true
+          }
+        ],
+        "explanation": "Eight years allow mostly investing, spread across regions rather than only at home: world, US, European and emerging-market funds. The European fund is fine as one part, up to about 40%. Familiar names like Allianz or Deutsche Telekom aren't less risky just because they're known."
+      },
       "debriefPoints": [
         "Diversify across companies and regions, not only within one market.",
         "Knowing a company's name doesn't lower its risk.",
@@ -532,6 +674,32 @@
           "why": "Half of the tuition money rides on one stock."
         }
       ],
+      "evaluation": {
+        "suitableInstrumentIds": [
+          1013,
+          1010
+        ],
+        "minInstruments": 0,
+        "shareRanges": [
+          {
+            "label": "Cash",
+            "includesCash": true,
+            "instrumentIds": [],
+            "min": 0.85,
+            "max": 1
+          },
+          {
+            "label": "The tip (ASML)",
+            "includesCash": false,
+            "instrumentIds": [
+              1010
+            ],
+            "min": 0,
+            "max": 0.05
+          }
+        ],
+        "explanation": "Half of the money pays the tuition in six months and the rest should be kept, so almost all of it stays in cash. If Olek follows the tip at all, it's a small bet of up to 5% on that one stock; a little in the world fund is the steadier choice. Other stocks would just be new bets."
+      },
       "debriefPoints": [
         "A tip is a bet on price, not a plan.",
         "Never bet money you need soon.",
@@ -632,6 +800,44 @@
           "why": "A drop just before the purchase can shrink the deposit."
         }
       ],
+      "evaluation": {
+        "suitableInstrumentIds": [
+          1013,
+          1014,
+          1015,
+          1017,
+          1018,
+          1019,
+          1020
+        ],
+        "minInstruments": 1,
+        "shareRanges": [
+          {
+            "label": "Cash",
+            "includesCash": true,
+            "instrumentIds": [],
+            "min": 0.35,
+            "max": 0.7
+          },
+          {
+            "label": "Any single fund",
+            "includesCash": false,
+            "instrumentIds": [
+              1013,
+              1014,
+              1015,
+              1017,
+              1018,
+              1019,
+              1020
+            ],
+            "min": 0,
+            "max": 0.4,
+            "each": true
+          }
+        ],
+        "explanation": "Four years to the flat is a medium horizon: keep a large part, roughly 35–70%, safe in cash and invest the rest in broad funds. Single stocks and the tech-heavy NASDAQ fund put the deposit at unnecessary risk."
+      },
       "debriefPoints": [
         "A medium horizon needs a balance of growth and safety.",
         "Ask the five questions for each pick: risk, return, liquidity, cost and horizon."
@@ -712,6 +918,38 @@
           "why": "Half on one company, with dependents and an uneven income."
         }
       ],
+      "evaluation": {
+        "suitableInstrumentIds": [
+          1013,
+          1015,
+          1017,
+          1018
+        ],
+        "minInstruments": 1,
+        "shareRanges": [
+          {
+            "label": "Cash",
+            "includesCash": true,
+            "instrumentIds": [],
+            "min": 0.3,
+            "max": 0.6
+          },
+          {
+            "label": "Any single fund",
+            "includesCash": false,
+            "instrumentIds": [
+              1013,
+              1015,
+              1017,
+              1018
+            ],
+            "min": 0,
+            "max": 0.35,
+            "each": true
+          }
+        ],
+        "explanation": "Irregular income and a child who depends on her lower Paula's capacity for risk, and a quiet spell will need €3,000 in about two and a half years. Keeping roughly a third to a half in cash covers it, and the rest can go into broad funds. A luxury-brand stock is a bet, not a school fund."
+      },
       "debriefPoints": [
         "Age and horizon aren't the whole picture.",
         "Unstable income and dependents lower risk capacity, so more stays in cash."
@@ -788,6 +1026,25 @@
           "why": "A long horizon doesn't make one company safe."
         }
       ],
+      "evaluation": {
+        "suitableInstrumentIds": [
+          1013,
+          1015,
+          1018,
+          1019
+        ],
+        "minInstruments": 1,
+        "shareRanges": [
+          {
+            "label": "Cash",
+            "includesCash": true,
+            "instrumentIds": [],
+            "min": 0,
+            "max": 0.2
+          }
+        ],
+        "explanation": "Ten years, a steady income and an emergency fund in place allow a growth-oriented mix: almost everything in broad funds across regions and company sizes. Cash barely grows, the NASDAQ fund leans on one sector, and a single star stock adds risk without adding expected return."
+      },
       "debriefPoints": [
         "A long horizon and future income allow a growth-oriented mix.",
         "Starting early gives compounding the most time."
@@ -870,6 +1127,38 @@
           "why": "Safe, but 7 years without any growth."
         }
       ],
+      "evaluation": {
+        "suitableInstrumentIds": [
+          1013,
+          1015,
+          1017,
+          1018
+        ],
+        "minInstruments": 1,
+        "shareRanges": [
+          {
+            "label": "Cash",
+            "includesCash": true,
+            "instrumentIds": [],
+            "min": 0.1,
+            "max": 0.4
+          },
+          {
+            "label": "Any single fund",
+            "includesCash": false,
+            "instrumentIds": [
+              1013,
+              1015,
+              1017,
+              1018
+            ],
+            "min": 0,
+            "max": 0.5,
+            "each": true
+          }
+        ],
+        "explanation": "The university fund has seven years, but the house may need €5,000 of repairs in under three. A cash part of 10–40% covers surprises so the investments can stay put, and the rest goes into broad funds. Two favourite stocks are not a plan for a child's education."
+      },
       "debriefPoints": [
         "Each goal gets its own horizon and mix.",
         "A cash part covers surprises so the investments can stay put."
@@ -934,6 +1223,38 @@
           "why": "No growth at all for 9 years, with a long retirement still ahead."
         }
       ],
+      "evaluation": {
+        "suitableInstrumentIds": [
+          1013,
+          1015,
+          1017,
+          1018
+        ],
+        "minInstruments": 1,
+        "shareRanges": [
+          {
+            "label": "Cash",
+            "includesCash": true,
+            "instrumentIds": [],
+            "min": 0.25,
+            "max": 0.6
+          },
+          {
+            "label": "Any single fund",
+            "includesCash": false,
+            "instrumentIds": [
+              1013,
+              1015,
+              1017,
+              1018
+            ],
+            "min": 0,
+            "max": 0.35,
+            "each": true
+          }
+        ],
+        "explanation": "With retirement nine years away, Danuta should move gradually from growing to protecting: a large cash part, and the rest spread across broad funds in several regions. Keeping everything in one tech fund because it did well is concentration, not a plan."
+      },
       "debriefPoints": [
         "Shift from growing to protecting gradually.",
         "Even near retirement, part of the money stays invested for growth."
@@ -1009,6 +1330,38 @@
           "why": "No cash buffer: every withdrawal is a sale at that day's price."
         }
       ],
+      "evaluation": {
+        "suitableInstrumentIds": [
+          1013,
+          1015,
+          1017,
+          1018
+        ],
+        "minInstruments": 1,
+        "shareRanges": [
+          {
+            "label": "Cash",
+            "includesCash": true,
+            "instrumentIds": [],
+            "min": 0.25,
+            "max": 0.6
+          },
+          {
+            "label": "Any single fund",
+            "includesCash": false,
+            "instrumentIds": [
+              1013,
+              1015,
+              1017,
+              1018
+            ],
+            "min": 0,
+            "max": 0.3,
+            "each": true
+          }
+        ],
+        "explanation": "Withdrawals start in a year, so a cash buffer of at least two years of spending, plus a margin, avoids selling funds after a drop. The rest stays invested in broad funds for later in retirement."
+      },
       "debriefPoints": [
         "Sequence risk: the same drop hurts more when withdrawals start.",
         "A cash buffer of 1-3 years of spending avoids selling at the bottom."
@@ -1076,6 +1429,26 @@
           "why": "Most of the money does no work for almost 10 years."
         }
       ],
+      "evaluation": {
+        "suitableInstrumentIds": [
+          1013,
+          1015,
+          1018,
+          1019,
+          1020
+        ],
+        "minInstruments": 1,
+        "shareRanges": [
+          {
+            "label": "Cash",
+            "includesCash": true,
+            "instrumentIds": [],
+            "min": 0,
+            "max": 0.3
+          }
+        ],
+        "explanation": "Nine and a half years and a large pension gap call for growth: most of the money in broad funds across regions and company sizes, and little in cash."
+      },
       "debriefPoints": [
         "Public pensions often cover only part of what's needed.",
         "Cash alone can't close a large gap; time and compounding do most of the work."

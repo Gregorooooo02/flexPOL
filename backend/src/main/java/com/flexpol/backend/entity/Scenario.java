@@ -141,6 +141,29 @@ public class Scenario {
 	@OrderBy("sortOrder ASC")
 	private List<ScenarioAllocation> allocations = new ArrayList<>();
 
+	/**
+	 * Instruments that suit the person (the "right assets" star); cash is always fine. Server-side
+	 * only until the learner has a result.
+	 */
+	@ManyToMany
+	@JoinTable(name = "scenario_suitable_instrument", joinColumns = @JoinColumn(name = "scenario_id"),
+			inverseJoinColumns = @JoinColumn(name = "instrument_id"))
+	@OrderColumn(name = "sort_order")
+	private List<Instrument> suitableInstruments = new ArrayList<>();
+
+	/** How many different suitable instruments the "right assets" star needs (0 allows all cash). */
+	@Column(nullable = false)
+	private Integer minInstruments;
+
+	/** Ranges for the "right shares" star. Server-side only until the learner has a result. */
+	@OneToMany(mappedBy = "scenario")
+	@OrderBy("sortOrder ASC")
+	private List<ScenarioShareRange> shareRanges = new ArrayList<>();
+
+	/** Why the suitable instruments and ranges fit the person; shown with the result. */
+	@Column(nullable = false, length = 1000)
+	private String evaluationExplanation;
+
 	/** What the debrief should bring out. Server-side only until the learner has a result. */
 	@ElementCollection
 	@CollectionTable(name = "scenario_debrief_point", joinColumns = @JoinColumn(name = "scenario_id"))

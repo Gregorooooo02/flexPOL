@@ -18,6 +18,7 @@ export function SandboxActions({
   unavailableReason,
   onRun,
   onChangePlan,
+  onShowResult,
 }: {
   scenarioId: number;
   phase: SandboxPhase;
@@ -28,6 +29,7 @@ export function SandboxActions({
   unavailableReason?: string;
   onRun: () => void;
   onChangePlan: () => void;
+  onShowResult: () => void;
 }) {
   const hintId = useId();
   const seconds = SIMULATION_DURATION_MS / 1000;
@@ -54,9 +56,14 @@ export function SandboxActions({
       </Link>
       <div className="flex flex-wrap items-center justify-end gap-2">
         {phase === 'finished' ? (
-          <Button type="button" onClick={onChangePlan}>
-            Change plan
-          </Button>
+          <>
+            <Button type="button" variant="outline" onClick={onShowResult}>
+              See result
+            </Button>
+            <Button type="button" onClick={onChangePlan}>
+              Change plan
+            </Button>
+          </>
         ) : phase === 'planning' ? (
           <Button type="button" disabled={!canRun} aria-describedby={hintId} onClick={onRun}>
             {failed ? 'Try again' : 'Run simulation'}

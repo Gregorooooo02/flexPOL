@@ -14,8 +14,6 @@ import { CoachLauncher } from './CoachLauncher';
 import { useCoachFocus } from './coachFocus';
 import type { CoachFocus } from './coachFocus';
 import { useCoachChat } from './useCoachChat';
-import {hedgieImage} from "@/components/coach/hedgie.ts";
-import { Button } from '../ui/button';
 
 const DESKTOP_MEDIA_QUERY = '(min-width: 64rem)';
 /** Width of the Hedgie sidebar the first time it opens; capped by the panel's maxSize (45%). */
@@ -117,7 +115,7 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
   );
 
   return (
-    // group/coach: a page with a workspace action bar lifts the floating buttons above it.
+    // group/coach: a page with a sticky footer marked data-coach-footer lifts the floating launcher above it.
     <div className="group/coach relative flex min-h-0 flex-1 flex-col">
       <ResizablePanelGroup
         orientation="horizontal"

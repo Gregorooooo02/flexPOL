@@ -5,10 +5,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import com.flexpol.backend.dto.ScenarioResponse;
 import com.flexpol.backend.dto.ScenarioRunRequest;
 import com.flexpol.backend.dto.ScenarioRunRequest.Allocation;
+import com.flexpol.backend.dto.ScenarioRunResponse.ShareRangeResult;
+import com.flexpol.backend.dto.ScenarioRunResponse.StarCriterion;
 import com.flexpol.backend.exception.BadRequestException;
 
 import org.junit.jupiter.api.Test;
@@ -43,6 +46,35 @@ class ScenarioRunServiceTests {
 		});
 		assertThat(run.goalMet()).isTrue();
 		assertThat(run.score().total()).isEqualTo(100);
+		// No growth (cash earns 0%), but the goal, the instruments (none needed) and the cash share fit.
+		assertThat(run.stars().criteria()).extracting(StarCriterion::earned).containsExactly(false, true, true, true);
+		assertThat(run.stars().stars()).isEqualTo(3);
+	}
+
+	@Test
+	void starsJudgeInstrumentsAndSharesExactlyAndNeverDropBelowOne() {
+		var evaluation = new ScenarioRunSpec.Evaluation(List.of(1013L), 1, List.of(
+				new ScenarioRunSpec.ShareRange("Cash", true, false, List.of(), new BigDecimal("0.7"), BigDecimal.ONE),
+				new ScenarioRunSpec.ShareRange("Any single fund", false, true, List.of(1013L, 1015L), BigDecimal.ZERO, new BigDecimal("0.3"))),
+				"Why");
+		var budget = new BigDecimal("6000.00");
+
+		// Exactly 70% cash and 30% in one fund is inside both ranges.
+		var atLimit = ScenarioRunService.stars(evaluation, Map.of(1013L, new BigDecimal("1800.00")), budget, true, false);
+		assertThat(atLimit.criteria()).extracting(StarCriterion::earned).containsExactly(true, false, true, true);
+		assertThat(atLimit.stars()).isEqualTo(4);
+		assertThat(atLimit.shareRanges()).extracting(ShareRangeResult::share)
+				.usingElementComparator(BigDecimal::compareTo).containsExactly(new BigDecimal("0.7"), new BigDecimal("0.3"));
+
+		// One cent more invested breaks both ranges.
+		var overLimit = ScenarioRunService.stars(evaluation, Map.of(1013L, new BigDecimal("1800.01")), budget, true, false);
+		assertThat(overLimit.shareRanges()).extracting(ShareRangeResult::met).containsExactly(false, false);
+
+		// Only an unsuitable instrument, no growth, no goal: nothing earned, still one star.
+		var nothing = ScenarioRunService.stars(evaluation, Map.of(1015L, budget), budget, false, false);
+		assertThat(nothing.unsuitableInstrumentIds()).containsExactly(1015L);
+		assertThat(nothing.earned()).isZero();
+		assertThat(nothing.stars()).isEqualTo(1);
 	}
 
 	@Test
@@ -63,6 +95,14 @@ class ScenarioRunServiceTests {
 		// No cash: the portfolio is the fund, and its contribution is what it made on top of the €6,000.
 		assertThat(first.finalValue()).isEqualByComparingTo(fund.finalValue());
 		assertThat(fund.contribution()).isEqualByComparingTo(first.finalValue().add(first.paidOut()).subtract(new BigDecimal("6000")));
+		// The seeded evaluation: the world fund suits Kuba, but no cash at all is outside the 70–100% range.
+		assertThat(first.stars().unsuitableInstrumentIds()).isEmpty();
+		assertThat(first.stars().shareRanges()).singleElement().satisfies(range -> {
+			assertThat(range.label()).isEqualTo("Cash");
+			assertThat(range.share()).isEqualByComparingTo("0");
+			assertThat(range.met()).isFalse();
+		});
+		assertThat(first.stars().explanation()).isNotBlank();
 	}
 
 	@Test

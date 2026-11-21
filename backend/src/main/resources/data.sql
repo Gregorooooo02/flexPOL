@@ -16826,7 +16826,7 @@ INSERT INTO historical_observation (id, instrument_id, observation_date, origina
 -- BEGIN GENERATED SCENARIOS (scripts/generate-content-sql.mjs, do not edit by hand)
 
 -- Scenario 2.1: Kuba's Safety Cushion
-INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap) VALUES (1, 'kuba-safety-cushion', '2.1', 2, 1, 'Kuba''s Safety Cushion', 'Kuba', 24, 'First job on a 6-month contract that may not be renewed. No savings cushion yet.', 'Pay the car repair in four months without a loss and still have a cushion at the end of the year.', 'EUR', 6000, 365, 3500, 3200, 0.04, 0.5, 0.5, 15, 210000, NULL);
+INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap, min_instruments, evaluation_explanation) VALUES (1, 'kuba-safety-cushion', '2.1', 2, 1, 'Kuba''s Safety Cushion', 'Kuba', 24, 'First job on a 6-month contract that may not be renewed. No savings cushion yet.', 'Pay the car repair in four months without a loss and still have a cushion at the end of the year.', 'EUR', 6000, 365, 3500, 3200, 0.04, 0.5, 0.5, 15, 210000, NULL, 0, 'The repair is due in four months and the job may not last, so most of the money belongs in cash. Up to about 30% can go into a broad fund such as the world or S&P 500 fund. Single stocks swing too much for an emergency fund.');
 INSERT INTO scenario_lesson (scenario_id, sort_order, subchapter_id) VALUES (1, 0, 6);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (1, 0, 1013);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (1, 1, 1015);
@@ -16840,13 +16840,16 @@ INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, 
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (3, 1013, 1);
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (4, 1, 4, 'TRAP', 'One exciting stock', 'A single volatile stock can be far down exactly when the repair is due.', 0);
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (4, 1010, 1);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (1, 0, 1013);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (1, 1, 1015);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (1, 1, 1, 'Cash', TRUE, FALSE, 0.7, 1);
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (1, 0, 'An emergency fund needs to be available, and its value shouldn''t swing.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (1, 1, 'One year is too short to recover from a drop.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (1, 2, 'Cash grows slowly, but here safety matters more than growth.');
 INSERT INTO scenario_not_simulated (scenario_id, sort_order, note_text) VALUES (1, 0, 'Savings-account interest and inflation (cash earns 0% and prices don''t rise in this sandbox).');
 
 -- Scenario 2.2: Lena and Tom's Wedding
-INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap) VALUES (2, 'lena-tom-wedding', '2.2', 2, 2, 'Lena and Tom''s Wedding', 'Lena and Tom', 29, 'Wedding booked for a fixed date in 2 years. The venue is paid on that day.', 'Have the full wedding budget on the day.', 'EUR', 18000, 730, 18000, 17000, 0.04, 0.5, 0.5, 15, 220000, NULL);
+INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap, min_instruments, evaluation_explanation) VALUES (2, 'lena-tom-wedding', '2.2', 2, 2, 'Lena and Tom''s Wedding', 'Lena and Tom', 29, 'Wedding booked for a fixed date in 2 years. The venue is paid on that day.', 'Have the full wedding budget on the day.', 'EUR', 18000, 730, 18000, 17000, 0.04, 0.5, 0.5, 15, 220000, NULL, 0, 'The wedding date is fixed and only two years away, so nearly all of the money should keep its value in cash. A small part, up to a quarter, can go into a broad world or S&P 500 fund. One region or emerging markets add risk the couple doesn''t need.');
 INSERT INTO scenario_lesson (scenario_id, sort_order, subchapter_id) VALUES (2, 0, 7);
 INSERT INTO scenario_lesson (scenario_id, sort_order, subchapter_id) VALUES (2, 1, 9);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (2, 0, 1013);
@@ -16862,13 +16865,16 @@ INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALU
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (7, 1018, 0.3);
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (8, 2, 4, 'TRAP', 'One region', 'All the money in one market''s ups and downs, right before a fixed date.', 0);
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (8, 1017, 1);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (2, 0, 1013);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (2, 1, 1015);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (2, 2, 1, 'Cash', TRUE, FALSE, 0.75, 1);
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (2, 0, 'A fixed date close ahead calls for money that keeps its value.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (2, 1, 'Diversification lowers risk but doesn''t remove it.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (2, 2, 'Growth isn''t needed when the goal is to keep what you have.');
 INSERT INTO scenario_not_simulated (scenario_id, sort_order, note_text) VALUES (2, 0, 'Term deposits and bonds, which would usually fit a known date (no such instruments in the catalogue yet).');
 
 -- Scenario 2.3: Marek's Favourite Company
-INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap) VALUES (3, 'marek-favourite-company', '2.3', 2, 3, 'Marek''s Favourite Company', 'Marek', 33, 'Engineer with a stable job and an emergency fund already in place. A big fan of one chip-equipment company who wants to go all in.', 'Grow the money over 6 years.', 'EUR', 25000, 2190, 31000, 23000, 0.3, 0.6, 0.4, 15, 230000, NULL);
+INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap, min_instruments, evaluation_explanation) VALUES (3, 'marek-favourite-company', '2.3', 2, 3, 'Marek''s Favourite Company', 'Marek', 33, 'Engineer with a stable job and an emergency fund already in place. A big fan of one chip-equipment company who wants to go all in.', 'Grow the money over 6 years.', 'EUR', 25000, 2190, 31000, 23000, 0.3, 0.6, 0.4, 15, 230000, NULL, 1, 'Six years and a stable job allow mostly investing. The bulk belongs in broad funds across regions, and the favourite company fits as a small part, up to 10%. Going all in, or doubling up on tech with the NASDAQ fund, ties the money to one theme.');
 INSERT INTO scenario_lesson (scenario_id, sort_order, subchapter_id) VALUES (3, 0, 8);
 INSERT INTO scenario_lesson (scenario_id, sort_order, subchapter_id) VALUES (3, 1, 9);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (3, 0, 1013);
@@ -16896,13 +16902,26 @@ INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALU
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (12, 3, 4, 'TRAP', 'One theme', 'Looks spread out, but it is all one volatile theme, half of it in one company.', 0);
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (12, 1010, 0.5);
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (12, 1016, 0.5);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (3, 0, 1013);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (3, 1, 1015);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (3, 2, 1017);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (3, 3, 1018);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (3, 4, 1010);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (3, 3, 1, 'Broad funds', FALSE, FALSE, 0.6, 1);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (3, 0, 1013);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (3, 1, 1015);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (3, 2, 1017);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (3, 3, 1018);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (4, 3, 2, 'Favourite stock (ASML)', FALSE, FALSE, 0, 0.1);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (4, 0, 1010);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (5, 3, 3, 'Cash', TRUE, FALSE, 0, 0.3);
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (3, 0, 'A single stock carries the full damage of one company''s problems.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (3, 1, 'A fund spreads the money across many companies.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (3, 2, 'A favourite stock fits as a small part of a long-term mix.');
 INSERT INTO scenario_not_simulated (scenario_id, sort_order, note_text) VALUES (3, 0, 'Shares moving together: in this sandbox every instrument moves independently, which makes any mix look more diversified than it really is.');
 
 -- Scenario 2.4: Zofia Only Buys What She Knows
-INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap) VALUES (4, 'zofia-home-markets', '2.4', 2, 4, 'Zofia Only Buys What She Knows', 'Zofia', 45, 'Inherited money. A relative says to only buy big local European names you know.', 'Grow the inheritance over 8 years.', 'EUR', 80000, 2920, 105000, 80000, 0.25, 0.75, 0.25, 15, 240000, NULL);
+INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap, min_instruments, evaluation_explanation) VALUES (4, 'zofia-home-markets', '2.4', 2, 4, 'Zofia Only Buys What She Knows', 'Zofia', 45, 'Inherited money. A relative says to only buy big local European names you know.', 'Grow the inheritance over 8 years.', 'EUR', 80000, 2920, 105000, 80000, 0.25, 0.75, 0.25, 15, 240000, NULL, 1, 'Eight years allow mostly investing, spread across regions rather than only at home: world, US, European and emerging-market funds. The European fund is fine as one part, up to about 40%. Familiar names like Allianz or Deutsche Telekom aren''t less risky just because they''re known.');
 INSERT INTO scenario_lesson (scenario_id, sort_order, subchapter_id) VALUES (4, 0, 9);
 INSERT INTO scenario_lesson (scenario_id, sort_order, subchapter_id) VALUES (4, 1, 12);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (4, 0, 1013);
@@ -16922,13 +16941,30 @@ INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, 
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (14, 1004, 1);
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (15, 4, 3, 'TRAP', 'Home only, mostly cash', 'Far too cautious for 8 years, and the small invested part depends on one region.', 0.9);
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (15, 1017, 0.1);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (4, 0, 1013);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (4, 1, 1015);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (4, 2, 1017);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (4, 3, 1018);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (6, 4, 1, 'Funds', FALSE, FALSE, 0.7, 1);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (6, 0, 1013);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (6, 1, 1015);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (6, 2, 1017);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (6, 3, 1018);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (7, 4, 2, 'Europe only (EURO STOXX 50)', FALSE, FALSE, 0, 0.4);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (7, 0, 1017);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (8, 4, 3, 'Cash', TRUE, FALSE, 0, 0.3);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (9, 4, 4, 'Any single fund', FALSE, TRUE, 0, 0.5);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (9, 0, 1013);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (9, 1, 1015);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (9, 2, 1017);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (9, 3, 1018);
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (4, 0, 'Diversify across companies and regions, not only within one market.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (4, 1, 'Knowing a company''s name doesn''t lower its risk.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (4, 2, 'Compare instruments on risk, return, liquidity, cost and horizon.');
 INSERT INTO scenario_not_simulated (scenario_id, sort_order, note_text) VALUES (4, 0, 'Fund fees (no fees in this sandbox), so the cost difference between funds isn''t visible here.');
 
 -- Scenario 2.5: Olek's Group-Chat Tip
-INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap) VALUES (5, 'olek-group-chat-tip', '2.5', 2, 5, 'Olek''s Group-Chat Tip', 'Olek', 21, 'Student with savings from a summer job. A group chat says one tech stock can''t lose. Next semester''s tuition comes out of this money in 6 months.', 'Pay the tuition and keep the rest.', 'EUR', 4000, 274, 2000, 1800, 0.05, 0.5, 0.5, 15, 250000, NULL);
+INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap, min_instruments, evaluation_explanation) VALUES (5, 'olek-group-chat-tip', '2.5', 2, 5, 'Olek''s Group-Chat Tip', 'Olek', 21, 'Student with savings from a summer job. A group chat says one tech stock can''t lose. Next semester''s tuition comes out of this money in 6 months.', 'Pay the tuition and keep the rest.', 'EUR', 4000, 274, 2000, 1800, 0.05, 0.5, 0.5, 15, 250000, NULL, 0, 'Half of the money pays the tuition in six months and the rest should be kept, so almost all of it stays in cash. If Olek follows the tip at all, it''s a small bet of up to 5% on that one stock; a little in the world fund is the steadier choice. Other stocks would just be new bets.');
 INSERT INTO scenario_lesson (scenario_id, sort_order, subchapter_id) VALUES (5, 0, 11);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (5, 0, 1013);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (5, 1, 1001);
@@ -16946,13 +16982,18 @@ INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, 
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (18, 1010, 1);
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (19, 5, 4, 'TRAP', 'Half on the tip', 'Half of the tuition money rides on one stock.', 0.5);
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (19, 1010, 0.5);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (5, 0, 1013);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (5, 1, 1010);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (10, 5, 1, 'Cash', TRUE, FALSE, 0.85, 1);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (11, 5, 2, 'The tip (ASML)', FALSE, FALSE, 0, 0.05);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (11, 0, 1010);
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (5, 0, 'A tip is a bet on price, not a plan.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (5, 1, 'Never bet money you need soon.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (5, 2, 'If you speculate at all, keep it small and separate from important goals.');
 INSERT INTO scenario_not_simulated (scenario_id, sort_order, note_text) VALUES (5, 0, 'Crypto, leverage and a hype-then-crash price pattern (no such instruments or scripted events in this sandbox).');
 
 -- Scenario 2.6: Nina's Home Deposit
-INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap) VALUES (6, 'nina-home-deposit', '2.6', 2, 6, 'Nina''s Home Deposit', 'Nina', 40, 'Renting, steady job, emergency fund in place. Plans to buy a flat in 4 years.', 'Grow the home deposit a little without risking the purchase.', 'EUR', 40000, 1461, 43000, 40000, 0.1, 0.5, 0.5, 15, 260000, NULL);
+INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap, min_instruments, evaluation_explanation) VALUES (6, 'nina-home-deposit', '2.6', 2, 6, 'Nina''s Home Deposit', 'Nina', 40, 'Renting, steady job, emergency fund in place. Plans to buy a flat in 4 years.', 'Grow the home deposit a little without risking the purchase.', 'EUR', 40000, 1461, 43000, 40000, 0.1, 0.5, 0.5, 15, 260000, NULL, 1, 'Four years to the flat is a medium horizon: keep a large part, roughly 35–70%, safe in cash and invest the rest in broad funds. Single stocks and the tech-heavy NASDAQ fund put the deposit at unnecessary risk.');
 INSERT INTO scenario_lesson (scenario_id, sort_order, subchapter_id) VALUES (6, 0, 12);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (6, 0, 1001);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (6, 1, 1002);
@@ -16994,12 +17035,28 @@ INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALU
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (21, 6, 2, 'TRAP', 'Only cash', 'Safe, but no growth at all over 4 years.', 1);
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (22, 6, 3, 'TRAP', 'All in shares', 'A drop just before the purchase can shrink the deposit.', 0);
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (22, 1013, 1);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (6, 0, 1013);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (6, 1, 1014);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (6, 2, 1015);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (6, 3, 1017);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (6, 4, 1018);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (6, 5, 1019);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (6, 6, 1020);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (12, 6, 1, 'Cash', TRUE, FALSE, 0.35, 0.7);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (13, 6, 2, 'Any single fund', FALSE, TRUE, 0, 0.4);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (13, 0, 1013);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (13, 1, 1014);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (13, 2, 1015);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (13, 3, 1017);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (13, 4, 1018);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (13, 5, 1019);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (13, 6, 1020);
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (6, 0, 'A medium horizon needs a balance of growth and safety.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (6, 1, 'Ask the five questions for each pick: risk, return, liquidity, cost and horizon.');
 INSERT INTO scenario_not_simulated (scenario_id, sort_order, note_text) VALUES (6, 0, 'Bonds and deposits, the usual middle ground (only cash and shares in this sandbox).');
 
 -- Scenario 3.1: Paula's Uneven Income
-INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap) VALUES (7, 'paula-uneven-income', '3.1', 3, 7, 'Paula''s Uneven Income', 'Paula', 31, 'Single parent and freelance designer with irregular income. Saving for a child''s school costs. A quiet spell with no clients is likely.', 'A school fund that survives a bad year.', 'EUR', 12000, 1825, 10000, 8800, 0.12, 0.3, 0.7, 15, 310000, NULL);
+INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap, min_instruments, evaluation_explanation) VALUES (7, 'paula-uneven-income', '3.1', 3, 7, 'Paula''s Uneven Income', 'Paula', 31, 'Single parent and freelance designer with irregular income. Saving for a child''s school costs. A quiet spell with no clients is likely.', 'A school fund that survives a bad year.', 'EUR', 12000, 1825, 10000, 8800, 0.12, 0.3, 0.7, 15, 310000, NULL, 1, 'Irregular income and a child who depends on her lower Paula''s capacity for risk, and a quiet spell will need €3,000 in about two and a half years. Keeping roughly a third to a half in cash covers it, and the rest can go into broad funds. A luxury-brand stock is a bet, not a school fund.');
 INSERT INTO scenario_lesson (scenario_id, sort_order, subchapter_id) VALUES (7, 0, 13);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (7, 0, 1013);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (7, 1, 1015);
@@ -17018,11 +17075,21 @@ INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALU
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (25, 7, 3, 'TRAP', 'Luxury bet', 'Half on one company, with dependents and an uneven income.', 0);
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (25, 1008, 0.5);
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (25, 1013, 0.5);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (7, 0, 1013);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (7, 1, 1015);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (7, 2, 1017);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (7, 3, 1018);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (14, 7, 1, 'Cash', TRUE, FALSE, 0.3, 0.6);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (15, 7, 2, 'Any single fund', FALSE, TRUE, 0, 0.35);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (15, 0, 1013);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (15, 1, 1015);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (15, 2, 1017);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (15, 3, 1018);
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (7, 0, 'Age and horizon aren''t the whole picture.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (7, 1, 'Unstable income and dependents lower risk capacity, so more stays in cash.');
 
 -- Scenario 3.2: Ewa's First Salary
-INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap) VALUES (8, 'ewa-first-salary', '3.2', 3, 8, 'Ewa''s First Salary', 'Ewa', 23, 'First full-time job, no expensive debt, emergency fund already built. Investing the first savings for the long run.', 'Grow as much as possible over the first 10 years.', 'EUR', 5000, 3650, 7500, 5000, 0.4, 0.8, 0.2, 15, 320000, NULL);
+INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap, min_instruments, evaluation_explanation) VALUES (8, 'ewa-first-salary', '3.2', 3, 8, 'Ewa''s First Salary', 'Ewa', 23, 'First full-time job, no expensive debt, emergency fund already built. Investing the first savings for the long run.', 'Grow as much as possible over the first 10 years.', 'EUR', 5000, 3650, 7500, 5000, 0.4, 0.8, 0.2, 15, 320000, NULL, 1, 'Ten years, a steady income and an emergency fund in place allow a growth-oriented mix: almost everything in broad funds across regions and company sizes. Cash barely grows, the NASDAQ fund leans on one sector, and a single star stock adds risk without adding expected return.');
 INSERT INTO scenario_lesson (scenario_id, sort_order, subchapter_id) VALUES (8, 0, 14);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (8, 0, 1013);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (8, 1, 1015);
@@ -17042,12 +17109,17 @@ INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALU
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (28, 8, 3, 'TRAP', 'Play it safe', 'No growth at all in 10 years of compounding time.', 1);
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (29, 8, 4, 'TRAP', 'All on one star', 'A long horizon doesn''t make one company safe.', 0);
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (29, 1010, 1);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (8, 0, 1013);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (8, 1, 1015);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (8, 2, 1018);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (8, 3, 1019);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (16, 8, 1, 'Cash', TRUE, FALSE, 0, 0.2);
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (8, 0, 'A long horizon and future income allow a growth-oriented mix.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (8, 1, 'Starting early gives compounding the most time.');
 INSERT INTO scenario_not_simulated (scenario_id, sort_order, note_text) VALUES (8, 0, 'Monthly contributions and the ''start at 25 vs 35'' comparison (one starting amount only, horizon at most 10 years).');
 
 -- Scenario 3.3: Sam's University Fund
-INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap) VALUES (9, 'sam-university-fund', '3.3', 3, 9, 'Sam''s University Fund', 'Sam', 38, 'Steady income and two children. Saving for the eldest''s university, with an older house that may need repairs.', 'Have the university fund ready in 7 years.', 'EUR', 60000, 2555, 68000, 55000, 0.25, 0.6, 0.4, 15, 330000, NULL);
+INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap, min_instruments, evaluation_explanation) VALUES (9, 'sam-university-fund', '3.3', 3, 9, 'Sam''s University Fund', 'Sam', 38, 'Steady income and two children. Saving for the eldest''s university, with an older house that may need repairs.', 'Have the university fund ready in 7 years.', 'EUR', 60000, 2555, 68000, 55000, 0.25, 0.6, 0.4, 15, 330000, NULL, 1, 'The university fund has seven years, but the house may need €5,000 of repairs in under three. A cash part of 10–40% covers surprises so the investments can stay put, and the rest goes into broad funds. Two favourite stocks are not a plan for a child''s education.');
 INSERT INTO scenario_lesson (scenario_id, sort_order, subchapter_id) VALUES (9, 0, 15);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (9, 0, 1013);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (9, 1, 1015);
@@ -17067,12 +17139,22 @@ INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, 
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (31, 1002, 0.5);
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (31, 1012, 0.5);
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (32, 9, 3, 'TRAP', 'Park it in cash', 'Safe, but 7 years without any growth.', 1);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (9, 0, 1013);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (9, 1, 1015);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (9, 2, 1017);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (9, 3, 1018);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (17, 9, 1, 'Cash', TRUE, FALSE, 0.1, 0.4);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (18, 9, 2, 'Any single fund', FALSE, TRUE, 0, 0.5);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (18, 0, 1013);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (18, 1, 1015);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (18, 2, 1017);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (18, 3, 1018);
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (9, 0, 'Each goal gets its own horizon and mix.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (9, 1, 'A cash part covers surprises so the investments can stay put.');
 INSERT INTO scenario_not_simulated (scenario_id, sort_order, note_text) VALUES (9, 0, 'Several goals in separate buckets (one portfolio per scenario).');
 
 -- Scenario 3.4: Danuta's Glide Path
-INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap) VALUES (10, 'danuta-glide-path', '3.4', 3, 10, 'Danuta''s Glide Path', 'Danuta', 58, 'Savings at their largest, retiring at 67. Has kept everything in a tech fund for years because it has done well.', 'Protect what''s been built over the last 9 years before retirement, while still growing.', 'EUR', 250000, 3285, 290000, 250000, 0.15, 0.5, 0.5, 15, 340000, NULL);
+INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap, min_instruments, evaluation_explanation) VALUES (10, 'danuta-glide-path', '3.4', 3, 10, 'Danuta''s Glide Path', 'Danuta', 58, 'Savings at their largest, retiring at 67. Has kept everything in a tech fund for years because it has done well.', 'Protect what''s been built over the last 9 years before retirement, while still growing.', 'EUR', 250000, 3285, 290000, 250000, 0.15, 0.5, 0.5, 15, 340000, NULL, 1, 'With retirement nine years away, Danuta should move gradually from growing to protecting: a large cash part, and the rest spread across broad funds in several regions. Keeping everything in one tech fund because it did well is concentration, not a plan.');
 INSERT INTO scenario_lesson (scenario_id, sort_order, subchapter_id) VALUES (10, 0, 16);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (10, 0, 1013);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (10, 1, 1015);
@@ -17086,12 +17168,22 @@ INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALU
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (34, 10, 2, 'TRAP', 'It worked so far', 'A big drop near retirement hits the largest balance.', 0);
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (34, 1016, 1);
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (35, 10, 3, 'TRAP', 'All to cash', 'No growth at all for 9 years, with a long retirement still ahead.', 1);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (10, 0, 1013);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (10, 1, 1015);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (10, 2, 1017);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (10, 3, 1018);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (19, 10, 1, 'Cash', TRUE, FALSE, 0.25, 0.6);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (20, 10, 2, 'Any single fund', FALSE, TRUE, 0, 0.35);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (20, 0, 1013);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (20, 1, 1015);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (20, 2, 1017);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (20, 3, 1018);
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (10, 0, 'Shift from growing to protecting gradually.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (10, 1, 'Even near retirement, part of the money stays invested for growth.');
 INSERT INTO scenario_not_simulated (scenario_id, sort_order, note_text) VALUES (10, 0, 'A glide path that changes the mix year by year (one decision at the start), and bonds as the steadier part.');
 
 -- Scenario 3.5: Henryk Retires Next Year
-INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap) VALUES (11, 'henryk-retires-next-year', '3.5', 3, 11, 'Henryk Retires Next Year', 'Henryk', 64, 'Retires in a year and will live on these savings for the first years of retirement.', 'Pay two years of spending and keep the rest for later retirement.', 'EUR', 400000, 1095, 340000, 310000, 0.08, 0.3, 0.7, 15, 350000, NULL);
+INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap, min_instruments, evaluation_explanation) VALUES (11, 'henryk-retires-next-year', '3.5', 3, 11, 'Henryk Retires Next Year', 'Henryk', 64, 'Retires in a year and will live on these savings for the first years of retirement.', 'Pay two years of spending and keep the rest for later retirement.', 'EUR', 400000, 1095, 340000, 310000, 0.08, 0.3, 0.7, 15, 350000, NULL, 1, 'Withdrawals start in a year, so a cash buffer of at least two years of spending, plus a margin, avoids selling funds after a drop. The rest stays invested in broad funds for later in retirement.');
 INSERT INTO scenario_lesson (scenario_id, sort_order, subchapter_id) VALUES (11, 0, 16);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (11, 0, 1013);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (11, 1, 1015);
@@ -17108,12 +17200,22 @@ INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALU
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (38, 11, 3, 'TRAP', 'Two funds, no buffer', 'No cash buffer: every withdrawal is a sale at that day''s price.', 0);
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (38, 1015, 0.5);
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (38, 1018, 0.5);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (11, 0, 1013);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (11, 1, 1015);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (11, 2, 1017);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (11, 3, 1018);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (21, 11, 1, 'Cash', TRUE, FALSE, 0.25, 0.6);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (22, 11, 2, 'Any single fund', FALSE, TRUE, 0, 0.3);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (22, 0, 1013);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (22, 1, 1015);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (22, 2, 1017);
+INSERT INTO scenario_share_range_instrument (share_range_id, sort_order, instrument_id) VALUES (22, 3, 1018);
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (11, 0, 'Sequence risk: the same drop hurts more when withdrawals start.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (11, 1, 'A cash buffer of 1-3 years of spending avoids selling at the bottom.');
 INSERT INTO scenario_not_simulated (scenario_id, sort_order, note_text) VALUES (11, 0, 'A scripted crash: the market path is random, so some runs show sequence risk more clearly than others.');
 
 -- Scenario 3.6: Ola Minds the Gap
-INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap) VALUES (12, 'ola-minds-the-gap', '3.6', 3, 12, 'Ola Minds the Gap', 'Ola', 45, 'Expects a public pension of 1,800 a month against 3,000 needed: a gap of about 288,000 over 20 years of retirement. This money is the start of Ola''s own retirement savings.', 'Grow the retirement savings as much as sensible over 9½ years.', 'EUR', 30000, 3468, 45000, 30000, 0.35, 0.8, 0.2, 15, 360000, 288000);
+INSERT INTO scenario (id, slug, code, chapter_id, sort_order, title, persona_name, persona_age, persona_situation, goal, currency, budget, duration_days, target, floor, max_drawdown, growth_weight, stability_weight, rule_penalty_points, scenario_seed, retirement_gap, min_instruments, evaluation_explanation) VALUES (12, 'ola-minds-the-gap', '3.6', 3, 12, 'Ola Minds the Gap', 'Ola', 45, 'Expects a public pension of 1,800 a month against 3,000 needed: a gap of about 288,000 over 20 years of retirement. This money is the start of Ola''s own retirement savings.', 'Grow the retirement savings as much as sensible over 9½ years.', 'EUR', 30000, 3468, 45000, 30000, 0.35, 0.8, 0.2, 15, 360000, 288000, 1, 'Nine and a half years and a large pension gap call for growth: most of the money in broad funds across regions and company sizes, and little in cash.');
 INSERT INTO scenario_lesson (scenario_id, sort_order, subchapter_id) VALUES (12, 0, 17);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (12, 0, 1013);
 INSERT INTO scenario_instrument (scenario_id, sort_order, instrument_id) VALUES (12, 1, 1015);
@@ -17128,6 +17230,12 @@ INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALU
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (40, 12, 2, 'TRAP', 'Only savings', 'The gap doesn''t shrink at all.', 1);
 INSERT INTO scenario_allocation (id, scenario_id, sort_order, kind, label, why, cash_share) VALUES (41, 12, 3, 'TRAP', 'Too cautious', 'Most of the money does no work for almost 10 years.', 0.8);
 INSERT INTO scenario_allocation_share (allocation_id, instrument_id, share) VALUES (41, 1013, 0.2);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (12, 0, 1013);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (12, 1, 1015);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (12, 2, 1018);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (12, 3, 1019);
+INSERT INTO scenario_suitable_instrument (scenario_id, sort_order, instrument_id) VALUES (12, 4, 1020);
+INSERT INTO scenario_share_range (id, scenario_id, sort_order, label, includes_cash, each_instrument, min_share, max_share) VALUES (23, 12, 1, 'Cash', TRUE, FALSE, 0, 0.3);
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (12, 0, 'Public pensions often cover only part of what''s needed.');
 INSERT INTO scenario_debrief_point (scenario_id, sort_order, point_text) VALUES (12, 1, 'Cash alone can''t close a large gap; time and compounding do most of the work.');
 INSERT INTO scenario_not_simulated (scenario_id, sort_order, note_text) VALUES (12, 0, 'Pension accounts: tax advantages, employer contributions and lock-up rules (no taxes or locked accounts in this sandbox).');
@@ -17136,5 +17244,6 @@ INSERT INTO scenario_not_simulated (scenario_id, sort_order, note_text) VALUES (
 ALTER TABLE scenario ALTER COLUMN id RESTART WITH 13;
 ALTER TABLE scenario_rule ALTER COLUMN id RESTART WITH 8;
 ALTER TABLE scenario_allocation ALTER COLUMN id RESTART WITH 42;
+ALTER TABLE scenario_share_range ALTER COLUMN id RESTART WITH 24;
 
 -- END GENERATED SCENARIOS
