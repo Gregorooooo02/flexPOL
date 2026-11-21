@@ -846,12 +846,12 @@ export function LessonPage({
             <Button
               type="button"
               size="lg"
-              className="relative w-full overflow-hidden text-[#07090a] transition-transform active:scale-[0.97]"
+              className="relative w-full overflow-hidden text-[#07090a] transition-all duration-200 ease-out motion-reduce:transition-none enabled:hover:scale-[1.02] enabled:hover:brightness-105 enabled:hover:shadow-md active:scale-[0.97] lg:w-fit lg:min-w-56 lg:self-end"
               style={{ backgroundColor: topic.accentHex }}
               onClick={handleStartQuestions}
             >
               {questionCount > 0 ? 'Go to questions' : 'Finish lesson'}
-              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2.2} />
+              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2.2} className="transition-[translate] duration-200 ease-out group-hover/button:translate-x-1 motion-reduce:transition-none" />
             </Button>
           )}
 
@@ -868,7 +868,7 @@ export function LessonPage({
           )}
 
           {step.kind === 'question' && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -881,13 +881,13 @@ export function LessonPage({
               <Button
                 type="button"
                 size="lg"
-                className="flex-1 text-[#07090a] transition-transform active:scale-[0.97]"
+                className="flex-1 text-[#07090a] transition-all duration-200 ease-out motion-reduce:transition-none enabled:hover:scale-[1.02] enabled:hover:brightness-105 enabled:hover:shadow-md active:scale-[0.97] lg:min-w-56 lg:flex-none"
                 style={canAdvance ? { backgroundColor: topic.accentHex } : undefined}
                 disabled={!canAdvance}
                 onClick={handleAdvanceFromQuestion}
               >
                 {!isLastQuestion ? 'Next question' : isScored ? 'Finish test' : 'Finish lesson'}
-                <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2.2} />
+                <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2.2} className="transition-[translate] duration-200 ease-out group-hover/button:translate-x-1 motion-reduce:transition-none" />
               </Button>
             </div>
           )}

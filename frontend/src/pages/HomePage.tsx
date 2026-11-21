@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowRight01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Link } from 'react-router';
+import { cn } from 'cn';
 import { getChapters } from '@/api';
 import { useAuth } from '@/auth/authContext';
 import { hedgieImage } from '@/components/coach/hedgie';
@@ -112,9 +113,20 @@ export function HomePage() {
               </CardDescription>
             </CardHeader>
             <CardFooter className="mt-auto flex flex-wrap items-center gap-5 px-8 pt-10 pb-8 @3xl:px-10 @3xl:pb-10">
-              <Link to="/learning" className={buttonVariants({ size: 'lg' })}>
+              <Link
+                to="/learning"
+                className={cn(
+                  buttonVariants({ size: 'lg' }),
+                  'transition-all duration-200 ease-out motion-reduce:transition-none hover:scale-[1.02] hover:brightness-105 hover:shadow-md active:scale-[0.97]',
+                )}
+              >
                 Start learning
-                <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} data-icon="inline-end" />
+                <HugeiconsIcon
+                  icon={ArrowRight01Icon}
+                  strokeWidth={2}
+                  data-icon="inline-end"
+                  className="transition-[translate] duration-200 ease-out group-hover/button:translate-x-1 motion-reduce:transition-none"
+                />
               </Link>
               {firstLesson && (
                 <p className="min-w-0 text-sm text-muted-foreground [overflow-wrap:anywhere]">
@@ -220,10 +232,15 @@ export function HomePage() {
                     <Separator />
                     <Link
                       to={feature.to}
-                      className="flex items-center justify-between gap-3 font-heading text-xs font-semibold tracking-wide text-accent-foreground uppercase outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                      className="flex items-center justify-between gap-3 font-heading text-xs font-semibold tracking-wide text-accent-foreground uppercase outline-none transition-[translate,scale] duration-200 ease-out hover:translate-x-0.5 hover:underline active:scale-[0.98] motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {feature.action}
-                      <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="size-4 shrink-0 transition-transform group-hover/feature:translate-x-1 motion-reduce:transition-none" aria-hidden="true" />
+                      <HugeiconsIcon
+                        icon={ArrowRight01Icon}
+                        strokeWidth={2}
+                        className="size-4 shrink-0 transition-[translate] duration-200 ease-out group-hover/feature:translate-x-1 motion-reduce:transition-none"
+                        aria-hidden="true"
+                      />
                     </Link>
                   </div>
                 </CardFooter>
