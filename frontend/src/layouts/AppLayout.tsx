@@ -54,6 +54,11 @@ export function AppLayout() {
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
+              {!user && (
+                <Link to="/login" className={buttonVariants({ size: 'sm' })}>
+                  Log in
+                </Link>
+              )}
               {user && (
                 <>
                   <span

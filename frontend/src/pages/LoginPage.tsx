@@ -10,14 +10,21 @@ import {
 } from '@hugeicons/core-free-icons';
 import type { IconSvgElement } from '@hugeicons/react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Navigate, useLocation } from 'react-router';
+import { Navigate, useLocation, useNavigate } from 'react-router';
 import type { Location } from 'react-router';
 import { useAuth } from '@/auth/authContext';
 import { hedgieImage } from '@/components/coach/hedgie';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Field,
   FieldDescription,
@@ -29,7 +36,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { ApiError } from '@/config/axios';
-import { ThemeToggle } from '@/theme/ThemeToggle';
 
 /** Shown for show only: real sign-in is out of scope for the hackathon. */
 const OAUTH_PROVIDERS: ReadonlyArray<{ readonly name: string; readonly icon: IconSvgElement }> = [
@@ -55,6 +61,7 @@ function validate(username: string, email: string): FormErrors {
 export function LoginPage() {
   const { user, login } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const from = (location.state as { from?: Location } | null)?.from;
   const redirectTo = from ? `${from.pathname}${from.search}${from.hash}` : '/';
 
@@ -92,18 +99,20 @@ export function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-svh items-center justify-center bg-background px-4 py-10 text-foreground">
-      <ThemeToggle className="absolute top-4 right-4" />
-      <Card className="w-full max-w-sm">
-        <CardHeader className="justify-items-center text-center">
-          <img src={hedgieImage('greeting')} alt="" className="mb-2 size-20" />
-          <CardTitle>Welcome to HedgeFlex</CardTitle>
-          <CardDescription>
+    <Dialog open onOpenChange={(open) => { if (!open && !pending) navigate('/', { replace: true }); }}>
+      <DialogContent
+        overlayClassName="bg-black/50 backdrop-blur-md duration-300 supports-backdrop-filter:backdrop-blur-md"
+        className="max-w-[calc(100%-2rem)] gap-6 p-8 duration-300 ease-out data-open:slide-in-from-bottom-6 data-closed:slide-out-to-bottom-4 sm:max-w-sm"
+      >
+        <DialogHeader className="items-center text-center">
+          <img src={hedgieImage('greeting')} alt="" className="mb-2 size-20 animate-in zoom-in-50 duration-500" />
+          <DialogTitle>Welcome to HedgeFlex</DialogTitle>
+          <DialogDescription>
             Learn investing, practice with virtual money and build confidence with Hedgie.
-          </CardDescription>
-        </CardHeader>
+          </DialogDescription>
+        </DialogHeader>
 
-        <CardContent>
+        <div>
           {showGuestForm ? (
             <form noValidate onSubmit={handleSubmit}>
               <FieldGroup>
@@ -180,7 +189,7 @@ export function LoginPage() {
               </FieldGroup>
             </form>
           ) : (
-            <FieldGroup className="[&_[data-slot=field-separator-content]]:bg-card">
+            <FieldGroup className="[&_[data-slot=field-separator-content]]:bg-popover">
               <div className="flex flex-col gap-2">
                 {OAUTH_PROVIDERS.map((provider) => (
                   <Button
@@ -207,14 +216,14 @@ export function LoginPage() {
               </Button>
             </FieldGroup>
           )}
-        </CardContent>
+        </div>
 
-        <CardFooter className="justify-center">
+        <DialogFooter className="justify-center sm:justify-center">
           <p className="text-center text-xs text-muted-foreground">
             Demo login: all data in HedgeFlex is fictional and for learning only.
           </p>
-        </CardFooter>
-      </Card>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
