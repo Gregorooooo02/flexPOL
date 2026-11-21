@@ -15,6 +15,8 @@ Imagine you keep 1,000 coins under your mattress. Ten years later you still have
 
 With 3% inflation a year, 1,000 coins today buy only about as much as **744 coins** would in 10 years. Nothing was stolen. The money simply lost **purchasing power**.
 
+![Hedgie chases gold coins as they sprint away on tiny legs, a metaphor for purchasing power slipping away.](/lesson-illustrations/hedgie-coin-chase.svg)
+
 ### Saving vs. investing
 
 - **Saving** means putting money aside somewhere safe and easy to reach, like a savings account. It protects you against surprises, but it often grows more slowly than inflation.

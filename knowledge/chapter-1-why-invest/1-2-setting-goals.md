@@ -13,6 +13,8 @@ Many beginners start by asking "What should I buy?" A better first question is: 
 
 The goal decides which instruments make sense. The same 5,000 coins should be handled very differently if they're meant for a holiday next summer or for retirement in 35 years.
 
+![Hedgie squints as his dart flies toward the bullseye.](/lesson-illustrations/hedgie-target-practice.svg)
+
 ### Vague wishes vs. clear goals
 
 | Vague wish | Clear goal |
