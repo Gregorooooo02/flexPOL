@@ -24,8 +24,6 @@ export interface CoachFocus {
   readonly scenarioRun?: boolean;
   /** The run's stars; only used to pick Hedgie's face. */
   readonly scenarioStars?: number;
-  /** Keep the launcher out of exercise controls on narrow screens. */
-  readonly dockLauncher?: boolean;
   /** Whether that checked answer was right; only used to pick Hedgie's face. */
   readonly answerCorrect?: boolean;
 }
@@ -87,7 +85,6 @@ export function usePublishCoachFocus(focus: CoachFocus | null): void {
     scenarioRun,
     scenarioStars,
     answerCorrect,
-    dockLauncher,
   } = focus ?? {};
   useEffect(() => {
     setFocus(
@@ -106,7 +103,6 @@ export function usePublishCoachFocus(focus: CoachFocus | null): void {
             scenarioRun,
             scenarioStars,
             answerCorrect,
-            dockLauncher,
           },
     );
   }, [
@@ -123,7 +119,6 @@ export function usePublishCoachFocus(focus: CoachFocus | null): void {
     scenarioRun,
     scenarioStars,
     answerCorrect,
-    dockLauncher,
   ]);
   useEffect(() => () => setFocus(null), [setFocus]);
 }

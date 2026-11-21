@@ -10,6 +10,7 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
 import { CoachPanel } from './CoachPanel';
+import { CoachHeaderButton } from './CoachHeaderButton';
 import { CoachLauncher } from './CoachLauncher';
 import { useCoachAskChannel, useCoachFocus } from './coachFocus';
 import type { CoachFocus } from './coachFocus';
@@ -17,7 +18,8 @@ import { moodForReply } from './hedgie';
 import { useCoachChat } from './useCoachChat';
 import type { CoachMessageContext } from './useCoachChat';
 
-const DESKTOP_MEDIA_QUERY = '(min-width: 64rem)';
+/** Keep in sync with --breakpoint-coach-sidebar in index.css. */
+const DESKTOP_MEDIA_QUERY = '(min-width: 50rem)';
 /** Width of the Hedgie sidebar the first time it opens; capped by the panel's maxSize (45%). */
 const SIDEBAR_DEFAULT_WIDTH = '32rem';
 const COACH_SIDEBAR_ID = 'coach-sidebar';
@@ -47,14 +49,17 @@ const LESSON_SUGGESTIONS = [
 ] as const;
 
 interface CoachSidebarProps {
+  /** Renders the app header; below 800px it receives the button that opens the coach drawer. */
+  readonly header: (coachButton: ReactNode) => ReactNode;
   readonly children: ReactNode;
 }
 
-export function CoachSidebar({ children }: CoachSidebarProps) {
+export function CoachSidebar({ header, children }: CoachSidebarProps) {
   const focus = useCoachFocus();
   const focusScopeId = focus?.scopeId ?? 'general';
   const sidebarRef = usePanelRef();
   const launcherRef = useRef<HTMLButtonElement>(null);
+  const headerButtonRef = useRef<HTMLButtonElement>(null);
   const mainRef = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
   const transitionTimeout = useRef<number | undefined>(undefined);
@@ -143,7 +148,15 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
   });
 
   return (
-    // group/coach: a page with a sticky footer marked data-coach-footer lifts the floating launcher above it.
+    <>
+      {header(
+        <CoachHeaderButton
+          buttonRef={headerButtonRef}
+          chatOpen={mobileChatOpen}
+          onOpen={() => setMobileChat({ focusScopeId, open: true })}
+        />,
+      )}
+      {/* group/coach: a page with a sticky footer marked data-coach-footer lifts the floating launcher above it. */}
     <div className="group/coach relative flex min-h-0 flex-1 flex-col">
       <ResizablePanelGroup
         orientation="horizontal"
@@ -179,24 +192,16 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
             focus={focus}
             sidebarOpen={sidebarOpen}
             mobileChatOpen={mobileChatOpen}
-            launcherRef={launcherRef}
+            drawerFocusRef={headerButtonRef}
             onMobileChatOpenChange={(open) => setMobileChat({ focusScopeId, open })}
             onCloseSidebar={closeSidebar}
           />
         </ResizablePanel>
       </ResizablePanelGroup>
 
-      <CoachLauncher
-        buttonRef={launcherRef}
-        desktop={desktop}
-        docked={!desktop && focus?.dockLauncher === true}
-        chatOpen={desktop ? sidebarOpen : mobileChatOpen}
-        onOpen={() => {
-          if (desktop) openSidebar();
-          else setMobileChat({ focusScopeId, open: true });
-        }}
-      />
+      {desktop && <CoachLauncher buttonRef={launcherRef} chatOpen={sidebarOpen} onOpen={openSidebar} />}
     </div>
+    </>
   );
 }
 
@@ -204,7 +209,8 @@ interface CoachChatSessionProps {
   readonly focus: CoachFocus | null;
   readonly sidebarOpen: boolean;
   readonly mobileChatOpen: boolean;
-  readonly launcherRef: RefObject<HTMLButtonElement | null>;
+  /** Gets focus back when the drawer closes. */
+  readonly drawerFocusRef: RefObject<HTMLButtonElement | null>;
   readonly onMobileChatOpenChange: (open: boolean) => void;
   readonly onCloseSidebar: () => void;
 }
@@ -213,7 +219,7 @@ function CoachChatSession({
   focus,
   sidebarOpen,
   mobileChatOpen,
-  launcherRef,
+  drawerFocusRef,
   onMobileChatOpenChange,
   onCloseSidebar,
 }: CoachChatSessionProps) {
@@ -279,11 +285,16 @@ function CoachChatSession({
         />
       </aside>
       <Drawer open={mobileChatOpen} onOpenChange={onMobileChatOpenChange} showSwipeHandle>
-        <DrawerContent className="h-[85svh] lg:hidden" finalFocus={launcherRef}>
+        {/* Nearly full height (the drawer's own cap is 6rem below the top), leaving a strip to tap outside. */}
+        <DrawerContent
+          className="h-[calc(100dvh-2.5rem)]! max-h-[calc(100dvh-2.5rem)]! coach-sidebar:hidden"
+          finalFocus={drawerFocusRef}
+        >
           <DrawerTitle className="sr-only">AI coach</DrawerTitle>
           <CoachPanel
             {...panelProps}
             onClose={() => onMobileChatOpenChange(false)}
+            compact
             className="min-h-0 flex-1 rounded-none shadow-none ring-0"
           />
         </DrawerContent>

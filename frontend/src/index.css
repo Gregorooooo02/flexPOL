@@ -126,6 +126,13 @@
   --topic-3-spiky: #ba4d00;
 }
 
+/* Below `nav` (1100px) the header's links and log-out move into the hamburger menu. */
+@theme {
+  --breakpoint-nav: 68.75rem;
+  /* From 800px the coach is the floating 3D Hedgie + resizable sidebar; below it, a header button + drawer. */
+  --breakpoint-coach-sidebar: 50rem;
+}
+
 @theme inline {
   --font-sans: 'Raleway Variable', sans-serif;
   --font-heading: 'Figtree Variable', sans-serif;
@@ -246,6 +253,11 @@
     transform: translateX(180%) skewX(-20deg);
     opacity: 0;
   }
+}
+
+@keyframes hedgie-peek {
+  0%, 100% { transform: translateX(100%); }
+  24%, 76% { transform: translateX(0); }
 }
 
 @keyframes fx-option-pop {

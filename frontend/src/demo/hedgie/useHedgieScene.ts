@@ -1,28 +1,55 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { HedgieScene } from './scene';
 
-function waitForIdle() {
-  return new Promise<void>((resolve) => {
-    if (typeof window.requestIdleCallback === 'function') {
-      window.requestIdleCallback(() => resolve(), { timeout: 500 });
-    } else {
-      window.setTimeout(resolve, 50);
-    }
+function requestHedgieScene() {
+  let scene: HedgieScene | undefined;
+  let cancelled = false;
+  let resolveUnavailable: () => void;
+  const unavailable = new Promise<null>((resolve) => {
+    resolveUnavailable = () => resolve(null);
   });
+
+  function dispose() {
+    cancelled = true;
+    window.clearTimeout(timeout);
+    resolveUnavailable();
+    scene?.dispose();
+  }
+
+  const timeout = window.setTimeout(() => {
+    console.warn('Hedgie 3D timed out while loading.');
+    dispose();
+  }, 4000);
+
+  const load = import('./scene.js')
+    .then(async ({ prepareHedgieScene }) => {
+      if (cancelled) return null;
+      scene = prepareHedgieScene();
+      scene.signal.addEventListener('abort', () => {
+        window.clearTimeout(timeout);
+        resolveUnavailable();
+      }, { once: true });
+      await scene.ready;
+      return scene.signal.aborted ? null : scene;
+    })
+    .catch((error: unknown) => {
+      if (!cancelled) console.warn('Could not load Hedgie 3D.', error);
+      dispose();
+      return null;
+    })
+    .finally(() => window.clearTimeout(timeout));
+
+  return { ready: Promise.race([load, unavailable]), dispose };
 }
 
 export function useHedgieScene(enabled: boolean) {
-  const sceneRequest = useRef<Promise<HedgieScene | null> | null>(null);
+  const sceneRequest = useRef<ReturnType<typeof requestHedgieScene> | null>(null);
 
   const loadScene = useCallback(() => {
     if (!sceneRequest.current) {
-      const request: Promise<HedgieScene | null> = import('./scene.js').then(async ({ prepareHedgieScene }) => {
-        await waitForIdle();
-        return sceneRequest.current === request ? prepareHedgieScene() : null;
-      });
-      sceneRequest.current = request;
+      sceneRequest.current = requestHedgieScene();
     }
-    return sceneRequest.current;
+    return sceneRequest.current.ready;
   }, []);
 
   useEffect(() => {
@@ -30,16 +57,13 @@ export function useHedgieScene(enabled: boolean) {
 
     // Let the lesson entrance animation finish before loading the 3D bundle.
     const preloadTimer = window.setTimeout(() => {
-      void loadScene().then((scene) => scene?.ready).catch(() => {
-        // The completion screen reports loading errors.
-      });
+      void loadScene();
     }, 400);
 
     return () => {
       window.clearTimeout(preloadTimer);
-      const request = sceneRequest.current;
+      sceneRequest.current?.dispose();
       sceneRequest.current = null;
-      void request?.then((scene) => scene?.dispose(), () => {});
     };
   }, [enabled, loadScene]);
 
