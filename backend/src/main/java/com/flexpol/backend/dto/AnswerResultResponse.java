@@ -1,18 +1,19 @@
 package com.flexpol.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.flexpol.backend.entity.AnswerOption;
 import com.flexpol.backend.entity.Question;
 
 /**
- * The result of checking one answer. It reveals the correct option and the explanation,
- * so it is only sent in reply to an answer the learner has already given.
+ * The result of checking one answer. A wrong assignment gets a hint so the learner can retry.
  */
 public record AnswerResultResponse(
 		Long questionId,
 		Long selectedOptionId,
 		boolean correct,
 		Long correctOptionId,
-		String explanation) {
+		String explanation,
+		@JsonInclude(JsonInclude.Include.NON_NULL) String hint) {
 
 	public static AnswerResultResponse from(Question question, AnswerOption selected, AnswerOption correctOption) {
 		return new AnswerResultResponse(
@@ -20,6 +21,13 @@ public record AnswerResultResponse(
 				selected.getId(),
 				selected.isCorrect(),
 				correctOption.getId(),
-				question.getExplanation());
+				question.getExplanation(),
+				null);
+	}
+
+	public static AnswerResultResponse forAssignment(Question question, boolean correct) {
+		return new AnswerResultResponse(question.getId(), null, correct, null,
+				correct ? question.getExplanation() : null,
+				correct ? null : question.getAssignment().hint());
 	}
 }

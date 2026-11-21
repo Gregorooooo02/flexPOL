@@ -29,6 +29,7 @@ import {
   MessageScrollerViewport,
 } from '@/components/ui/message-scroller';
 import { Spinner } from '@/components/ui/spinner';
+import type { Assignments } from '@/model';
 import { hedgieImage, moodForReply } from './hedgie';
 import type { HedgieMood } from './hedgie';
 import { HedgieAvatar } from './HedgieAvatar';
@@ -56,6 +57,7 @@ export interface CoachPanelProps {
   readonly questionId?: number;
   /** The option the learner picked and had checked for `questionId`. Leave it out before they answer. */
   readonly selectedOptionId?: number;
+  readonly assignments?: Assignments;
   /** Whether that checked answer was right. Only picks Hedgie's face (joy or encouragement). */
   readonly answerCorrect?: boolean;
   /** Shown in the header so the learner knows what the coach can see, e.g. "Question 2/4". */
@@ -83,6 +85,7 @@ export function CoachPanel({
   subchapterId,
   questionId,
   selectedOptionId,
+  assignments,
   answerCorrect,
   contextLabel,
   title = 'Ask Hedgie',
@@ -102,8 +105,8 @@ export function CoachPanel({
     }
     sendToCoach(
       text,
-      { subchapterId, questionId, selectedOptionId },
-      moodForReply({ questionId, selectedOptionId, answerCorrect }),
+      { subchapterId, questionId, selectedOptionId, assignments },
+      moodForReply({ questionId, answerCorrect }),
     );
     setDraft('');
   }

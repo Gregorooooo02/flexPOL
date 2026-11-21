@@ -62,13 +62,26 @@ Diversification **reduces** risk. It doesn't **remove** it.
 
 **Explanation:** spreading money out means no single result decides your whole outcome.
 
-### Q2. One company in your portfolio falls 50%. It made up 10% of your money. Roughly how much does your total portfolio fall from this?
-- A) 0%
-- B) 5% ✅
-- C) 10%
-- D) 50%
+### Q2. See how the same drop affects two portfolios.
 
-**Explanation:** 50% of a 10% share = 5% of the total.
+```comparison
+{
+  "company": "Nova Robotics",
+  "startingBalance": 10000,
+  "dropPercent": 50,
+  "portfolios": [
+    { "id": "a", "name": "Portfolio A", "exposurePercent": 60, "description": "60% in Nova Robotics, 40% spread across other companies" },
+    { "id": "b", "name": "Portfolio B", "exposurePercent": 10, "description": "10% in Nova Robotics, 90% spread across other companies" }
+  ]
+}
+```
+
+- A) Portfolio A started with more money.
+- B) Nova Robotics made up a larger share of Portfolio A. ✅
+- C) Nova Robotics fell by a different percentage in each portfolio.
+- D) The other companies rose in Portfolio B.
+
+**Explanation:** half of a 60% share is a 30% loss for the whole portfolio. Half of a 10% share is a 5% loss. The stock fell by the same amount in both portfolios.
 
 ### Q3. Which portfolio is most diversified?
 - A) 100% in a locked-term instrument

@@ -841,11 +841,7 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (17,
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (18, 5, 'B', '"I want to invest in something good."', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (19, 5, 'C', '"I want 6,000 coins for a car in 3 years."', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (20, 5, 'D', '"I want to be financially free someday."', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (6, 2, 2, 'Sort the goals: a holiday in 8 months, a home deposit in 6 years, retirement in 30 years.', 'Under 2 years is short-term, 2–10 years is medium-term, over 10 years is long-term.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (21, 6, 'A', 'Short, medium, long', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (22, 6, 'B', 'Medium, long, long', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (23, 6, 'C', 'Long, medium, short', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (24, 6, 'D', 'Short, short, long', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (6, 2, 2, 'Sort each goal by when you will need the money.', 'Under 2 years is short-term, 2–10 years is medium-term, over 10 years is long-term.', NULL, JSON '{"mode":"SORT","cards":[{"id":"holiday","text":"Holiday in 8 months"},{"id":"retirement","text":"Retirement in 30 years"},{"id":"home","text":"Home deposit in 6 years"},{"id":"laptop","text":"Laptop in 18 months"}],"targets":[{"id":"short","text":"Short-term"},{"id":"medium","text":"Medium-term"},{"id":"long","text":"Long-term"}],"solution":{"holiday":"short","retirement":"long","home":"medium","laptop":"short"},"hint":"Start with the time left until you need the money. Try comparing all the deadlines in years."}');
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (7, 2, 3, 'Why should the goal come before choosing an instrument?', 'Money needed soon can''t wait out a drop in value; money needed in 30 years can.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (25, 7, 'A', 'It doesn''t matter which comes first.', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (26, 7, 'B', 'Because instruments change every year', FALSE);
@@ -879,11 +875,7 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (45,
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (46, 12, 'B', 'Covering surprise costs so you don''t have to sell investments at a bad moment', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (47, 12, 'C', 'Paying for holidays', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (48, 12, 'D', 'Earning the highest return', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (13, 3, 5, 'Why do locked-term instruments often pay slightly more than cash?', 'You trade liquidity for a higher rate.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (49, 13, 'A', 'They are always risk-free.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (50, 13, 'B', 'They don''t; they always pay less.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (51, 13, 'C', 'The bank likes long-term customers.', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (52, 13, 'D', 'They reward you for giving up access to your money for a period.', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (13, 3, 5, 'Match each fictional instrument to how you can get your money back.', 'Cash is already available. For the basket, you need to sell and accept the current price. The locked-term instrument trades immediate access for a higher rate.', NULL, JSON '{"mode":"MATCH","cards":[{"id":"cash","text":"Accessible Cash"},{"id":"basket","text":"Diversified market basket"},{"id":"term","text":"Locked-term instrument"}],"targets":[{"id":"sell","text":"Sell quickly at the current market price"},{"id":"penalty","text":"Wait until the term ends or pay an early withdrawal penalty"},{"id":"available","text":"Use immediately with no withdrawal cost"}],"solution":{"cash":"available","basket":"sell","term":"penalty"},"hint":"Imagine a bill is due tomorrow. For each instrument, what would you have to do before you could pay it?"}');
 
 -- Control questions: 1.4 Risk and Volatility
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (4, 1, 4, 'CONTROL', '1.4 Risk and Volatility — Control questions', NULL);
@@ -907,11 +899,7 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (65,
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (66, 17, 'B', 'Risk capacity, because the short horizon can''t absorb large drops', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (67, 17, 'C', 'Whatever was popular last month', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (68, 17, 'D', 'The highest past return', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (18, 4, 5, 'Match each chart to an instrument: a flat line, a wavy line, a jagged line.', 'Cash barely moves, the basket wobbles, and the concentrated asset swings hard.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (69, 18, 'A', 'Basket, cash, volatile asset', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (70, 18, 'B', 'Volatile asset, basket, cash', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (71, 18, 'C', 'Cash, volatile asset, basket', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (72, 18, 'D', 'Cash, basket, volatile asset', TRUE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, assignment) VALUES (18, 4, 5, 'Match each fictional price chart to its level of volatility.', 'All three had the same final return. Chart A had the biggest price swings, Chart C had smaller swings, and Chart B stayed flat.', NULL, JSON '{"mode":"MATCH","cards":[{"id":"a","text":"Chart A","prices":[100,117,82,120,84,100]},{"id":"b","text":"Chart B","prices":[100,100,100,100,100,100]},{"id":"c","text":"Chart C","prices":[100,105,96,106,95,100]}],"targets":[{"id":"low","text":"Low volatility"},{"id":"medium","text":"Medium volatility"},{"id":"high","text":"High volatility"}],"solution":{"a":"high","b":"low","c":"medium"},"hint":"All three charts end where they started. Compare the size of the moves between those points."}');
 
 -- Control questions: 1.5 Diversification
 INSERT INTO quiz (id, chapter_id, subchapter_id, quiz_type, title, pass_mark) VALUES (5, 1, 5, 'CONTROL', '1.5 Diversification — Control questions', NULL);
@@ -920,11 +908,11 @@ INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (73,
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (74, 19, 'B', 'Putting all your money into the best-performing stock', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (75, 19, 'C', 'Spreading money across many investments to reduce the impact of one bad result', TRUE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (76, 19, 'D', 'Moving money between accounts often', FALSE);
-INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (20, 5, 2, 'One company in your portfolio falls 50%. It made up 10% of your money. Roughly how much does your total portfolio fall from this?', '50% of a 10% share = 5% of the total.', NULL);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (77, 20, 'A', '0%', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (78, 20, 'B', '5%', TRUE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (79, 20, 'C', '10%', FALSE);
-INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (80, 20, 'D', '50%', FALSE);
+INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id, comparison) VALUES (20, 5, 2, 'See how the same drop affects two portfolios.', 'Half of a 60% share is a 30% loss for the whole portfolio. Half of a 10% share is a 5% loss. The stock fell by the same amount in both portfolios.', NULL, JSON '{"company":"Nova Robotics","startingBalance":10000,"dropPercent":50,"portfolios":[{"id":"a","name":"Portfolio A","exposurePercent":60,"description":"60% in Nova Robotics, 40% spread across other companies"},{"id":"b","name":"Portfolio B","exposurePercent":10,"description":"10% in Nova Robotics, 90% spread across other companies"}]}');
+INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (77, 20, 'A', 'Portfolio A started with more money.', FALSE);
+INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (78, 20, 'B', 'Nova Robotics made up a larger share of Portfolio A.', TRUE);
+INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (79, 20, 'C', 'Nova Robotics fell by a different percentage in each portfolio.', FALSE);
+INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (80, 20, 'D', 'The other companies rose in Portfolio B.', FALSE);
 INSERT INTO question (id, quiz_id, sort_order, prompt, explanation, source_subchapter_id) VALUES (21, 5, 3, 'Which portfolio is most diversified?', 'C spreads money across different types of instruments that react differently to events.', NULL);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (81, 21, 'A', '100% in a locked-term instrument', FALSE);
 INSERT INTO answer_option (id, question_id, label, text, is_correct) VALUES (82, 21, 'B', '10 companies, all in the same industry', FALSE);

@@ -86,10 +86,24 @@ They don't always match. Someone may love excitement (high tolerance) while need
 
 **Explanation:** what you can afford matters more than what you'd enjoy.
 
-### Q5. Match each chart to an instrument: a flat line, a wavy line, a jagged line.
-- A) Basket, cash, volatile asset
-- B) Volatile asset, basket, cash
-- C) Cash, volatile asset, basket
-- D) Cash, basket, volatile asset ✅
+### Q5. Match each fictional price chart to its level of volatility.
 
-**Explanation:** cash barely moves, the basket wobbles, and the concentrated asset swings hard.
+```assignment
+{
+  "mode": "MATCH",
+  "cards": [
+    { "id": "a", "text": "Chart A", "prices": [100, 117, 82, 120, 84, 100] },
+    { "id": "b", "text": "Chart B", "prices": [100, 100, 100, 100, 100, 100] },
+    { "id": "c", "text": "Chart C", "prices": [100, 105, 96, 106, 95, 100] }
+  ],
+  "targets": [
+    { "id": "low", "text": "Low volatility" },
+    { "id": "medium", "text": "Medium volatility" },
+    { "id": "high", "text": "High volatility" }
+  ],
+  "solution": { "a": "high", "b": "low", "c": "medium" },
+  "hint": "All three charts end where they started. Compare the size of the moves between those points."
+}
+```
+
+**Explanation:** all three had the same final return. Chart A had the biggest price swings, Chart C had smaller swings, and Chart B stayed flat.

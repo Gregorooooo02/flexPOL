@@ -86,13 +86,17 @@ class LearningContentRepositoryTests {
 	}
 
 	@Test
-	void everyQuestionHasOptionsAToDWithExactlyOneCorrect() {
+	void everyChoiceQuestionHasOptionsAToDWithExactlyOneCorrect() {
 		List<Question> questions = questionRepository.findAll();
 		assertThat(questions).hasSize(117);
 		for (Question question : questions) {
 			List<AnswerOption> options = answerOptionRepository.findByQuestionIdOrderByLabelAsc(question.getId());
-			assertThat(options).extracting(AnswerOption::getLabel).containsExactly("A", "B", "C", "D");
-			assertThat(options).filteredOn(AnswerOption::isCorrect).hasSize(1);
+			if (question.getAssignment() != null) {
+				assertThat(options).isEmpty();
+			} else {
+				assertThat(options).extracting(AnswerOption::getLabel).containsExactly("A", "B", "C", "D");
+				assertThat(options).filteredOn(AnswerOption::isCorrect).hasSize(1);
+			}
 			assertThat(question.getExplanation()).isNotBlank();
 		}
 	}

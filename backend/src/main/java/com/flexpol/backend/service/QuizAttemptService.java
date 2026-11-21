@@ -1,6 +1,7 @@
 package com.flexpol.backend.service;
 
 import java.time.Instant;
+import java.util.Map;
 
 import com.flexpol.backend.dto.QuizAttemptResponse;
 import com.flexpol.backend.entity.AnswerOption;
@@ -59,8 +60,10 @@ public class QuizAttemptService {
 	 * is complete. Runs in the caller's transaction ({@link QuestionService}).
 	 */
 	@Transactional
-	public void recordAnswer(Long attemptId, User user, Question question, AnswerOption selected) {
-		QuizAttempt attempt = findOwned(attemptId, user);
+	public void recordAnswer(Long attemptId, User user, Question question, AnswerOption selected,
+			Map<String, String> assignments, boolean correct) {
+		QuizAttempt attempt = attemptRepository.findOwnedForUpdate(attemptId, user.getId())
+				.orElseThrow(() -> new ResourceNotFoundException("Quiz attempt", attemptId));
 		if (!attempt.getQuiz().getId().equals(question.getQuiz().getId())) {
 			throw new BadRequestException("Question " + question.getId() + " is not part of quiz attempt " + attemptId);
 		}
@@ -77,7 +80,8 @@ public class QuizAttemptService {
 		answer.setAttempt(attempt);
 		answer.setQuestion(question);
 		answer.setSelectedOption(selected);
-		answer.setCorrect(selected.isCorrect());
+		answer.setAssignments(assignments);
+		answer.setCorrect(correct);
 		attempt.getAnswers().add(answerRepository.save(answer));
 
 		if (attempt.getAnswers().size() >= attempt.getQuiz().getQuestions().size()) {

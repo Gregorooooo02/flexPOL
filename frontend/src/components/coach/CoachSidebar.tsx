@@ -14,8 +14,6 @@ import { CoachLauncher } from './CoachLauncher';
 import { useCoachFocus } from './coachFocus';
 import type { CoachFocus } from './coachFocus';
 import { useCoachChat } from './useCoachChat';
-import {hedgieImage} from "@/components/coach/hedgie.ts";
-import { Button } from '../ui/button';
 
 const DESKTOP_MEDIA_QUERY = '(min-width: 64rem)';
 /** Width of the Hedgie sidebar the first time it opens; capped by the panel's maxSize (45%). */
@@ -198,6 +196,7 @@ function CoachChatSession({
     subchapterId: focus?.subchapterId,
     questionId: focus?.questionId,
     selectedOptionId: focus?.selectedOptionId,
+    assignments: focus?.assignments,
     answerCorrect: focus?.answerCorrect,
     contextLabel: focus?.label,
     suggestions,

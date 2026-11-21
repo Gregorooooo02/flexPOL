@@ -18,8 +18,10 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-/** A single A-D question inside a quiz. */
+/** A single question inside a quiz. */
 @Entity
 @Table(name = "question", uniqueConstraints = @UniqueConstraint(columnNames = { "quiz_id", "sort_order" }))
 @Getter
@@ -40,6 +42,12 @@ public class Question {
 
 	@Column(nullable = false, length = 1000)
 	private String prompt;
+
+	@JdbcTypeCode(SqlTypes.JSON)
+	private AssignmentExercise assignment;
+
+	@JdbcTypeCode(SqlTypes.JSON)
+	private PortfolioComparison comparison;
 
 	/** Shown to the learner after answering. */
 	@Column(length = 2000)

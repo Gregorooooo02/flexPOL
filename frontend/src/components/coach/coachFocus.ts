@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect } from 'react';
+import type { Assignments } from '@/model';
 
 /**
  * What the learner is looking at, so the coach can answer "help me with this question".
@@ -13,6 +14,7 @@ export interface CoachFocus {
   readonly questionId?: number;
   /** The option the learner picked and had checked. Leave it out until the answer is checked. */
   readonly selectedOptionId?: number;
+  readonly assignments?: Assignments;
   /** Whether that checked answer was right; only used to pick Hedgie's face. */
   readonly answerCorrect?: boolean;
 }
@@ -28,9 +30,9 @@ export function useCoachFocus(): CoachFocus | null {
 /** Publishes `focus` while the calling component is mounted, and clears it on unmount. */
 export function usePublishCoachFocus(focus: CoachFocus | null): void {
   const setFocus = useContext(SetCoachFocusContext);
-  const { scopeId, label, subchapterId, questionId, selectedOptionId, answerCorrect } = focus ?? {};
+  const { scopeId, label, subchapterId, questionId, selectedOptionId, assignments, answerCorrect } = focus ?? {};
   useEffect(() => {
-    setFocus(scopeId === undefined || label === undefined ? null : { scopeId, label, subchapterId, questionId, selectedOptionId, answerCorrect });
-  }, [setFocus, scopeId, label, subchapterId, questionId, selectedOptionId, answerCorrect]);
+    setFocus(scopeId === undefined || label === undefined ? null : { scopeId, label, subchapterId, questionId, selectedOptionId, assignments, answerCorrect });
+  }, [setFocus, scopeId, label, subchapterId, questionId, selectedOptionId, assignments, answerCorrect]);
   useEffect(() => () => setFocus(null), [setFocus]);
 }

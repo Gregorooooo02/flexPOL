@@ -55,6 +55,68 @@ function parseOverview() {
   return chapters;
 }
 
+function readExercise(block, name, where) {
+  const fence = "```";
+  const lines = block.split("\n").map((line) => line.trimEnd());
+  const opening = lines.indexOf(fence + name);
+  if (opening === -1) return null;
+  const closing = lines.indexOf(fence, opening + 1);
+  if (closing === -1) fail(`${where}: unclosed ${name} block`);
+  if (lines.indexOf(fence + name, closing + 1) !== -1) fail(`${where}: duplicate ${name} block`);
+  try {
+    const content = JSON.parse(lines.slice(opening + 1, closing).join("\n"));
+    if (content && typeof content === "object" && !Array.isArray(content)) return content;
+  } catch {
+    fail(`${where}: invalid JSON in ${name} block`);
+  }
+  fail(`${where}: expected an object in ${name} block`);
+}
+
+const hasText = (value) => typeof value === "string" && value.trim().length > 0;
+const isPercent = (value) => Number.isInteger(value) && value >= 0 && value <= 100;
+const isNonnegativeInt = (value) => Number.isInteger(value) && value >= 0 && value <= 2_147_483_647;
+
+function validateItems(items, where, label) {
+  if (!Array.isArray(items) || items.length < 2 || items.some((item) =>
+    !item || typeof item.id !== "string" || !/^[a-z][a-z0-9-]*$/.test(item.id) || !hasText(item[label]))) {
+    fail(`${where}: expected at least two items with an id and ${label}`);
+  }
+  const ids = new Set(items.map((item) => item.id));
+  if (ids.size !== items.length) fail(`${where}: ids must be unique`);
+  return ids;
+}
+
+function validateAssignment(assignment, where) {
+  const { mode, cards, targets, solution, hint } = assignment;
+  if (mode !== "MATCH" && mode !== "SORT") fail(`${where}: expected MATCH or SORT`);
+  const cardIds = validateItems(cards, `${where} cards`, "text");
+  const targetIds = validateItems(targets, `${where} targets`, "text");
+  if (cards.some((card) => card.prices !== undefined && (
+    !Array.isArray(card.prices) || card.prices.length < 2 ||
+    card.prices.some((price) => !isNonnegativeInt(price))
+  ))) fail(`${where}: charts need at least two nonnegative integer prices`);
+  if (!solution || typeof solution !== "object" || Array.isArray(solution) ||
+    Object.keys(solution).length !== cardIds.size ||
+    !Object.entries(solution).every(([card, target]) => cardIds.has(card) && targetIds.has(target))) {
+    fail(`${where}: the solution must assign each card to a known destination`);
+  }
+  if (mode === "MATCH" && (cards.length !== targets.length || new Set(Object.values(solution)).size !== cards.length)) {
+    fail(`${where}: a matching solution must use each destination exactly once`);
+  }
+  if (!hasText(hint)) fail(`${where}: missing hint for a retry`);
+}
+
+function validateComparison(comparison, where) {
+  const { company, startingBalance, dropPercent, portfolios } = comparison;
+  validateItems(portfolios, `${where} portfolios`, "name");
+  if (!hasText(company) || !isNonnegativeInt(startingBalance) || startingBalance === 0 ||
+    !isPercent(dropPercent) || dropPercent === 0 || portfolios.length !== 2 ||
+    portfolios.some((portfolio) => !isPercent(portfolio.exposurePercent) || !hasText(portfolio.description)) ||
+    portfolios[0].exposurePercent === portfolios[1].exposurePercent) {
+    fail(`${where}: expected two portfolios with different exposures and a positive starting balance and drop`);
+  }
+}
+
 function parseQuestions(section, file, withSource) {
   const blocks = section.split(/^### Q\d+\. /m).slice(1);
   return blocks.map((block, i) => {
@@ -79,11 +141,20 @@ function parseQuestions(section, file, withSource) {
       }
     }
     const where = `${file} Q${i + 1}`;
-    if (options.length !== 4) fail(`${where}: expected 4 options, found ${options.length}`);
-    if (options.map((o) => o.label).join("") !== "ABCD") fail(`${where}: options must be A-D in order`);
-    if (options.filter((o) => o.correct).length !== 1) fail(`${where}: expected exactly one ✅ option`);
+    const assignment = readExercise(block, "assignment", where);
+    const comparison = readExercise(block, "comparison", where);
+    if (assignment && (options.length || comparison)) fail(`${where}: an assignment replaces the options`);
+    if (withSource && (assignment || comparison)) fail(`${where}: interactive exercises are for practice quizzes`);
+    if (assignment) {
+      validateAssignment(assignment, where);
+    } else {
+      if (options.length !== 4) fail(`${where}: expected 4 options, found ${options.length}`);
+      if (options.map((o) => o.label).join("") !== "ABCD") fail(`${where}: options must be A-D in order`);
+      if (options.filter((o) => o.correct).length !== 1) fail(`${where}: expected exactly one ✅ option`);
+    }
+    if (comparison) validateComparison(comparison, where);
     if (!explanation) fail(`${where}: missing **Explanation:**`);
-    return { sortOrder: i + 1, prompt, explanation: capitalize(explanation), sourceCode, options };
+    return { sortOrder: i + 1, prompt, explanation: capitalize(explanation), sourceCode, options, assignment, comparison };
   });
 }
 
@@ -145,11 +216,12 @@ function loadContent() {
 // ---------- SQL ----------
 
 const sql = (v) => (v === null || v === undefined ? "NULL" : typeof v === "number" || typeof v === "boolean" ? String(v).toUpperCase() : `'${String(v).replace(/'/g, "''")}'`);
-const insert = (table, row) => `INSERT INTO ${table} (${Object.keys(row).join(", ")}) VALUES (${Object.values(row).map(sql).join(", ")});`;
+const insert = (table, row, jsonColumns = []) => `INSERT INTO ${table} (${Object.keys(row).join(", ")}) VALUES (${Object.entries(row).map(([key, value]) => jsonColumns.includes(key) ? `JSON ${sql(JSON.stringify(value))}` : sql(value)).join(", ")});`;
 
 function toSql(chapters) {
   const out = [];
   const ids = { chapter: 0, subchapter: 0, quiz: 0, question: 0, answer_option: 0 };
+  let optionCount = 0;
   const next = (t) => ++ids[t];
   const subchapterIds = new Map();
 
@@ -172,10 +244,18 @@ function toSql(chapters) {
     for (const q of quiz.questions) {
       const qid = next("question");
       const source = q.sourceCode ? (subchapterIds.get(q.sourceCode) ?? fail(`${quiz.title}: unknown subchapter reference (${q.sourceCode})`)) : null;
-      out.push(insert("question", { id: qid, quiz_id: quiz.id, sort_order: q.sortOrder, prompt: q.prompt, explanation: q.explanation, source_subchapter_id: source }));
+      out.push(insert("question", {
+        id: qid, quiz_id: quiz.id, sort_order: q.sortOrder, prompt: q.prompt, explanation: q.explanation,
+        source_subchapter_id: source,
+        ...(q.assignment && { assignment: q.assignment }),
+        ...(q.comparison && { comparison: q.comparison }),
+      }, ["assignment", "comparison"]));
+      // Preserve option ids in the rest of the seed when a question becomes an assignment.
+      if (q.assignment) ids.answer_option += 4;
       for (const o of q.options) {
         out.push(insert("answer_option", { id: next("answer_option"), question_id: qid, label: o.label, text: o.text, is_correct: o.correct }));
       }
+      optionCount += q.options.length;
     }
     out.push("");
   };
@@ -195,7 +275,7 @@ function toSql(chapters) {
   // Explicit ids don't move H2's identity counters, so restart them past the seeded rows.
   out.push("-- Let rows inserted by the application continue after the seeded ids");
   for (const [table, last] of Object.entries(ids)) out.push(`ALTER TABLE ${table} ALTER COLUMN id RESTART WITH ${last + 1};`);
-  return { body: out.join("\n"), ids };
+  return { body: out.join("\n"), ids, optionCount };
 }
 
 // ---------- scenarios ----------
@@ -279,7 +359,7 @@ function replaceBlock(text, begin, end, body) {
 }
 
 const chapters = loadContent();
-const { body, ids } = toSql(chapters);
+const { body, ids, optionCount } = toSql(chapters);
 
 const current = read(DATA_SQL);
 const seededInstruments = new Set(
@@ -293,5 +373,5 @@ writeFileSync(DATA_SQL, updated, "utf8");
 
 console.log(
   `Wrote ${ids.chapter} chapters, ${ids.subchapter} subchapters, ${ids.quiz} quizzes, ` +
-    `${ids.question} questions, ${ids.answer_option} options, ${scenarios.ids.scenario} scenarios to ${DATA_SQL}`,
+    `${ids.question} questions, ${optionCount} options, ${scenarios.ids.scenario} scenarios to ${DATA_SQL}`,
 );

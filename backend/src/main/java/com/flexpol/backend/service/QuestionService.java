@@ -1,6 +1,7 @@
 package com.flexpol.backend.service;
 
 import com.flexpol.backend.dto.AnswerResultResponse;
+import com.flexpol.backend.dto.AnswerSubmissionRequest;
 import com.flexpol.backend.entity.AnswerOption;
 import com.flexpol.backend.entity.Question;
 import com.flexpol.backend.entity.User;
@@ -14,8 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Checks answers one question at a time. This is the only place that reads
- * {@code answer_option.is_correct}, and only after the learner has picked an option.
+ * Checks answers one question at a time, using the authored solution for that question.
  * With an attempt id the answer is also saved in the learner's quiz attempt ({@link QuizAttemptService}).
  */
 @Service
@@ -28,12 +28,27 @@ public class QuestionService {
 	private final UserService userService;
 
 	@Transactional
-	public AnswerResultResponse checkAnswer(Long questionId, Long optionId, Long attemptId, String userEmail) {
+	public AnswerResultResponse checkAnswer(Long questionId, AnswerSubmissionRequest request, String userEmail) {
+		Question question = questionRepository.findById(questionId)
+				.orElseThrow(() -> new ResourceNotFoundException("Question", questionId));
+		if (question.getAssignment() != null) {
+			if (request.optionId() != null) {
+				throw new BadRequestException("This question accepts assignments instead of optionId");
+			}
+			boolean correct = AssignmentGrading.isCorrect(question.getAssignment(), request.assignments());
+			if (request.attemptId() != null) {
+				User user = userService.requireCurrentUser(userEmail);
+				quizAttemptService.recordAnswer(request.attemptId(), user, question, null, request.assignments(), correct);
+			}
+			return AnswerResultResponse.forAssignment(question, correct);
+		}
+		Long optionId = request.optionId();
 		if (optionId == null) {
 			throw new BadRequestException("optionId is required");
 		}
-		Question question = questionRepository.findById(questionId)
-				.orElseThrow(() -> new ResourceNotFoundException("Question", questionId));
+		if (request.assignments() != null) {
+			throw new BadRequestException("This question accepts optionId instead of assignments");
+		}
 		AnswerOption selected = question.getOptions().stream()
 				.filter(option -> option.getId().equals(optionId))
 				.findFirst()
@@ -43,9 +58,9 @@ public class QuestionService {
 				.findFirst()
 				.orElseThrow(() -> new IllegalStateException("Question " + questionId + " has no correct option"));
 
-		if (attemptId != null) {
+		if (request.attemptId() != null) {
 			User user = userService.requireCurrentUser(userEmail);
-			quizAttemptService.recordAnswer(attemptId, user, question, selected);
+			quizAttemptService.recordAnswer(request.attemptId(), user, question, selected, null, selected.isCorrect());
 		}
 		return AnswerResultResponse.from(question, selected, correctOption);
 	}

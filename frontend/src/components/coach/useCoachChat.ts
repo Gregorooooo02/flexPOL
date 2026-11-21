@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { askCoach } from '@/api';
 import { ApiError } from '@/config/axios';
+import type { CoachRequest } from '@/model';
 import type { HedgieMood } from './hedgie';
 
 export type ChatEntry =
@@ -15,11 +16,7 @@ export type ChatEntry =
     };
 
 /** Where the learner is when they send a message. The backend turns these ids into prompt context. */
-export interface CoachMessageContext {
-  readonly subchapterId?: number;
-  readonly questionId?: number;
-  readonly selectedOptionId?: number;
-}
+export type CoachMessageContext = Readonly<Pick<CoachRequest, 'subchapterId' | 'questionId' | 'selectedOptionId' | 'assignments'>>;
 
 export interface CoachChat {
   readonly entries: readonly ChatEntry[];

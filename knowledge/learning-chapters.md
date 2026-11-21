@@ -6,7 +6,7 @@ For the hackathon MVP, **Chapter 1** is built in full. Chapters 2 and 3 appear i
 
 ## Lesson files
 
-Each subchapter has its own file, with the lesson for the user and A–D control questions (with answers and explanations). Each chapter ends with a 10-question A–D final quiz covering all its subchapters.
+Each subchapter has its own file, with the lesson for the user and practice questions with explanations. Practice questions can be A–D choices, matching or sorting (`assignment` blocks with a private solution and a retry hint), or a portfolio prediction before a follow-up A–D question (`comparison` blocks). Each chapter ends with a 10-question A–D final quiz covering all its subchapters.
 
 - **[Chapter 1 — Why Invest?](chapter-1-why-invest/)**
   - [1.1 Why investing is worth it](chapter-1-why-invest/1-1-why-investing-is-worth-it.md)
@@ -46,7 +46,7 @@ Each subchapter has its own file, with the lesson for the user and A–D control
 |---|---|---|---|
 | 1.1 | **Why investing is worth it** | Inflation slowly eats the value of cash; compounding grows money over time; saving and investing are different things | Slider: "100 in cash vs. invested, after 10 / 20 / 30 years" |
 | 1.2 | **Setting goals** | Short-, medium- and long-term goals; specific vs. vague goals; why the goal comes before the instrument | Sort goals into horizons: a holiday, a home deposit, a pension |
-| 1.3 | **Time horizon and liquidity** | How long until you need the money, and whether you can get it out early; an emergency fund comes first | "Maya needs money in 8 months. Which instrument fits badly, and why?" |
+| 1.3 | **Time horizon and liquidity** | How long until you need the money, and whether you can get it out early; an emergency fund comes first | Match instruments to how you can access the money |
 | 1.4 | **Risk and volatility** | Volatility is price swings, not only loss; risk vs. expected return; risk tolerance vs. risk capacity | Match 3 price charts to low, medium and high volatility |
 | 1.5 | **Diversification** | Don't put all your eggs in one basket; concentration risk; diversification reduces risk but doesn't remove it | Same market shock, two portfolios: which survives better? |
 

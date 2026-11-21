@@ -17,6 +17,21 @@ export interface Question {
   sortOrder: number;
   prompt: string;
   options: AnswerOption[];
+  assignment?: AssignmentExercise;
+  comparison?: PortfolioComparison;
+}
+
+export interface AssignmentExercise {
+  mode: 'MATCH' | 'SORT';
+  cards: { id: string; text: string; prices: readonly number[] | null }[];
+  targets: { id: string; text: string }[];
+}
+
+export interface PortfolioComparison {
+  company: string;
+  startingBalance: number;
+  dropPercent: number;
+  portfolios: { id: string; name: string; exposurePercent: number; description: string }[];
 }
 
 export interface Quiz {
@@ -24,7 +39,7 @@ export interface Quiz {
   quizType: QuizType;
   title: string;
   chapterId: number;
-  /** Set for control quizzes, null for final quizzes. */
+  /** Null for control quizzes. */
   subchapterId: number | null;
   /** Minimum number of correct answers to pass, if the quiz has one. */
   passMark: number | null;

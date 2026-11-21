@@ -64,11 +64,26 @@ Most people have several goals at once. A sensible order is:
 
 **Explanation:** only C names what the money is for, how much and when.
 
-### Q2. Sort the goals: a holiday in 8 months, a home deposit in 6 years, retirement in 30 years.
-- A) Short, medium, long ✅
-- B) Medium, long, long
-- C) Long, medium, short
-- D) Short, short, long
+### Q2. Sort each goal by when you will need the money.
+
+```assignment
+{
+  "mode": "SORT",
+  "cards": [
+    { "id": "holiday", "text": "Holiday in 8 months" },
+    { "id": "retirement", "text": "Retirement in 30 years" },
+    { "id": "home", "text": "Home deposit in 6 years" },
+    { "id": "laptop", "text": "Laptop in 18 months" }
+  ],
+  "targets": [
+    { "id": "short", "text": "Short-term" },
+    { "id": "medium", "text": "Medium-term" },
+    { "id": "long", "text": "Long-term" }
+  ],
+  "solution": { "holiday": "short", "retirement": "long", "home": "medium", "laptop": "short" },
+  "hint": "Start with the time left until you need the money. Try comparing all the deadlines in years."
+}
+```
 
 **Explanation:** under 2 years is short-term, 2–10 years is medium-term, over 10 years is long-term.
 

@@ -88,10 +88,24 @@ The emergency fund is what lets your investments stay invested.
 
 **Explanation:** it's a safety net that protects the rest of your plan.
 
-### Q5. Why do locked-term instruments often pay slightly more than cash?
-- A) They are always risk-free.
-- B) They don't; they always pay less.
-- C) The bank likes long-term customers.
-- D) They reward you for giving up access to your money for a period. ✅
+### Q5. Match each fictional instrument to how you can get your money back.
 
-**Explanation:** you trade liquidity for a higher rate.
+```assignment
+{
+  "mode": "MATCH",
+  "cards": [
+    { "id": "cash", "text": "Accessible Cash" },
+    { "id": "basket", "text": "Diversified market basket" },
+    { "id": "term", "text": "Locked-term instrument" }
+  ],
+  "targets": [
+    { "id": "sell", "text": "Sell quickly at the current market price" },
+    { "id": "penalty", "text": "Wait until the term ends or pay an early withdrawal penalty" },
+    { "id": "available", "text": "Use immediately with no withdrawal cost" }
+  ],
+  "solution": { "cash": "available", "basket": "sell", "term": "penalty" },
+  "hint": "Imagine a bill is due tomorrow. For each instrument, what would you have to do before you could pay it?"
+}
+```
+
+**Explanation:** cash is already available. For the basket, you need to sell and accept the current price. The locked-term instrument trades immediate access for a higher rate.

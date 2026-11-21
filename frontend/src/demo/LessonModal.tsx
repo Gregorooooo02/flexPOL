@@ -23,7 +23,9 @@ import { cn } from 'cn';
 import { getQuiz, getSubchapter, getSubchapterControlQuiz, startQuizAttempt, submitAnswer } from '@/api';
 import { usePublishCoachFocus } from '@/components/coach/coachFocus';
 import { ApiError } from '@/config/axios';
-import type { AnswerOption, AnswerResult, Question, Quiz } from '@/model';
+import type { AnswerChoice, AnswerOption, AnswerResult, Assignments, Question, Quiz } from '@/model';
+import { AssignmentQuestion } from './AssignmentQuestion';
+import { PortfolioPrediction } from './PortfolioPrediction';
 import { withAlpha } from './learningPath';
 import type { LearningNode, TopicDefinition } from './learningPath';
 import { LessonMarkdown } from './LessonMarkdown';
@@ -64,7 +66,7 @@ type LessonStep =
   | { readonly kind: 'result'; readonly passed: boolean };
 
 interface AnswerState {
-  readonly optionId: number;
+  readonly choice: AnswerChoice;
   readonly status: 'checking' | 'checked' | 'error';
   readonly result: AnswerResult | null;
   readonly errorMessage: string | null;
@@ -76,6 +78,7 @@ type AnswerMap = Readonly<Partial<Record<number, AnswerState>>>;
 type OptionLook = 'idle' | 'checking' | 'correct' | 'wrong';
 
 const WORDS_PER_MINUTE = 180;
+const EMPTY_ASSIGNMENTS: Assignments = {};
 
 /** Splits lesson Markdown into one card per "###" section. */
 function splitIntoSections(markdown: string): TheorySection[] {
@@ -179,7 +182,7 @@ function getOptionLook(option: AnswerOption, answer: AnswerState | undefined, is
   if (!answer) {
     return 'idle';
   }
-  const isSelected = answer.optionId === option.id;
+  const isSelected = answer.choice.optionId === option.id;
   if (answer.status === 'checking') {
     return isSelected ? 'checking' : 'idle';
   }
@@ -210,7 +213,9 @@ export function LessonPage({
   const [reloadKey, setReloadKey] = useState(0);
   const [step, setStep] = useState<LessonStep>({ kind: 'theory' });
   const [answers, setAnswers] = useState<AnswerMap>({});
-  const [flashKey, setFlashKey] = useState<{ optionId: number; seq: number } | null>(null);
+  const [placements, setPlacements] = useState<Partial<Record<number, Assignments>>>({});
+  const [predictions, setPredictions] = useState<Partial<Record<number, string>>>({});
+  const [flashKey, setFlashKey] = useState<{ questionId: number; optionId?: number; seq: number } | null>(null);
   const answerAbortRef = useRef<AbortController | null>(null);
   /** The saved quiz attempt's id once started (null if it couldn't be), or null before the questions. */
   const attemptRef = useRef<Promise<number | null> | null>(null);
@@ -250,6 +255,8 @@ export function LessonPage({
 
   const currentQuestion = step.kind === 'question' ? (questions[step.index] ?? null) : null;
   const currentAnswer = currentQuestion ? answers[currentQuestion.id] : undefined;
+  const currentAssignments = (currentQuestion && placements[currentQuestion.id]) || EMPTY_ASSIGNMENTS;
+  const currentPrediction = currentQuestion ? predictions[currentQuestion.id] : undefined;
   const currentResult = currentAnswer?.status === 'checked' ? currentAnswer.result : null;
   const canAdvance = currentResult !== null && (isScored || currentResult.correct);
   const isLastQuestion = step.kind === 'question' && step.index + 1 >= questionCount;
@@ -314,23 +321,23 @@ export function LessonPage({
     goToStep({ kind: 'question', index: 0 });
   };
 
-  const handleSelectOption = (question: Question, option: AnswerOption) => {
+  const handleSubmitAnswer = (question: Question, choice: AnswerChoice) => {
     if (isAnswerLocked(answers[question.id], isScored)) {
       return;
     }
     setAnswers((prev) => ({
       ...prev,
-      [question.id]: { optionId: option.id, status: 'checking', result: null, errorMessage: null },
+      [question.id]: { choice, status: 'checking', result: null, errorMessage: null },
     }));
-    setFlashKey((prev) => ({ optionId: option.id, seq: (prev?.seq ?? 0) + 1 }));
+    setFlashKey((prev) => ({ questionId: question.id, optionId: choice.optionId, seq: (prev?.seq ?? 0) + 1 }));
 
     // Only apply a response if the learner hasn't picked something else (or restarted) meanwhile
     const isStillPending = (prev: AnswerMap) =>
-      prev[question.id]?.optionId === option.id && prev[question.id]?.status === 'checking';
+      prev[question.id]?.choice === choice && prev[question.id]?.status === 'checking';
 
     const signal = answerAbortRef.current?.signal;
     (attemptRef.current ?? Promise.resolve(null))
-      .then((attemptId) => submitAnswer(question.id, option.id, { attemptId, signal }))
+      .then((attemptId) => submitAnswer(question.id, choice, { attemptId, signal }))
       .then((result) => {
         if (signal?.aborted) {
           return;
@@ -341,7 +348,7 @@ export function LessonPage({
             ? {
                 ...prev,
                 [question.id]: {
-                  optionId: option.id,
+                  choice,
                   status: 'checked',
                   result,
                   errorMessage: null,
@@ -360,7 +367,7 @@ export function LessonPage({
             ? {
                 ...prev,
                 [question.id]: {
-                  optionId: option.id,
+                  choice,
                   status: 'error',
                   result: null,
                   errorMessage: errorMessageOf(error),
@@ -392,6 +399,8 @@ export function LessonPage({
 
   const handleRetryQuiz = () => {
     setAnswers({});
+    setPlacements({});
+    setPredictions({});
     startAttempt();
     goToStep({ kind: 'question', index: 0 });
   };
@@ -402,7 +411,8 @@ export function LessonPage({
     label: `${stepLabel} · ${node.code} ${node.title}`,
     subchapterId: node.kind === 'lesson' ? node.subchapterId : undefined,
     questionId: currentQuestion?.id,
-    selectedOptionId: currentResult ? currentAnswer?.optionId : undefined,
+    selectedOptionId: currentResult ? currentAnswer?.choice.optionId : undefined,
+    assignments: currentResult ? currentAnswer?.choice.assignments : undefined,
     answerCorrect: currentResult?.correct,
   });
 
@@ -599,64 +609,84 @@ export function LessonPage({
               </CardHeader>
             </Card>
 
-            <div className="flex flex-col gap-2.5">
-              {currentQuestion.options.map((option) => {
-                const look = getOptionLook(option, currentAnswer, isScored);
-                const isSelected = currentAnswer?.optionId === option.id;
-                const isFlashing = flashKey?.optionId === option.id;
-                const isLocked = isAnswerLocked(currentAnswer, isScored);
+            {currentQuestion.assignment && (
+              <AssignmentQuestion
+                exercise={currentQuestion.assignment}
+                assignments={currentAssignments}
+                locked={isAnswerLocked(currentAnswer, isScored)}
+                onChange={(assignments) => setPlacements((prev) => ({ ...prev, [currentQuestion.id]: assignments }))}
+                onCheck={() => handleSubmitAnswer(currentQuestion, { assignments: currentAssignments })}
+              />
+            )}
 
-                return (
-                  <Button
-                    key={`${option.id}-${isFlashing ? flashKey.seq : 0}`}
-                    type="button"
-                    variant="outline"
-                    aria-pressed={isSelected}
-                    aria-disabled={isLocked ? 'true' : undefined}
-                    onClick={() => handleSelectOption(currentQuestion, option)}
-                    className={cn(
-                      'relative h-auto min-h-13 w-full justify-start gap-3 overflow-hidden px-4 py-3 text-left text-sm font-normal tracking-normal whitespace-normal normal-case transition-transform active:scale-[0.98]',
-                      isFlashing && 'fx-option-pop fx-sheen',
-                      isLocked && 'cursor-default',
-                      look === 'checking' && 'animate-pulse',
-                      look === 'correct' &&
-                        'bg-[#efb100]/15 text-foreground hover:bg-[#efb100]/20',
-                      look === 'wrong' &&
-                        'border-[#ba4d00] bg-[#973b00]/25 text-foreground hover:bg-[#973b00]/30',
-                    )}
-                    style={
-                      look === 'correct'
-                        ? {
-                            borderColor: topic.accentHex,
-                            boxShadow: `0 0 18px -4px ${withAlpha(topic.accentHex, 40)}`,
-                          }
-                        : look === 'checking'
-                          ? { borderColor: topic.pipeSecondary }
-                          : undefined
-                    }
-                  >
-                    <Badge
+            {currentQuestion.comparison && (
+              <PortfolioPrediction
+                comparison={currentQuestion.comparison}
+                revealedPrediction={currentPrediction}
+                onReveal={(prediction) => setPredictions((prev) => ({ ...prev, [currentQuestion.id]: prediction }))}
+              />
+            )}
+
+            {!currentQuestion.assignment && (!currentQuestion.comparison || currentPrediction !== undefined) && (
+              <div className="flex flex-col gap-2.5">
+                {currentQuestion.options.map((option) => {
+                  const look = getOptionLook(option, currentAnswer, isScored);
+                  const isSelected = currentAnswer?.choice.optionId === option.id;
+                  const isFlashing = flashKey?.optionId === option.id;
+                  const isLocked = isAnswerLocked(currentAnswer, isScored);
+
+                  return (
+                    <Button
+                      key={`${option.id}-${isFlashing ? flashKey.seq : 0}`}
+                      type="button"
+                      variant="outline"
+                      aria-pressed={isSelected}
+                      aria-disabled={isLocked ? 'true' : undefined}
+                      onClick={() => handleSubmitAnswer(currentQuestion, { optionId: option.id })}
                       className={cn(
-                        'size-6 shrink-0 justify-center border border-border bg-secondary text-foreground',
-                        look === 'wrong' && 'border-[#ba4d00] bg-[#ba4d00] text-[#fafbfb]',
+                        'relative h-auto min-h-13 w-full justify-start gap-3 overflow-hidden px-4 py-3 text-left text-sm font-normal tracking-normal whitespace-normal normal-case transition-transform active:scale-[0.98]',
+                        isFlashing && 'fx-option-pop fx-sheen',
+                        isLocked && 'cursor-default',
+                        look === 'checking' && 'animate-pulse',
+                        look === 'correct' &&
+                          'bg-[#efb100]/15 text-foreground hover:bg-[#efb100]/20',
+                        look === 'wrong' &&
+                          'border-[#ba4d00] bg-[#973b00]/25 text-foreground hover:bg-[#973b00]/30',
                       )}
                       style={
                         look === 'correct'
                           ? {
-                              backgroundColor: topic.accentHex,
-                              borderColor: topic.pipeSecondary,
-                              color: '#07090a',
+                              borderColor: topic.accentHex,
+                              boxShadow: `0 0 18px -4px ${withAlpha(topic.accentHex, 40)}`,
                             }
-                          : undefined
+                          : look === 'checking'
+                            ? { borderColor: topic.pipeSecondary }
+                            : undefined
                       }
                     >
-                      {option.label}
-                    </Badge>
-                    <span>{option.text}</span>
-                  </Button>
-                );
-              })}
-            </div>
+                      <Badge
+                        className={cn(
+                          'size-6 shrink-0 justify-center border border-border bg-secondary text-foreground',
+                          look === 'wrong' && 'border-[#ba4d00] bg-[#ba4d00] text-[#fafbfb]',
+                        )}
+                        style={
+                          look === 'correct'
+                            ? {
+                                backgroundColor: topic.accentHex,
+                                borderColor: topic.pipeSecondary,
+                                color: '#07090a',
+                              }
+                            : undefined
+                        }
+                      >
+                        {option.label}
+                      </Badge>
+                      <span>{option.text}</span>
+                    </Button>
+                  );
+                })}
+              </div>
+            )}
 
             {currentAnswer?.status === 'checking' && (
               <Card size="sm" className="border border-border bg-card/90 py-3.5" role="status">
@@ -669,7 +699,7 @@ export function LessonPage({
             {currentAnswer?.status === 'error' && (
               <Card size="sm" className="border border-[#ba4d00]/80 bg-[#973b00]/20 py-3.5" role="alert">
                 <CardContent className="px-4 text-sm text-foreground">
-                  Couldn't check your answer ({currentAnswer.errorMessage}). Pick it again.
+                  Couldn't check your answer ({currentAnswer.errorMessage}). Please try again.
                 </CardContent>
               </Card>
             )}
@@ -704,12 +734,15 @@ export function LessonPage({
                         ? 'Correct!'
                         : isScored
                           ? `Not quite. The correct answer is ${correctLabel ?? '?'}.`
-                          : 'Not quite. Think it over and pick another answer.'}
+                          : currentQuestion.assignment
+                            ? 'Not quite. Try adjusting your placements.'
+                            : 'Not quite. Think it over and pick another answer.'}
                     </p>
                     {/* In practice mode the explanation would give the answer away, so it waits for a correct answer */}
                     {(currentResult.correct || isScored) && currentResult.explanation && (
                       <p className="leading-relaxed text-foreground/90">{currentResult.explanation}</p>
                     )}
+                    {currentResult.hint && <p className="leading-relaxed text-foreground/90">{currentResult.hint}</p>}
                   </div>
                 </CardContent>
               </Card>
@@ -788,7 +821,7 @@ export function LessonPage({
         )}
       </div>
 
-      {wrongAnswerIndex !== undefined && flashKey?.optionId === currentAnswer?.optionId && (
+      {wrongAnswerIndex !== undefined && flashKey?.questionId === currentQuestion?.id && (
         <HedgieWrongAnswer key={wrongAnswerIndex} reactionIndex={wrongAnswerIndex} loadScene={loadHedgie} />
       )}
 
