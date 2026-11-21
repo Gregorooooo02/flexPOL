@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode, RefObject } from 'react';
 import { usePanelRef } from 'react-resizable-panels';
+import { useLocation } from 'react-router';
 import { cn } from 'cn';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import {
@@ -13,6 +14,8 @@ import { CoachLauncher } from './CoachLauncher';
 import { useCoachFocus } from './coachFocus';
 import type { CoachFocus } from './coachFocus';
 import { useCoachChat } from './useCoachChat';
+import {hedgieImage} from "@/components/coach/hedgie.ts";
+import { Button } from '../ui/button';
 
 const DESKTOP_MEDIA_QUERY = '(min-width: 64rem)';
 /** Width of the Hedgie sidebar the first time it opens; capped by the panel's maxSize (45%). */
@@ -40,6 +43,8 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
   const focusScopeId = focus?.scopeId ?? 'general';
   const sidebarRef = usePanelRef();
   const launcherRef = useRef<HTMLButtonElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
+  const { pathname } = useLocation();
   const transitionTimeout = useRef<number | undefined>(undefined);
   const hasOpenedSidebar = useRef(false);
   const [desktop, setDesktop] = useState(() => window.matchMedia(DESKTOP_MEDIA_QUERY).matches);
@@ -82,6 +87,12 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
     window.requestAnimationFrame(() => launcherRef.current?.focus({ preventScroll: true }));
   }
 
+  // A new route starts at the top. The content panel around <main> is what scrolls, and it
+  // would otherwise keep the previous page's position (e.g. a scenario opened from far down the list).
+  useLayoutEffect(() => {
+    mainRef.current?.parentElement?.scrollTo({ top: 0 });
+  }, [pathname]);
+
   useEffect(() => {
     const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
     const handleMediaChange = () => {
@@ -106,6 +117,7 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
   );
 
   return (
+    // group/coach: a page with a workspace action bar lifts the floating buttons above it.
     <div className="group/coach relative flex min-h-0 flex-1 flex-col">
       <ResizablePanelGroup
         orientation="horizontal"
@@ -113,7 +125,9 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
         className={cn('min-h-0 flex-1', isTransitioning && 'fx-coach-sidebar-transition')}
       >
         <ResizablePanel defaultSize="100%" minSize="40%" className="min-w-0">
-          <main className="relative flex h-full min-h-0 flex-col">{children}</main>
+          <main ref={mainRef} className="relative flex h-full min-h-0 flex-col">
+            {children}
+          </main>
         </ResizablePanel>
         <ResizableHandle
           withHandle

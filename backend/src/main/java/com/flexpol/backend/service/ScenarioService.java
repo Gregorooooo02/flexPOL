@@ -30,4 +30,11 @@ public class ScenarioService {
 				.map(ScenarioResponse::from)
 				.orElseThrow(() -> new ResourceNotFoundException("Scenario", scenarioId));
 	}
+
+	/** The brief and the market seed, for {@link ScenarioRunService}. The seed stays on the server. */
+	public ScenarioRunSpec getRunSpec(Long scenarioId) {
+		return scenarioRepository.findById(scenarioId)
+				.map(scenario -> new ScenarioRunSpec(ScenarioResponse.from(scenario), scenario.getScenarioSeed()))
+				.orElseThrow(() -> new ResourceNotFoundException("Scenario", scenarioId));
+	}
 }

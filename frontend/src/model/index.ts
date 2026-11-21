@@ -24,3 +24,12 @@ export type {
   ScenarioRuleType,
   ScenarioScoring,
 } from './scenario';
+export type {
+  ScenarioAllocation,
+  ScenarioInstrumentRun,
+  ScenarioMoneyNeedRun,
+  ScenarioRunPoint,
+  ScenarioRunRequest,
+  ScenarioRunResponse,
+  ScenarioScore,
+} from './scenarioRun';
