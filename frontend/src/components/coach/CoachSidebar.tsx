@@ -106,7 +106,8 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
   );
 
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col">
+    // group/coach: a page with a workspace action bar lifts the floating buttons above it.
+    <div className="group/coach relative flex min-h-0 flex-1 flex-col">
       <ResizablePanelGroup
         orientation="horizontal"
         className={cn('min-h-0 flex-1', isTransitioning && 'fx-coach-sidebar-transition')}
@@ -149,7 +150,7 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
 
       <Button
         type="button"
-        className="fixed right-4 bottom-4 z-40 shadow-md lg:hidden"
+        className="fixed right-4 bottom-4 z-40 shadow-md group-has-[[data-workspace-action-bar]]/coach:bottom-32 lg:hidden"
         onClick={() => setMobileChat({ focusScopeId, open: true })}
         aria-haspopup="dialog"
       >
@@ -159,7 +160,7 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
       {!sidebarOpen && (
         <Button
           type="button"
-          className="fixed right-4 bottom-4 z-40 hidden shadow-md lg:inline-flex"
+          className="fixed right-4 bottom-4 z-40 hidden shadow-md group-has-[[data-workspace-action-bar]]/coach:bottom-28 lg:inline-flex"
           onClick={openSidebar}
           aria-expanded={sidebarOpen}
           aria-controls="coach-sidebar"

@@ -45,6 +45,8 @@ interface InstrumentPanelProps {
   onRemove: () => void;
   onRetryHistory: (id: number) => void;
   readOnly?: boolean;
+  /** Shown instead of the amount editor when `readOnly`; each mode explains its own lock. */
+  readOnlyMessage?: string;
   running?: boolean;
   simulationChart?: ReactNode;
   chartView?: 'history' | 'simulation';
@@ -72,6 +74,7 @@ export function InstrumentPanel({
   onRemove,
   onRetryHistory,
   readOnly = false,
+  readOnlyMessage = 'This run is complete. Positions are read-only; start over to build a new portfolio.',
   running = false,
   simulationChart,
   chartView = 'history',
@@ -221,9 +224,7 @@ export function InstrumentPanel({
               </p>
             )}
             {readOnly ? (
-              <p className="text-sm text-muted-foreground">
-                This run is complete. Positions are read-only; start over to build a new portfolio.
-              </p>
+              <p className="text-sm text-muted-foreground">{readOnlyMessage}</p>
             ) : (
               <AmountField
                 text={text}

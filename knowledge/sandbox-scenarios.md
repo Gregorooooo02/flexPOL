@@ -1,6 +1,6 @@
 # HedgeFlex — Sandbox Scenarios (Chapters 2 and 3)
 
-**Status:** draft spec. The scenarios are seeded into the database (`node scripts/generate-content-sql.mjs`), served by `GET /api/scenarios`, listed on the `/scenarios` page, and each shown on its own brief page (`/scenarios/{id}`); playing, evaluating and scoring them is not implemented yet. Chapter 1 keeps its own mission, "The Two-Year Goal" (see [learning-chapters.md](learning-chapters.md)), and is out of scope here.
+**Status:** draft spec. The scenarios are seeded into the database (`node scripts/generate-content-sql.mjs`), served by `GET /api/scenarios`, listed on the `/scenarios` page, and each shown on its own brief page (`/scenarios/{id}`). They are playable at `/scenarios/{id}/play`: the learner allocates, `POST /api/scenarios/{id}/runs` simulates and scores the plan as in §4, and the page replays the result. Runs aren't saved yet, and there is no coach debrief or Quest Arena ranking. Chapter 1 keeps its own mission, "The Two-Year Goal" (see [learning-chapters.md](learning-chapters.md)), and is out of scope here.
 
 > People, goals, amounts and events are fictional. Instruments come from the app's catalogue, but every price path is synthetic. Outcomes illustrate ideas from the lessons. They don't predict real returns and are not product recommendations.
 
@@ -379,6 +379,8 @@ Allocations are maps from `"CASH"` or a catalogue id (as a string) to a share. `
 | `POST /api/scenarios/{scenarioId}/runs` | Body `{ "allocations": [ { "instrumentId": 1015, "amount": 7000.00 } ] }`; the rest is cash. Runs the batch and returns the evaluation. With `X-User-Email` the run is saved, so retries can be compared and Quest Arena can rank them |
 
 400 if the amounts exceed the budget or use an instrument the scenario doesn't allow. The response contains the score and its parts, broken rules, final value, growth, largest drop, money needs (paid from cash / from holdings, shortfall), the weekday value path for the replay chart, each instrument's contribution, and the previous run's score.
+
+**Built so far:** `GET /api/scenarios` (without the `chapterId` filter), `GET /api/scenarios/{scenarioId}` and `POST /api/scenarios/{scenarioId}/runs` with everything above except saving: runs aren't stored, so the previous run's score is kept by the page (`/scenarios/{id}/play`) instead of returned by the server. The largest drop adds back the money actually paid, so a shortfall doesn't soften it; the checker adds the full amount, which only differs after a shortfall (where growth is already 0).
 
 ## 8. What's needed to build it
 

@@ -5,6 +5,7 @@ import { DemoPage } from './pages/DemoPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { PlaygroundPage } from './playground/PlaygroundPage';
+import { SandboxPage } from './sandbox/SandboxPage';
 import { ScenarioPage } from './scenarios/ScenarioPage';
 import { ScenariosPage } from './scenarios/ScenariosPage';
 
@@ -19,6 +20,7 @@ export function App() {
           <Route path="demo" element={<Navigate to="/learning" replace />} />
           <Route path="scenarios" element={<ScenariosPage />} />
           <Route path="scenarios/:scenarioId" element={<ScenarioPage />} />
+          <Route path="scenarios/:scenarioId/play" element={<SandboxPage />} />
           <Route path="playground" element={<PlaygroundPage />} />
         </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

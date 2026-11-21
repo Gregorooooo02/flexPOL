@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Scenario } from '@/model';
+import { scenarioPath } from './routes';
 
 /** One scenario as a tile: code, lessons, title, the person and their goal. Opens the scenario's page. */
 export function ScenarioTile({ scenario }: { readonly scenario: Scenario }) {
@@ -15,7 +16,7 @@ export function ScenarioTile({ scenario }: { readonly scenario: Scenario }) {
 
   return (
     <Link
-      to={`/scenarios/${scenario.id}`}
+      to={scenarioPath(scenario.id)}
       aria-labelledby={`${codeId} ${titleId}`}
       aria-describedby={goalId}
       className="group/tile block h-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"

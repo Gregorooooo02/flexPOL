@@ -25,6 +25,7 @@ import { ApiError } from '@/config/axios';
 import type { AssetClass, Scenario } from '@/model';
 import { RISK_LABELS } from '@/workspace/instruments';
 import { formatDayCount, formatDays, formatEuros, formatShare } from './format';
+import { parseScenarioId, scenarioPlayPath } from './routes';
 
 type LoadState =
   | { readonly status: 'loading' }
@@ -127,12 +128,16 @@ function ScenarioBrief({ scenario }: { readonly scenario: Scenario }) {
         </div>
 
         <div className="flex shrink-0 flex-col items-start gap-1.5 @3xl:items-end">
-          <Button type="button" size="lg" disabled aria-describedby="scenario-start-note">
+          <Link
+            to={scenarioPlayPath(scenario.id)}
+            aria-describedby="scenario-start-note"
+            className={buttonVariants({ size: 'lg' })}
+          >
             <HugeiconsIcon icon={PlayIcon} strokeWidth={2} data-icon="inline-start" />
             Start scenario
-          </Button>
+          </Link>
           <p id="scenario-start-note" className="text-xs text-muted-foreground">
-            Playing scenarios is coming soon.
+            Build a portfolio, then run it in {persona.name}&apos;s market.
           </p>
         </div>
       </header>
@@ -417,15 +422,6 @@ function LoadingBrief() {
       </div>
     </PageShell>
   );
-}
-
-/** Route ids are positive integers; anything else is treated as not found without a request. */
-function parseScenarioId(value: string | undefined): number | null {
-  if (value === undefined || !/^\d+$/.test(value)) {
-    return null;
-  }
-  const id = Number(value);
-  return Number.isSafeInteger(id) && id > 0 ? id : null;
 }
 
 function sum(values: readonly number[]): number {
