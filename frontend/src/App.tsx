@@ -12,10 +12,10 @@ import { ScenariosPage } from './scenarios/ScenariosPage';
 export function App() {
   return (
     <Routes>
-      <Route path="login" element={<LoginPage />} />
-      <Route element={<RequireAuth />}>
-        <Route element={<AppLayout />}>
-          <Route index element={<HomePage />} />
+      <Route element={<AppLayout />}>
+        <Route index element={<HomePage />} />
+        <Route path="login" element={<><HomePage /><LoginPage /></>} />
+        <Route element={<RequireAuth />}>
           <Route path="learning" element={<DemoPage />} />
           <Route path="demo" element={<Navigate to="/learning" replace />} />
           <Route path="scenarios" element={<ScenariosPage />} />
@@ -23,7 +23,7 @@ export function App() {
           <Route path="scenarios/:scenarioId/play" element={<SandboxPage />} />
           <Route path="playground" element={<PlaygroundPage />} />
         </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   );

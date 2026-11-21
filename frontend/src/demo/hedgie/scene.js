@@ -85,11 +85,12 @@ export function prepareHedgieScene() {
   isolateHedgieResources(scene);
   const gaze = new THREE.Vector2();
   const pointer = new THREE.Vector2();
+  const lifetime = new AbortController();
   let unmountViewport;
   let reaction;
+  let reactionStartedAt = 0;
   let reactionElapsed = 0;
   let speaking = false;
-  let disposed = false;
   let onScreen = false;
   let time = 0;
   let elapsed = 0;
@@ -145,14 +146,14 @@ export function prepareHedgieScene() {
   }
 
   function finishWrongAnswer() {
-    reaction.onSpeech(false);
+    const { onSpeech, onFinish } = reaction;
     unmountViewport?.();
+    onSpeech(false);
+    onFinish();
   }
 
   function advanceWrongAnswer(now) {
-    // Keep the short gestures visible when the device drops a frame.
-    reactionElapsed += Math.min(.1, Math.max(0, (now - then) / 1000));
-    then = now;
+    reactionElapsed = Math.max(0, (now - reactionStartedAt) / 1000);
     if (reactionElapsed >= WRONG_ANSWER_DURATION) {
       finishWrongAnswer();
       return;
@@ -167,8 +168,10 @@ export function prepareHedgieScene() {
 
   function updateLoop() {
     then = performance.now();
-    const draw = reaction ? advanceWrongAnswer : drawCelebration;
-    renderer.setAnimationLoop(onScreen && !document.hidden && !reaction?.reducedMotion ? draw : null);
+    const draw = reaction
+      ? (reaction.reducedMotion ? null : advanceWrongAnswer)
+      : (onScreen ? drawCelebration : null);
+    renderer.setAnimationLoop(document.hidden ? null : draw);
   }
   function resize() {
     const viewport = canvas.parentElement;
@@ -182,6 +185,7 @@ export function prepareHedgieScene() {
     camera.updateProjectionMatrix();
     renderer.setSize(w, h, false);
     if (reaction) drawWrongAnswer();
+    else drawCelebration(then);
   }
   const resizeObserver = new ResizeObserver(resize);
   const visibilityObserver = new IntersectionObserver(([entry]) => {
@@ -189,18 +193,34 @@ export function prepareHedgieScene() {
     onScreen = entry.isIntersecting;
     updateLoop();
   });
+
+  function dispose() {
+    if (lifetime.signal.aborted) return;
+    unmountViewport?.();
+    lifetime.abort();
+    disposeHedgieScene(scene, renderer);
+  }
+
+  canvas.addEventListener('webglcontextlost', dispose, { signal: lifetime.signal });
+  renderer.debug.onShaderError = (gl, program) => {
+    console.warn('Could not compile a Hedgie 3D shader.', gl.getProgramInfoLog(program));
+    queueMicrotask(dispose);
+  };
+
   // Draw once offscreen to prepare GPU resources before the completion screen.
   const ready = Promise.resolve()
     .then(() => renderer.compileAsync(scene, camera))
     .then(() => {
-      if (disposed) return;
+      if (lifetime.signal.aborted) return;
       then = performance.now();
       drawCelebration(then);
     });
 
   return {
     ready,
+    signal: lifetime.signal,
     mount(viewport, nextReaction) {
+      lifetime.signal.throwIfAborted();
       unmountViewport?.();
       reaction = nextReaction;
       reactionElapsed = 0;
@@ -212,41 +232,15 @@ export function prepareHedgieScene() {
         medal.visible = false;
         for (const part of confetti) part.visible = false;
       }
-      viewport.append(canvas);
-      resize();
-      resizeObserver.observe(viewport);
-
       const listeners = new AbortController();
       const listenerOptions = { signal: listeners.signal };
-      visibilityObserver.observe(viewport);
-      document.addEventListener('visibilitychange', updateLoop, listenerOptions);
-      let stillFrameTimer;
-      if (!reaction) {
-        elapsed = 0;
-        hedgie.root.position.x = 0;
-        gaze.set(0, 0);
-        pointer.set(0, 0);
-        then = performance.now();
-        drawCelebration(then);
-        viewport.addEventListener('pointermove', (event) => {
-          if (event.pointerType === 'touch') return;
-          const rect = viewport.getBoundingClientRect();
-          pointer.set(
-            2 * (event.clientX - rect.left) / rect.width - 1,
-            2 * (event.clientY - rect.top) / rect.height - 1,
-          );
-        }, listenerOptions);
-        viewport.addEventListener('pointerleave', () => pointer.set(0, 0), listenerOptions);
-      } else if (reaction.reducedMotion) {
-        reaction.onSpeech(true);
-        stillFrameTimer = window.setTimeout(finishWrongAnswer, WRONG_ANSWER_DURATION * 1000);
-      }
+      let finishTimer;
 
       function unmount() {
         if (unmountViewport !== unmount) return;
         unmountViewport = undefined;
         reaction = undefined;
-        window.clearTimeout(stillFrameTimer);
+        window.clearTimeout(finishTimer);
         resizeObserver.disconnect();
         visibilityObserver.disconnect();
         listeners.abort();
@@ -255,15 +249,45 @@ export function prepareHedgieScene() {
         canvas.remove();
       }
       unmountViewport = unmount;
+
+      try {
+        if (!reaction) {
+          elapsed = 0;
+          hedgie.root.position.x = 0;
+          gaze.set(0, 0);
+          pointer.set(0, 0);
+          then = performance.now();
+          viewport.addEventListener('pointermove', (event) => {
+            if (event.pointerType === 'touch') return;
+            const rect = viewport.getBoundingClientRect();
+            pointer.set(
+              2 * (event.clientX - rect.left) / rect.width - 1,
+              2 * (event.clientY - rect.top) / rect.height - 1,
+            );
+          }, listenerOptions);
+          viewport.addEventListener('pointerleave', () => pointer.set(0, 0), listenerOptions);
+          visibilityObserver.observe(viewport);
+        }
+        viewport.append(canvas);
+        resize();
+        resizeObserver.observe(viewport);
+        document.addEventListener('visibilitychange', updateLoop, listenerOptions);
+
+        if (reaction) {
+          if (reaction.reducedMotion) reaction.onSpeech(true);
+          reactionStartedAt = performance.now();
+          finishTimer = window.setTimeout(finishWrongAnswer, WRONG_ANSWER_DURATION * 1000);
+        }
+        updateLoop();
+      } catch (error) {
+        unmount();
+        throw error;
+      }
       return unmount;
     },
     celebrate() {
       elapsed = .16;
     },
-    dispose() {
-      disposed = true;
-      unmountViewport?.();
-      disposeHedgieScene(scene, renderer);
-    },
+    dispose,
   };
 }

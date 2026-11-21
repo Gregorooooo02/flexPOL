@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { hedgieImage } from '@/components/coach/hedgie';
 import type { HedgieScene } from './scene';
 
 interface HedgieCelebrationProps {
@@ -8,29 +9,31 @@ interface HedgieCelebrationProps {
 export function HedgieCelebration({ loadScene }: HedgieCelebrationProps) {
   const viewportRef = useRef<HTMLSpanElement>(null);
   const sceneRef = useRef<HedgieScene | null>(null);
-  const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading');
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport) return;
 
-    let cancelled = false;
+    const listeners = new AbortController();
     let unmountScene: (() => void) | undefined;
     void loadScene()
-      .then(async (scene) => {
-        if (!scene || cancelled) return;
-        await scene.ready;
-        if (cancelled) return;
+      .then((scene) => {
+        if (!scene || scene.signal.aborted || listeners.signal.aborted) return;
         unmountScene = scene.mount(viewport);
         sceneRef.current = scene;
-        setStatus('ready');
+        setReady(true);
+        scene.signal.addEventListener('abort', () => {
+          sceneRef.current = null;
+          setReady(false);
+        }, { signal: listeners.signal });
       })
-      .catch(() => {
-        if (!cancelled) setStatus('failed');
+      .catch((error: unknown) => {
+        console.warn('Could not show Hedgie’s 3D celebration.', error);
       });
 
     return () => {
-      cancelled = true;
+      listeners.abort();
       unmountScene?.();
       sceneRef.current = null;
     };
@@ -43,7 +46,7 @@ export function HedgieCelebration({ loadScene }: HedgieCelebrationProps) {
       </div>
       <button
         type="button"
-        disabled={status !== 'ready'}
+        disabled={!ready}
         onClick={() => sceneRef.current?.celebrate()}
         aria-label="Celebrate with Hedgie"
         className="peer block w-full cursor-pointer touch-manipulation rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffcf45] disabled:cursor-default"
@@ -52,21 +55,21 @@ export function HedgieCelebration({ loadScene }: HedgieCelebrationProps) {
           aria-hidden="true"
           className="relative block aspect-[1.16] w-full bg-[radial-gradient(ellipse_at_center,#ffcf4526,transparent_68%)]"
         >
+          <img
+            src={hedgieImage('joy')}
+            alt=""
+            data-ready={ready}
+            className="absolute inset-0 m-auto size-3/4 object-contain data-[ready=true]:opacity-0 motion-safe:duration-700 motion-safe:data-[ready=true]:transition-opacity"
+          />
           <span
             ref={viewportRef}
-            data-ready={status === 'ready'}
-            className="absolute inset-0 block opacity-0 transition-opacity duration-700 ease-out data-[ready=true]:opacity-100 [&>canvas]:block [&>canvas]:size-full"
+            data-ready={ready}
+            className="absolute inset-0 block opacity-0 data-[ready=true]:opacity-100 motion-safe:transition-opacity motion-safe:duration-700 motion-safe:ease-out [&>canvas]:block [&>canvas]:size-full"
           />
         </span>
       </button>
-      <div className="mb-3 text-xs text-foreground/70 peer-enabled:peer-hover:text-[#9a6a00] dark:peer-enabled:peer-hover:text-[#ffcf45]">
-        {status === 'ready' ? (
-          'Tap or click to celebrate'
-        ) : (
-          <span role="status">
-            {status === 'loading' ? 'Loading Hedgie…' : 'Could not load Hedgie.'}
-          </span>
-        )}
+      <div className="mb-3 min-h-4 text-xs text-foreground/70 peer-enabled:peer-hover:text-[#9a6a00] dark:peer-enabled:peer-hover:text-[#ffcf45]">
+        {ready && 'Tap or click to celebrate'}
       </div>
     </div>
   );
