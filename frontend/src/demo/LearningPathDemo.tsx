@@ -752,14 +752,17 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                                 : 'var(--border)';
 
                         return (
-                          <li key={node.id}>
+                          <li key={node.id} className="group/node">
                             <div
                               className="absolute -translate-x-1/2 -translate-y-1/2"
                               style={{ left: `${slot.cx}px`, top: `${slot.cy}px` }}
                             >
                               <div
                                 className={cn(
-                                  'relative flex size-[86px] items-center justify-center rounded-full p-2 transition-transform',
+                                  'relative flex size-[86px] origin-center items-center justify-center rounded-full p-2 transition-[scale,box-shadow] duration-[350ms] ease-[cubic-bezier(0.76,0,0.24,1)] motion-reduce:transition-none',
+                                  status !== 'locked' &&
+                                    'group-hover/node:scale-110 group-hover/node:shadow-[0_0_0_4px_var(--background),0_0_0_7px_var(--ring),0_0_32px_4px_var(--ring)] has-focus-visible:scale-110',
+                                  status === 'locked' && 'group-hover/node:scale-105',
                                   isBursting && 'fx-node-punch',
                                   isShaking && 'fx-shake',
                                 )}
@@ -781,7 +784,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                                   aria-label={`Module ${node.code}: ${node.title} — ${statusText}`}
                                   onClick={() => handleOpenNode(node)}
                                   className={cn(
-                                    'relative z-10 size-full overflow-hidden rounded-full border-0 shadow-none transition-transform active:scale-90',
+                                    'relative z-10 size-full cursor-pointer overflow-hidden rounded-full border-0 shadow-none transition-transform active:scale-90',
                                     isBursting && 'fx-sheen',
                                     status === 'completed' && 'bg-card hover:bg-secondary',
                                     status === 'active' && 'bg-background hover:bg-card',
@@ -813,12 +816,18 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
 
                             <div
                               className={cn(
-                                'absolute flex flex-col gap-0.5',
+                                'absolute flex flex-col gap-0.5 transition-[translate] duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] motion-reduce:transition-none',
                                 slot.labelSide === 'center'
                                   ? 'items-center text-center'
                                   : slot.labelSide === 'left'
                                     ? 'items-end text-right'
                                     : 'items-start text-left',
+                                status !== 'locked' &&
+                                  (slot.labelSide === 'left'
+                                    ? 'group-hover/node:-translate-x-1.5'
+                                    : slot.labelSide === 'center'
+                                      ? 'group-hover/node:-translate-y-1.5'
+                                      : 'group-hover/node:translate-x-1.5'),
                               )}
                               style={{
                                 left: `${slot.labelLeft}px`,
@@ -843,7 +852,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                                 aria-disabled={status === 'locked' ? 'true' : undefined}
                                 onClick={() => handleOpenNode(node)}
                                 className={cn(
-                                  'h-auto p-0 text-sm leading-snug font-normal tracking-normal whitespace-normal normal-case underline underline-offset-4 transition-transform active:scale-95',
+                                  'h-auto p-0 text-sm leading-snug font-normal tracking-normal whitespace-normal normal-case underline underline-offset-4 transition-[scale,color] duration-300 ease-[cubic-bezier(0.76,0,0.24,1)] motion-reduce:transition-none active:scale-95',
                                   slot.labelSide === 'left'
                                     ? 'text-right'
                                     : slot.labelSide === 'center'
@@ -851,7 +860,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                                       : 'text-left',
                                   status === 'locked'
                                     ? 'cursor-not-allowed text-muted-foreground no-underline hover:no-underline'
-                                    : 'text-foreground',
+                                    : 'cursor-pointer text-foreground group-hover/node:font-semibold group-hover/node:text-primary group-hover/node:decoration-2',
                                 )}
                               >
                                 {node.title}

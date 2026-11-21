@@ -57,7 +57,11 @@ export function AppLayout() {
                     to={to}
                     end={end}
                     className={({ isActive }) =>
-                      buttonVariants({ variant: isActive ? 'secondary' : 'ghost', size: 'sm' })
+                      cn(
+                        buttonVariants({ variant: isActive ? 'secondary' : 'ghost', size: 'sm' }),
+                        'relative transition-[background-color,color,translate,scale] duration-[350ms] ease-[cubic-bezier(0.65,0,0.35,1)] after:absolute after:inset-x-2.5 after:bottom-0.5 after:h-[3px] after:origin-center after:bg-[#f8d860] after:transition-transform after:duration-[350ms] after:ease-[cubic-bezier(0.65,0,0.35,1)] hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-[#f8d860]/15 hover:text-[#f8d860] active:scale-95 motion-reduce:transition-none motion-reduce:after:transition-none',
+                        isActive ? 'after:scale-x-100' : 'after:scale-x-0 hover:after:scale-x-100',
+                      )
                     }
                   >
                     {label}
