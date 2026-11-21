@@ -9,7 +9,15 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiError } from '@/config/axios';
-import type { HistoricalObservation, Instrument, Scenario, ScenarioMoneyNeedRun, ScenarioRunResponse } from '@/model';
+import { useAskCoach, usePublishCoachFocus } from '@/components/coach/coachFocus';
+import type {
+  HistoricalObservation,
+  Instrument,
+  Scenario,
+  ScenarioAllocation,
+  ScenarioMoneyNeedRun,
+  ScenarioRunResponse,
+} from '@/model';
 import { SIMULATION_DURATION_MS } from '@/playground/config';
 import { advanceReplay, createReplay } from '@/playground/replay';
 import type { ReplayState } from '@/playground/replay';
@@ -42,6 +50,8 @@ import { SandboxResult } from './SandboxResult';
 import { SandboxResultDialog } from './SandboxResultDialog';
 
 const DEFAULT_FILTERS: InstrumentFilters = { search: '', assetClass: 'ALL', risk: 'ALL' };
+/** What "Ask Hedgie for feedback" sends for the learner after a run. */
+const FEEDBACK_REQUEST = 'Give me feedback on my plan and this result';
 /** Before a run every price is 1, so a holding's units are its cents (as in the Playground). */
 const PLANNING_PRICE = 1;
 
@@ -270,6 +280,31 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
     [instruments, filters],
   );
 
+  // The plan in euros, in the scenario's order: what a run submits, and what the coach sees.
+  // Holdings stay at planning prices while a run replays, so after a run this is the plan that was run.
+  const planAllocations = useMemo<ScenarioAllocation[]>(
+    () =>
+      scenario.instruments.flatMap(({ id }) => {
+        const cents = portfolio.holdings[id] ? positionValueCents(portfolio.holdings[id], PLANNING_PRICE) : 0;
+        return cents ? [{ instrumentId: id, amount: cents / 100 }] : [];
+      }),
+    [scenario.instruments, portfolio.holdings],
+  );
+
+  usePublishCoachFocus({
+    scopeId: `scenario-${scenario.id}`,
+    label: `${phase === 'finished' ? 'Result' : phase === 'planning' ? 'Planning' : 'Running'} · ${scenario.code} ${scenario.title}`,
+    scenarioId: scenario.id,
+    allocations: planAllocations,
+    scenarioRun: phase === 'finished',
+    scenarioStars: phase === 'finished' && run.status === 'ready' ? run.data.stars.stars : undefined,
+  });
+  const askCoach = useAskCoach();
+  function askForFeedback() {
+    setResultOpen(false);
+    askCoach(FEEDBACK_REQUEST);
+  }
+
   const plannedCents: Record<number, number> = Object.fromEntries(
     Object.entries(portfolio.holdings).map(([id, holding]) => [
       Number(id),
@@ -360,11 +395,7 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
 
   function runSimulation() {
     if (phase !== 'planning' || selectedId !== null || catalogue.status !== 'ready') return;
-    const request = {
-      allocations: scenario.instruments.flatMap(({ id }) =>
-        plannedCents[id] ? [{ instrumentId: id, amount: plannedCents[id] / 100 }] : [],
-      ),
-    };
+    const request = { allocations: planAllocations };
     runRequest.current?.abort();
     const controller = new AbortController();
     runRequest.current = controller;
@@ -439,7 +470,12 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
         notice={
           <div className="flex flex-col gap-5">
             {phase === 'finished' && run.status === 'ready' && (
-              <SandboxResult run={run.data} titleRef={resultTitleRef} onOpenDetails={() => setResultOpen(true)} />
+              <SandboxResult
+                run={run.data}
+                titleRef={resultTitleRef}
+                onOpenDetails={() => setResultOpen(true)}
+                onAskCoach={askForFeedback}
+              />
             )}
             {run.status === 'error' && (
               <Alert>
@@ -546,6 +582,7 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
           finalFocus={resultTitleRef}
           onOpenChange={setResultOpen}
           onChangePlan={changePlan}
+          onAskCoach={askForFeedback}
         />
       )}
       <p role="status" aria-live="polite" className="sr-only">

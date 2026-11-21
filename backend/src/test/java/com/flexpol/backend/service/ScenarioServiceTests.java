@@ -22,23 +22,20 @@ class ScenarioServiceTests {
 	void listsSeededScenariosInJsonOrderWithTheirBrief() {
 		var scenarios = scenarioService.getScenarios();
 
-		assertThat(scenarios).extracting(ScenarioResponse::code).containsExactly(
-				"2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6");
+		assertThat(scenarios).extracting(ScenarioResponse::code).containsExactly("2.3", "2.6", "3.3", "3.5");
 
-		var kuba = scenarios.getFirst();
-		assertThat(kuba.slug()).isEqualTo("kuba-safety-cushion");
-		assertThat(kuba.chapterNumber()).isEqualTo(2);
-		assertThat(kuba.budget()).isEqualByComparingTo("6000");
-		assertThat(kuba.durationDays()).isEqualTo(365);
-		assertThat(kuba.instruments()).extracting(ScenarioResponse.AllowedInstrument::id)
-				.containsExactly(1013L, 1015L, 1001L, 1010L);
-		assertThat(kuba.moneyNeeds()).singleElement().satisfies(need -> {
-			assertThat(need.day()).isEqualTo(120);
-			assertThat(need.amount()).isEqualByComparingTo("2500");
-			assertThat(need.label()).isEqualTo("Car repair");
-		});
-		assertThat(kuba.lessons()).extracting(lesson -> lesson.code()).containsExactly("2.1");
-		assertThat(kuba.scoring().maxDrawdown()).isEqualByComparingTo("0.04");
+		var henryk = scenarios.getLast();
+		assertThat(henryk.slug()).isEqualTo("henryk-retires-next-year");
+		assertThat(henryk.chapterNumber()).isEqualTo(3);
+		assertThat(henryk.budget()).isEqualByComparingTo("400000");
+		assertThat(henryk.durationDays()).isEqualTo(1095);
+		assertThat(henryk.instruments()).extracting(ScenarioResponse.AllowedInstrument::id)
+				.containsExactly(1013L, 1015L, 1017L, 1018L);
+		assertThat(henryk.moneyNeeds()).extracting(ScenarioResponse.MoneyNeed::day).containsExactly(365, 730);
+		assertThat(henryk.moneyNeeds()).allSatisfy(need -> assertThat(need.amount()).isEqualByComparingTo("32000"));
+		assertThat(henryk.moneyNeeds().getFirst().label()).isEqualTo("First year of spending");
+		assertThat(henryk.lessons()).extracting(lesson -> lesson.code()).containsExactly("3.4");
+		assertThat(henryk.scoring().maxDrawdown()).isEqualByComparingTo("0.08");
 	}
 
 	@Test

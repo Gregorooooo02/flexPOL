@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode, RefObject } from 'react';
 import { usePanelRef } from 'react-resizable-panels';
 import { useLocation } from 'react-router';
@@ -10,12 +10,16 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
 import { CoachPanel } from './CoachPanel';
+import { CoachHeaderButton } from './CoachHeaderButton';
 import { CoachLauncher } from './CoachLauncher';
-import { useCoachFocus } from './coachFocus';
+import { useCoachAskChannel, useCoachFocus } from './coachFocus';
 import type { CoachFocus } from './coachFocus';
+import { moodForReply } from './hedgie';
 import { useCoachChat } from './useCoachChat';
+import type { CoachMessageContext } from './useCoachChat';
 
-const DESKTOP_MEDIA_QUERY = '(min-width: 64rem)';
+/** Keep in sync with --breakpoint-coach-sidebar in index.css. */
+const DESKTOP_MEDIA_QUERY = '(min-width: 50rem)';
 /** Width of the Hedgie sidebar the first time it opens; capped by the panel's maxSize (45%). */
 const SIDEBAR_DEFAULT_WIDTH = '32rem';
 const COACH_SIDEBAR_ID = 'coach-sidebar';
@@ -26,6 +30,18 @@ const QUESTION_SUGGESTIONS = [
   'Can you give me a hint?',
 ] as const;
 
+const SCENARIO_PLANNING_SUGGESTIONS = [
+  'What does this goal need from my plan?',
+  'How should I prepare for the money needs?',
+  'What are the risks in my current plan?',
+] as const;
+
+const SCENARIO_RESULT_SUGGESTIONS = [
+  'Give me feedback on my plan and this result',
+  'Why did I get this rating?',
+  'What could I try next time?',
+] as const;
+
 const LESSON_SUGGESTIONS = [
   'Can you sum up this lesson?',
   'Explain the key idea with an example',
@@ -33,14 +49,17 @@ const LESSON_SUGGESTIONS = [
 ] as const;
 
 interface CoachSidebarProps {
+  /** Renders the app header; below 800px it receives the button that opens the coach drawer. */
+  readonly header: (coachButton: ReactNode) => ReactNode;
   readonly children: ReactNode;
 }
 
-export function CoachSidebar({ children }: CoachSidebarProps) {
+export function CoachSidebar({ header, children }: CoachSidebarProps) {
   const focus = useCoachFocus();
   const focusScopeId = focus?.scopeId ?? 'general';
   const sidebarRef = usePanelRef();
   const launcherRef = useRef<HTMLButtonElement>(null);
+  const headerButtonRef = useRef<HTMLButtonElement>(null);
   const mainRef = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
   const transitionTimeout = useRef<number | undefined>(undefined);
@@ -114,8 +133,30 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
     [],
   );
 
+  // When a screen asks Hedgie something (useAskCoach, e.g. feedback on a run), show the chat from that
+  // click; CoachChatSession sends the message. Re-registered after every render so it sees current state.
+  const { registerShowChat } = useCoachAskChannel();
+  useEffect(() => {
+    registerShowChat(() => {
+      if (desktop) {
+        if (!sidebarOpen) openSidebar();
+      } else {
+        setMobileChat({ focusScopeId, open: true });
+      }
+    });
+    return () => registerShowChat(null);
+  });
+
   return (
-    // group/coach: a page with a sticky footer marked data-coach-footer lifts the floating launcher above it.
+    <>
+      {header(
+        <CoachHeaderButton
+          buttonRef={headerButtonRef}
+          chatOpen={mobileChatOpen}
+          onOpen={() => setMobileChat({ focusScopeId, open: true })}
+        />,
+      )}
+      {/* group/coach: a page with a sticky footer marked data-coach-footer lifts the floating launcher above it. */}
     <div className="group/coach relative flex min-h-0 flex-1 flex-col">
       <ResizablePanelGroup
         orientation="horizontal"
@@ -151,24 +192,16 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
             focus={focus}
             sidebarOpen={sidebarOpen}
             mobileChatOpen={mobileChatOpen}
-            launcherRef={launcherRef}
+            drawerFocusRef={headerButtonRef}
             onMobileChatOpenChange={(open) => setMobileChat({ focusScopeId, open })}
             onCloseSidebar={closeSidebar}
           />
         </ResizablePanel>
       </ResizablePanelGroup>
 
-      <CoachLauncher
-        buttonRef={launcherRef}
-        desktop={desktop}
-        docked={!desktop && focus?.dockLauncher === true}
-        chatOpen={desktop ? sidebarOpen : mobileChatOpen}
-        onOpen={() => {
-          if (desktop) openSidebar();
-          else setMobileChat({ focusScopeId, open: true });
-        }}
-      />
+      {desktop && <CoachLauncher buttonRef={launcherRef} chatOpen={sidebarOpen} onOpen={openSidebar} />}
     </div>
+    </>
   );
 }
 
@@ -176,7 +209,8 @@ interface CoachChatSessionProps {
   readonly focus: CoachFocus | null;
   readonly sidebarOpen: boolean;
   readonly mobileChatOpen: boolean;
-  readonly launcherRef: RefObject<HTMLButtonElement | null>;
+  /** Gets focus back when the drawer closes. */
+  readonly drawerFocusRef: RefObject<HTMLButtonElement | null>;
   readonly onMobileChatOpenChange: (open: boolean) => void;
   readonly onCloseSidebar: () => void;
 }
@@ -185,24 +219,56 @@ function CoachChatSession({
   focus,
   sidebarOpen,
   mobileChatOpen,
-  launcherRef,
+  drawerFocusRef,
   onMobileChatOpenChange,
   onCloseSidebar,
 }: CoachChatSessionProps) {
   const chat = useCoachChat();
   const suggestions =
-    focus?.questionId !== undefined ? QUESTION_SUGGESTIONS : focus ? LESSON_SUGGESTIONS : undefined;
-  const panelProps = {
-    chat,
+    focus?.scenarioId !== undefined
+      ? focus.scenarioRun
+        ? SCENARIO_RESULT_SUGGESTIONS
+        : SCENARIO_PLANNING_SUGGESTIONS
+      : focus?.questionId !== undefined
+        ? QUESTION_SUGGESTIONS
+        : focus
+          ? LESSON_SUGGESTIONS
+          : undefined;
+  const context: CoachMessageContext = {
     subchapterId: focus?.subchapterId,
     questionId: focus?.questionId,
     selectedOptionId: focus?.selectedOptionId,
     assignments: focus?.assignments,
     number: focus?.number,
+    comparisonPrediction: focus?.comparisonPrediction,
+    scenarioId: focus?.scenarioId,
+    allocations: focus?.allocations,
+    scenarioRun: focus?.scenarioRun,
+  };
+  const panelProps = {
+    chat,
+    ...context,
     answerCorrect: focus?.answerCorrect,
+    scenarioStars: focus?.scenarioStars,
     contextLabel: focus?.label,
     suggestions,
   };
+
+  // Send what a screen asked for (useAskCoach) once no reply is pending, with the current focus as context.
+  const { pending: ask, done: askDone } = useCoachAskChannel();
+  const sentAskId = useRef<number | null>(null);
+  const sendAsk = useEffectEvent((id: number, text: string) => {
+    sentAskId.current = id;
+    chat.send(
+      text,
+      context,
+      moodForReply({ questionId: focus?.questionId, answerCorrect: focus?.answerCorrect, scenarioStars: focus?.scenarioStars }),
+    );
+    askDone(id);
+  });
+  useEffect(() => {
+    if (ask && !chat.pending && sentAskId.current !== ask.id) sendAsk(ask.id, ask.text);
+  }, [ask, chat.pending]);
 
   return (
     <>
@@ -220,11 +286,16 @@ function CoachChatSession({
         />
       </aside>
       <Drawer open={mobileChatOpen} onOpenChange={onMobileChatOpenChange} showSwipeHandle>
-        <DrawerContent className="h-[85svh] lg:hidden" finalFocus={launcherRef}>
+        {/* Nearly full height (the drawer's own cap is 6rem below the top), leaving a strip to tap outside. */}
+        <DrawerContent
+          className="h-[calc(100dvh-2.5rem)]! max-h-[calc(100dvh-2.5rem)]! coach-sidebar:hidden"
+          finalFocus={drawerFocusRef}
+        >
           <DrawerTitle className="sr-only">AI coach</DrawerTitle>
           <CoachPanel
             {...panelProps}
             onClose={() => onMobileChatOpenChange(false)}
+            compact
             className="min-h-0 flex-1 rounded-none shadow-none ring-0"
           />
         </DrawerContent>

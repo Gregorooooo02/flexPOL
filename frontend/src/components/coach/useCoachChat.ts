@@ -16,7 +16,12 @@ export type ChatEntry =
     };
 
 /** Where the learner is when they send a message. The backend turns these ids into prompt context. */
-export type CoachMessageContext = Readonly<Pick<CoachRequest, 'subchapterId' | 'questionId' | 'selectedOptionId' | 'assignments' | 'number'>>;
+export type CoachMessageContext = Readonly<
+  Pick<
+    CoachRequest,
+    'subchapterId' | 'questionId' | 'selectedOptionId' | 'assignments' | 'number' | 'comparisonPrediction' | 'scenarioId' | 'allocations' | 'scenarioRun'
+  >
+>;
 
 export interface CoachChat {
   readonly entries: readonly ChatEntry[];

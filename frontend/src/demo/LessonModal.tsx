@@ -5,6 +5,7 @@ import {
   ArrowRight01Icon,
   CancelCircleIcon,
   CheckmarkCircle02Icon,
+  Home01Icon,
   RefreshIcon,
   Tick02Icon,
 } from '@hugeicons/core-free-icons';
@@ -38,10 +39,10 @@ interface LessonPageProps {
   readonly node: LearningNode;
   readonly topic: TopicDefinition;
   readonly isCompleted: boolean;
-  readonly isTopicCompleted: boolean;
-  readonly nextNodeSummary: string | null;
+  readonly nextNodeKind: LearningNode['kind'] | null;
   readonly getNextWrongAnswerIndex: () => number;
   readonly onComplete: (nodeId: string) => void;
+  readonly onNext: (() => void) | null;
   readonly onBack: () => void;
 }
 
@@ -204,10 +205,10 @@ export function LessonPage({
   node,
   topic,
   isCompleted,
-  isTopicCompleted,
-  nextNodeSummary,
+  nextNodeKind,
   getNextWrongAnswerIndex,
   onComplete,
+  onNext,
   onBack,
 }: LessonPageProps) {
   const [contentState, setContentState] = useState<ContentState>({ status: 'loading' });
@@ -255,7 +256,6 @@ export function LessonPage({
   );
 
   const currentQuestion = step.kind === 'question' ? (questions[step.index] ?? null) : null;
-  const interactiveQuestion = Boolean(currentQuestion?.assignment || currentQuestion?.numberExercise || currentQuestion?.comparison);
   const currentAnswer = currentQuestion ? answers[currentQuestion.id] : undefined;
   const currentAssignments = (currentQuestion && placements[currentQuestion.id]) || EMPTY_ASSIGNMENTS;
   const currentPrediction = currentQuestion ? predictions[currentQuestion.id] : undefined;
@@ -416,7 +416,7 @@ export function LessonPage({
     selectedOptionId: currentResult ? currentAnswer?.choice.optionId : undefined,
     assignments: currentResult ? currentAnswer?.choice.assignments : undefined,
     number: currentResult ? currentAnswer?.choice.number : undefined,
-    dockLauncher: interactiveQuestion,
+    comparisonPrediction: currentPrediction,
     answerCorrect: currentResult?.correct,
   });
 
@@ -424,33 +424,36 @@ export function LessonPage({
     currentQuestion && currentResult
       ? currentQuestion.options.find((option) => option.id === currentResult.correctOptionId)?.label
       : undefined;
+  const isPassedResult = step.kind === 'result' && step.passed;
+  const nextLabel = nextNodeKind === 'checkpoint' ? 'Final test' : 'Next lesson';
 
   return (
     <div
       className={cn(
         'flex flex-1 flex-col justify-between',
+        isPassedResult && 'h-full min-h-0 overflow-hidden',
         topic.bandClassName,
       )}
       style={{ backgroundImage: topic.ambientGlow }}
     >
       <header className="sticky top-0 z-20 border-b border-border bg-card/90 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-md flex-col gap-2.5 px-4 py-3 lg:max-w-3xl">
-          <div className="flex items-center justify-between gap-2">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={onBack}
-              className="-ml-2 transition-transform active:scale-95"
+              className="-ml-2 justify-self-start transition-transform active:scale-95"
             >
               <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2.2} />
               Path
             </Button>
 
             <Badge
-              className="px-2.5 py-0.5 font-semibold"
+              className="justify-self-center px-2.5 py-0.5 font-semibold"
               style={
-                step.kind === 'result' && step.passed
+                isPassedResult
                   ? { backgroundColor: topic.accentHex, color: '#07090a' }
                   : {
                       backgroundColor: 'var(--secondary)',
@@ -459,24 +462,32 @@ export function LessonPage({
                     }
               }
             >
-              {stepLabel}
+              {isPassedResult ? `Module ${node.code} completed` : stepLabel}
             </Badge>
 
-            {step.kind !== 'result' && !isCompleted ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="xs"
-                onClick={() => finish(true)}
-                className="transition-transform active:scale-95"
-              >
-                Complete (demo)
-              </Button>
-            ) : (
-              <Badge variant="outline" className="border border-border px-2 py-0.5 tabular-nums">
-                {node.code}
-              </Badge>
-            )}
+            <div className="justify-self-end">
+              {step.kind !== 'result' && !isCompleted ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => finish(true)}
+                  className="transition-transform active:scale-95"
+                >
+                  Complete (demo)
+                </Button>
+              ) : isPassedResult ? (
+                isScored ? (
+                  <Badge variant="outline" className="border border-border px-2 py-0.5 tabular-nums">
+                    Score: {score}/{questionCount}
+                  </Badge>
+                ) : null
+              ) : (
+                <Badge variant="outline" className="border border-border px-2 py-0.5 tabular-nums">
+                  {node.code}
+                </Badge>
+              )}
+            </div>
           </div>
 
           <Progress
@@ -492,7 +503,12 @@ export function LessonPage({
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-6 lg:max-w-3xl">
+      <div
+        className={cn(
+          'mx-auto flex w-full max-w-md flex-1 flex-col px-4 lg:max-w-3xl',
+          isPassedResult ? 'min-h-0 gap-2.5 py-3' : 'gap-4 py-6',
+        )}
+      >
         <div className="flex flex-wrap items-center gap-2">
           <Badge
             className="px-2 py-0.5 text-[#07090a]"
@@ -767,48 +783,29 @@ export function LessonPage({
 
         {step.kind === 'result' && step.passed && (
           <Card
-            className="border py-8 animate-in fade-in-0 zoom-in-95 duration-200"
+            className="flex min-h-0 flex-1 flex-col justify-center border py-3 sm:py-4 animate-in fade-in-0 zoom-in-95 duration-200"
             style={{
               borderColor: topic.accentHex,
               backgroundColor: withAlpha(topic.pipeColor, 8),
               boxShadow: `0 0 32px -10px ${withAlpha(topic.pipeColor, 33)}`,
             }}
           >
-            <CardHeader className="items-center px-5 text-center">
+            <CardHeader className="flex min-h-0 flex-1 flex-col items-center justify-center px-5 text-center">
               {hasHedgie ? (
                 <HedgieCelebration loadScene={loadHedgie} />
               ) : (
-                <Badge
-                  className="mb-3 size-14 justify-center rounded-full text-[#07090a]"
-                  style={{ backgroundColor: topic.accentHex }}
-                >
-                  <HugeiconsIcon icon={Tick02Icon} className="size-7!" strokeWidth={2.5} />
-                </Badge>
+                <div className="flex flex-col items-center gap-3 justify-self-center">
+                  <Badge
+                    className="size-14 justify-center rounded-full text-[#07090a]"
+                    style={{ backgroundColor: topic.accentHex }}
+                  >
+                    <HugeiconsIcon icon={Tick02Icon} className="size-7!" strokeWidth={2.5} />
+                  </Badge>
+                  <p className="font-heading text-lg font-semibold text-foreground">
+                    Chapter test passed!
+                  </p>
+                </div>
               )}
-
-              <Badge
-                className="px-2.5 py-0.5 text-[#07090a]"
-                style={{ backgroundColor: topic.accentHex }}
-              >
-                Module {node.code} completed
-              </Badge>
-              {isScored && (
-                <Badge variant="outline" className="mt-1.5 border border-border px-2 py-0.5 tabular-nums">
-                  Score: {score}/{questionCount}
-                </Badge>
-              )}
-              <CardTitle className="mt-2 text-xl normal-case tracking-normal">
-                {node.title}
-              </CardTitle>
-              <CardDescription className="mt-1 text-foreground/85">
-                {isTopicCompleted
-                  ? nextNodeSummary
-                    ? `Chapter ${topic.title} completed. The path now leads to module ${nextNodeSummary}.`
-                    : `Chapter ${topic.title} completed. Every module on the path is completed.`
-                  : nextNodeSummary
-                    ? `The path now leads to module ${nextNodeSummary}.`
-                    : 'Every module on the path is completed.'}
-              </CardDescription>
             </CardHeader>
           </Card>
         )}
@@ -840,8 +837,8 @@ export function LessonPage({
         <HedgieWrongAnswer key={wrongAnswerIndex} reactionIndex={wrongAnswerIndex} loadScene={loadHedgie} />
       )}
 
-      <footer data-coach-footer className="sticky bottom-0 z-20 border-t border-border bg-card/90 backdrop-blur-sm">
-        <div className={cn('mx-auto flex w-full max-w-md flex-col gap-2 px-4 py-3 lg:max-w-3xl', interactiveQuestion && 'max-lg:pr-[4.25rem]')}>
+      <footer data-coach-footer className="@container sticky bottom-0 z-20 border-t border-border bg-card/90 backdrop-blur-sm">
+        <div className="mx-auto flex w-full max-w-md flex-col gap-2 px-4 py-3 lg:max-w-3xl">
           {step.kind === 'theory' && content && (
             <Button
               type="button"
@@ -917,17 +914,44 @@ export function LessonPage({
           )}
 
           {step.kind === 'result' && step.passed && (
-            <>
+            onNext ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="outline"
+                  aria-label="Back to path"
+                  className="flex-1 px-2.5 tracking-wider transition-transform active:scale-[0.97] @[26rem]:px-6 @[26rem]:tracking-widest"
+                  onClick={onBack}
+                >
+                  <HugeiconsIcon icon={Home01Icon} className="size-5 @[21.5rem]:size-4" strokeWidth={2.2} />
+                  <span className="hidden @[21.5rem]:inline">Back to path</span>
+                </Button>
+                <Button
+                  type="button"
+                  size="lg"
+                  aria-label={nextLabel}
+                  className="flex-1 px-2.5 tracking-wider text-[#07090a] transition-transform active:scale-[0.97] @[26rem]:px-6 @[26rem]:tracking-widest"
+                  style={{ backgroundColor: topic.accentHex }}
+                  onClick={onNext}
+                >
+                  <span className="hidden @[21.5rem]:inline">{nextLabel}</span>
+                  <HugeiconsIcon icon={ArrowRight01Icon} className="size-5 @[21.5rem]:size-4" strokeWidth={2.2} />
+                </Button>
+              </div>
+            ) : (
               <Button
                 type="button"
                 size="lg"
-                className="w-full transition-transform active:scale-[0.97]"
+                aria-label="Back to path"
+                className="w-full px-3 tracking-wider transition-transform active:scale-[0.97] @[26rem]:px-8 @[26rem]:tracking-widest"
                 style={{ backgroundColor: topic.accentHex, color: '#07090a' }}
                 onClick={onBack}
               >
-                Back to the path
+                <HugeiconsIcon icon={Home01Icon} className="size-5 @[15rem]:size-4" strokeWidth={2.2} />
+                <span className="hidden @[15rem]:inline">Back to path</span>
               </Button>
-            </>
+            )
           )}
         </div>
       </footer>

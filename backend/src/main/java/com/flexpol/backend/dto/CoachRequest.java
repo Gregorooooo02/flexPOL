@@ -1,6 +1,7 @@
 package com.flexpol.backend.dto;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -8,7 +9,13 @@ import java.util.Map;
  * <ul>
  * <li>{@code subchapterId} gives the coach that lesson as context;</li>
  * <li>{@code questionId} tells it which quiz question the learner is on, and {@code selectedOptionId}
- * which option they checked (or {@code assignments} for matching and sorting, or {@code number});</li>
+ * which option they checked (or {@code assignments} for matching and sorting, or {@code number}). For a question
+ * with a what-if portfolio comparison, {@code comparisonPrediction} is the portfolio id the learner predicted
+ * would lose more, sent once they have revealed the outcomes;</li>
+ * <li>{@code scenarioId} tells it which sandbox scenario the learner is in, {@code allocations} their plan
+ * (as in {@link ScenarioRunRequest}: the rest stays cash), and {@code scenarioRun} whether they have run
+ * that plan and see its result. The server runs the plan again for the coach, so results are never
+ * taken from the client;</li>
  * <li>{@code conversationId} (from an earlier {@link CoachResponse}) continues that conversation.
  * Without it, a new conversation starts.</li>
  * </ul>
@@ -20,5 +27,9 @@ public record CoachRequest(
 		Long selectedOptionId,
 		String conversationId,
 		Map<String, String> assignments,
-		BigDecimal number) {
+		BigDecimal number,
+		Long scenarioId,
+		List<ScenarioRunRequest.Allocation> allocations,
+		Boolean scenarioRun,
+		String comparisonPrediction) {
 }

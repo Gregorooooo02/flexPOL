@@ -10,10 +10,11 @@ import com.flexpol.backend.model.Instrument;
 
 /**
  * What a scenario run needs: the public brief, the server-only market seed (each simulated item
- * uses {@code seed + instrumentId}) and the star evaluation data. Never returned to the frontend
- * as is; the evaluation only comes back inside a run's result.
+ * uses {@code seed + instrumentId}) and the star evaluation data, plus the debrief points the
+ * coach brings out after a run. Never returned to the frontend as is; the evaluation only comes
+ * back inside a run's result, and the debrief points only reach the coach's prompt after a run.
  */
-public record ScenarioRunSpec(ScenarioResponse brief, long seed, Evaluation evaluation) {
+public record ScenarioRunSpec(ScenarioResponse brief, long seed, Evaluation evaluation, List<String> debriefPoints) {
 
 	static ScenarioRunSpec from(Scenario scenario) {
 		var evaluation = new Evaluation(
@@ -21,7 +22,8 @@ public record ScenarioRunSpec(ScenarioResponse brief, long seed, Evaluation eval
 				scenario.getMinInstruments(),
 				scenario.getShareRanges().stream().map(ShareRange::from).toList(),
 				scenario.getEvaluationExplanation());
-		return new ScenarioRunSpec(ScenarioResponse.from(scenario), scenario.getScenarioSeed(), evaluation);
+		return new ScenarioRunSpec(ScenarioResponse.from(scenario), scenario.getScenarioSeed(), evaluation,
+				List.copyOf(scenario.getDebriefPoints()));
 	}
 
 	/** The "right assets" and "right shares" data from knowledge/sandbox-scenarios.json. */

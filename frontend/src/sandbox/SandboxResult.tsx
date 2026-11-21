@@ -3,20 +3,26 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import type { Ref } from 'react';
 import { cn } from 'cn';
 import { Button } from '@/components/ui/button';
+import { hedgieImage } from '@/components/coach/hedgie';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ScenarioRunResponse } from '@/model';
 import { CRITERION_TITLES } from './resultText';
 import { StarRating } from './StarRating';
 
-/** What stays on the page after the result popup closes: the stars, each criterion, and a way back in. */
+/**
+ * What stays on the page after the result popup closes: the stars, each criterion, a way back in,
+ * and a way to ask Hedgie for feedback on the run.
+ */
 export function SandboxResult({
   run,
   titleRef,
   onOpenDetails,
+  onAskCoach,
 }: {
   run: ScenarioRunResponse;
   titleRef?: Ref<HTMLHeadingElement>;
   onOpenDetails: () => void;
+  onAskCoach: () => void;
 }) {
   const { stars } = run;
   return (
@@ -51,9 +57,15 @@ export function SandboxResult({
             </li>
           ))}
         </ul>
-        <Button type="button" variant="outline" size="sm" onClick={onOpenDetails}>
-          See full result
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={onOpenDetails}>
+            See full result
+          </Button>
+          <Button type="button" size="sm" onClick={onAskCoach}>
+            <img src={hedgieImage('hint')} alt="" aria-hidden="true" className="size-5" data-icon="inline-start" />
+            Ask Hedgie for feedback
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

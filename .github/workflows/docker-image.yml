@@ -9,6 +9,7 @@
 #   GAR_REPOSITORY                  Artifact Registry Docker repository name, e.g. hedgeflex
 #   GCP_WORKLOAD_IDENTITY_PROVIDER  projects/<number>/locations/global/workloadIdentityPools/<pool>/providers/<provider>
 #   GCP_SERVICE_ACCOUNT             <name>@<project>.iam.gserviceaccount.com (roles/artifactregistry.writer on the repository)
+# These resources are managed in infra/ (Terraform); `terraform output github_actions_variables` prints the values.
 
 name: Build Docker image
 
