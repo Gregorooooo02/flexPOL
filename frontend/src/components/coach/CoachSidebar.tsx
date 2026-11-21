@@ -2,11 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ReactNode, RefObject } from 'react';
 import { usePanelRef } from 'react-resizable-panels';
 import { cn } from 'cn';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -208,20 +204,16 @@ function CoachChatSession({
           className="h-full min-h-0 shadow-none ring-0"
         />
       </aside>
-      <Dialog open={mobileChatOpen} onOpenChange={onMobileChatOpenChange}>
-        <DialogContent
-          className="h-[min(40rem,85svh)] p-0 lg:hidden"
-          finalFocus={launcherRef}
-          showCloseButton={false}
-        >
-          <DialogTitle className="sr-only">AI coach</DialogTitle>
+      <Drawer open={mobileChatOpen} onOpenChange={onMobileChatOpenChange} showSwipeHandle>
+        <DrawerContent className="h-[85svh] lg:hidden" finalFocus={launcherRef}>
+          <DrawerTitle className="sr-only">AI coach</DrawerTitle>
           <CoachPanel
             {...panelProps}
             onClose={() => onMobileChatOpenChange(false)}
-            className="h-full min-h-0"
+            className="min-h-0 flex-1 rounded-none shadow-none ring-0"
           />
-        </DialogContent>
-      </Dialog>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 }
