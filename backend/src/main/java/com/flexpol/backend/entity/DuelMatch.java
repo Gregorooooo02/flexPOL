@@ -22,7 +22,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "duel_match", indexes = @Index(columnList = "phase, planning_ends_at"))
+@Table(name = "duel_match", indexes = {
+		@Index(columnList = "phase, planning_ends_at"),
+		@Index(columnList = "phase, replay_starts_at"),
+		@Index(columnList = "phase, replay_ends_at")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -62,6 +66,14 @@ public class DuelMatch {
 
 	private Instant evaluationStartedAt;
 	private Instant evaluatedAt;
+	private Instant replayStartsAt;
+	private Instant replayEndsAt;
+	private Instant finishedAt;
+
+	@Column(nullable = false, length = 40)
+	private String ratingFormulaVersion;
+	private Integer rawRatingTransfer;
+	private Integer appliedRatingTransfer;
 	private Instant failedAt;
 	private UUID evaluationClaimToken;
 	private Instant evaluationClaimExpiresAt;

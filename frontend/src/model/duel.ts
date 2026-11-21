@@ -27,7 +27,7 @@ export interface DuelAllowedInstrument {
   riskLevel: RiskLevel;
 }
 
-export type DuelPhase = 'BRIEFING' | 'PLANNING' | 'EVALUATING' | 'EVALUATED' | 'CANCELLED' | 'FAILED';
+export type DuelPhase = 'BRIEFING' | 'PLANNING' | 'EVALUATING' | 'EVALUATED' | 'REPLAY' | 'FINISHED' | 'CANCELLED' | 'FAILED';
 export type DuelFailureReason = 'EVALUATION_ERROR' | 'EVALUATION_TIMEOUT';
 export type DuelOutcome = 'WIN' | 'DRAW';
 export type DuelSubmissionSource = 'MANUAL' | 'TIMEOUT';
@@ -76,6 +76,10 @@ export interface DuelMatch {
   evaluatedAt: string | null;
   failedAt: string | null;
   failureReason: DuelFailureReason | null;
+  replayStartsAt: string | null;
+  replayEndsAt: string | null;
+  finishedAt: string | null;
+  ratingFormulaVersion: string;
   serverNow: string;
   players: DuelPlayer[];
   ownPortfolio: DuelPortfolio;
@@ -123,4 +127,35 @@ export interface DuelInstrumentResult {
   values: number[];
   finalValue: number;
   contribution: number;
+}
+
+// Mirrors DuelRatingResponse. Current balance, separate from a past game's audit.
+export interface DuelRating {
+  userId: number;
+  points: number;
+}
+
+// Mirrors DuelSettlementResponse. These historical balances never change after settlement.
+export interface DuelSettlement {
+  schemaVersion: number;
+  matchId: string;
+  settledAt: string;
+  formulaVersion: string;
+  outcome: DuelOutcome;
+  winnerId: number | null;
+  budget: number;
+  finalValueGap: number;
+  rawTransfer: number;
+  appliedTransfer: number;
+  loserFloorApplied: boolean;
+  players: DuelRatingChange[];
+}
+
+export interface DuelRatingChange {
+  userId: number;
+  username: string;
+  seat: number;
+  pointsBefore: number;
+  delta: number;
+  pointsAfter: number;
 }

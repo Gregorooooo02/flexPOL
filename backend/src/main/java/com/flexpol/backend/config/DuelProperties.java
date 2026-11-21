@@ -10,12 +10,16 @@ public record DuelProperties(
 		@DefaultValue("8s") Duration briefingDuration,
 		@DefaultValue("120s") Duration planningDuration,
 		@DefaultValue("30s") Duration evaluationLease,
-		@DefaultValue("3") int evaluationMaxAttempts) {
+		@DefaultValue("3") int evaluationMaxAttempts,
+		@DefaultValue("2s") Duration replayLeadIn,
+		@DefaultValue("10s") Duration replayDuration) {
 
 	public DuelProperties {
 		validate(briefingDuration, "briefing-duration");
 		validate(planningDuration, "planning-duration");
 		validate(evaluationLease, "evaluation-lease");
+		validate(replayLeadIn, "replay-lead-in");
+		validate(replayDuration, "replay-duration");
 		if (evaluationMaxAttempts < 1 || evaluationMaxAttempts > 5) {
 			throw new IllegalArgumentException("hedgeflex.duel.evaluation-max-attempts must be between 1 and 5");
 		}

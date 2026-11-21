@@ -25,9 +25,11 @@ public interface DuelMatchRepository extends JpaRepository<DuelMatch, UUID> {
 			select m.id from DuelMatch m
 			where (m.phase = :briefing and m.planningStartsAt <= :now)
 			   or (m.phase = :planning and m.planningEndsAt <= :now)
+			   or (m.phase = :evaluated and m.replayStartsAt <= :now)
+			   or (m.phase = :replay and m.replayEndsAt <= :now)
 			order by m.planningEndsAt, m.id
 			""")
-	List<UUID> findDueIds(DuelPhase briefing, DuelPhase planning, Instant now, Pageable page);
+	List<UUID> findDueIds(DuelPhase briefing, DuelPhase planning, DuelPhase evaluated, DuelPhase replay, Instant now, Pageable page);
 
 	@Query("""
 			select count(p) > 0 from DuelParticipant p

@@ -28,8 +28,11 @@ export type {
   DuelPlayerResult,
   DuelPortfolio,
   DuelPortfolioRequest,
+  DuelRating,
+  DuelRatingChange,
   DuelResult,
   DuelScenario,
+  DuelSettlement,
   DuelSubmissionSource,
 } from './duel';
 export type {

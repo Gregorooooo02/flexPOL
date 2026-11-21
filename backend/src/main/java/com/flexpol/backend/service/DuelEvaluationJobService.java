@@ -89,6 +89,9 @@ public class DuelEvaluationJobService {
 		results.saveAndFlush(result);
 		match.setPhase(DuelPhase.EVALUATED);
 		match.setEvaluatedAt(payload.completedAt());
+		// Assigned exactly once at result commit, never from a browser or a replay read.
+		match.setReplayStartsAt(clock.instant().plus(properties.replayLeadIn()));
+		match.setReplayEndsAt(match.getReplayStartsAt().plus(properties.replayDuration()));
 		clearClaim(match);
 		match.setRevision(match.getRevision() + 1);
 		return true;

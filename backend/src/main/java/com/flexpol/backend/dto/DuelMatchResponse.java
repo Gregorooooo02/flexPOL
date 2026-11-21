@@ -25,6 +25,10 @@ public record DuelMatchResponse(
 		Instant evaluatedAt,
 		Instant failedAt,
 		DuelFailureReason failureReason,
+		Instant replayStartsAt,
+		Instant replayEndsAt,
+		Instant finishedAt,
+		String ratingFormulaVersion,
 		Instant serverNow,
 		List<Player> players,
 		Portfolio ownPortfolio) {

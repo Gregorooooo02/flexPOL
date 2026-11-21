@@ -17,6 +17,7 @@ import com.flexpol.backend.dto.DuelMatchResponse;
 import com.flexpol.backend.dto.DuelPortfolioRequest;
 import com.flexpol.backend.dto.DuelScenarioResponse;
 import com.flexpol.backend.dto.DuelResultResponse;
+import com.flexpol.backend.dto.DuelSettlementResponse;
 import com.flexpol.backend.entity.DuelAllocation;
 import com.flexpol.backend.entity.DuelCancellationReason;
 import com.flexpol.backend.entity.DuelMatch;
@@ -48,13 +49,16 @@ import tools.jackson.databind.json.JsonMapper;
 @Transactional(noRollbackFor = DuelConflictException.class)
 public class DuelMatchService {
 
-	private static final Set<DuelPhase> ACTIVE_PHASES = Set.of(DuelPhase.BRIEFING, DuelPhase.PLANNING, DuelPhase.EVALUATING, DuelPhase.EVALUATED);
+	private static final Set<DuelPhase> ACTIVE_PHASES = Set.of(DuelPhase.BRIEFING, DuelPhase.PLANNING, DuelPhase.EVALUATING,
+			DuelPhase.EVALUATED, DuelPhase.REPLAY);
+	private static final Set<DuelPhase> RESULT_PHASES = Set.of(DuelPhase.EVALUATED, DuelPhase.REPLAY, DuelPhase.FINISHED);
 
 	private final DuelMatchRepository matchRepository;
 	private final UserRepository userRepository;
 	private final DuelScenarioService scenarioService;
 	private final DuelMarketService marketService;
 	private final DuelResultRepository resultRepository;
+	private final DuelRatingService ratingService;
 	private final JsonMapper jsonMapper;
 	private final Clock clock;
 	private final DuelProperties properties;
@@ -72,10 +76,14 @@ public class DuelMatchService {
 		if (matchRepository.hasActiveMatch(lowerId, ACTIVE_PHASES) || matchRepository.hasActiveMatch(higherId, ACTIVE_PHASES)) {
 			throw new DuelConflictException("A learner already has an active Duel");
 		}
+		// Both user rows are already locked in the global order; initialize accounts before a match can be evaluated.
+		ratingService.getRating(lowerId);
+		ratingService.getRating(higherId);
 		var spec = scenarioService.generate();
 		var now = clock.instant();
 		var match = new DuelMatch();
 		match.setId(UUID.randomUUID());
+		match.setRatingFormulaVersion(DuelRatingService.FORMULA_VERSION);
 		match.setScenarioJson(jsonMapper.writeValueAsString(spec));
 		match.setMarketJson(jsonMapper.writeValueAsString(marketService.freeze(spec, now)));
 		match.setCreatedAt(now);
@@ -100,9 +108,23 @@ public class DuelMatchService {
 		var match = findOwnedLocked(matchId, learnerId);
 		var now = clock.instant();
 		advance(match, now);
-		if (match.getPhase() != DuelPhase.EVALUATED) {
+		if (!RESULT_PHASES.contains(match.getPhase())) {
 			throw new DuelConflictException("Duel results are not available in the current phase", snapshot(match, learnerId, now));
 		}
+		return readResult(matchId);
+	}
+
+	public DuelSettlementResponse getSettlement(UUID matchId, Long learnerId) {
+		var match = findOwnedLocked(matchId, learnerId);
+		var now = clock.instant();
+		advance(match, now);
+		if (match.getPhase() != DuelPhase.FINISHED) {
+			throw new DuelConflictException("Duel ranking has not been settled yet", snapshot(match, learnerId, now));
+		}
+		return ratingService.readSettlementLocked(match, readResult(matchId));
+	}
+
+	private DuelResultResponse readResult(UUID matchId) {
 		var result = resultRepository.findById(matchId)
 				.orElseThrow(() -> new IllegalStateException("Evaluated Duel has no stored result"));
 		return jsonMapper.readValue(result.getResultJson(), DuelResultResponse.class);
@@ -144,7 +166,8 @@ public class DuelMatchService {
 	/** Bounded selection; each selected match is subsequently rechecked under its own row lock. */
 	@Transactional(readOnly = true)
 	public List<UUID> findDueMatchIds() {
-		return matchRepository.findDueIds(DuelPhase.BRIEFING, DuelPhase.PLANNING, clock.instant(), PageRequest.of(0, 100));
+		return matchRepository.findDueIds(DuelPhase.BRIEFING, DuelPhase.PLANNING, DuelPhase.EVALUATED, DuelPhase.REPLAY,
+				clock.instant(), PageRequest.of(0, 100));
 	}
 
 	public void advanceDueMatch(UUID matchId) {
@@ -178,7 +201,7 @@ public class DuelMatchService {
 				.findFirst().orElseThrow(() -> new ResourceNotFoundException("Duel", match.getId()));
 	}
 
-	private static void advance(DuelMatch match, Instant now) {
+	private void advance(DuelMatch match, Instant now) {
 		if (match.getPhase() == DuelPhase.BRIEFING && !now.isBefore(match.getPlanningStartsAt())) {
 			match.setPhase(DuelPhase.PLANNING);
 			changed(match);
@@ -192,6 +215,13 @@ public class DuelMatchService {
 				}
 			}
 			finishPlanning(match, now);
+		}
+		if (match.getPhase() == DuelPhase.EVALUATED && !now.isBefore(match.getReplayStartsAt())) {
+			match.setPhase(DuelPhase.REPLAY);
+			changed(match);
+		}
+		if (match.getPhase() == DuelPhase.REPLAY && !now.isBefore(match.getReplayEndsAt())) {
+			ratingService.settleLocked(match, readResult(match.getId()), now);
 		}
 	}
 
@@ -288,7 +318,8 @@ public class DuelMatchService {
 		return new DuelMatchResponse(match.getId(), match.getPhase(), match.getRevision(), DuelScenarioResponse.from(spec),
 				match.getCreatedAt(), match.getPlanningStartsAt(), match.getPlanningEndsAt(), match.getEvaluationStartedAt(),
 				match.getCancelledAt(), match.getCancellationReason(), match.getEvaluatedAt(), match.getFailedAt(),
-				match.getFailureReason(), now, players, portfolio);
+				match.getFailureReason(), match.getReplayStartsAt(), match.getReplayEndsAt(), match.getFinishedAt(),
+				match.getRatingFormulaVersion(), now, players, portfolio);
 	}
 
 	private static void changed(DuelMatch match) {

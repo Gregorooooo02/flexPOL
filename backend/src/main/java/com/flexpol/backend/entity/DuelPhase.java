@@ -1,6 +1,6 @@
 package com.flexpol.backend.entity;
 
-/** EVALUATED awaits future replay/settlement; FAILED and CANCELLED are terminal. */
+/** EVALUATED is the replay lead-in; FINISHED, FAILED and CANCELLED are terminal. */
 public enum DuelPhase {
-	BRIEFING, PLANNING, EVALUATING, EVALUATED, CANCELLED, FAILED
+	BRIEFING, PLANNING, EVALUATING, EVALUATED, REPLAY, FINISHED, CANCELLED, FAILED
 }
