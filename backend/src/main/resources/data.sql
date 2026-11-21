@@ -12,6 +12,8 @@ Imagine you keep 1,000 coins under your mattress. Ten years later you still have
 
 With 3% inflation a year, 1,000 coins today buy only about as much as **744 coins** would in 10 years. Nothing was stolen. The money simply lost **purchasing power**.
 
+![Hedgie chases gold coins as they sprint away on tiny legs, a metaphor for purchasing power slipping away.](/lesson-illustrations/hedgie-coin-chase.svg)
+
 ### Saving vs. investing
 
 - **Saving** means putting money aside somewhere safe and easy to reach, like a savings account. It protects you against surprises, but it often grows more slowly than inflation.
@@ -50,6 +52,8 @@ INSERT INTO subchapter (id, chapter_id, sort_order, code, title, goal, sandbox_i
 Many beginners start by asking "What should I buy?" A better first question is: **"What is this money for?"**
 
 The goal decides which instruments make sense. The same 5,000 coins should be handled very differently if they''re meant for a holiday next summer or for retirement in 35 years.
+
+![Hedgie squints as his dart flies toward the bullseye.](/lesson-illustrations/hedgie-target-practice.svg)
 
 ### Vague wishes vs. clear goals
 
