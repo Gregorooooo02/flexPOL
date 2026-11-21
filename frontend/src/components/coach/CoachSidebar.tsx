@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { usePanelRef } from 'react-resizable-panels';
+import { useLocation } from 'react-router';
 import { cn } from 'cn';
 import { Button } from '@/components/ui/button';
 import {
@@ -41,6 +42,8 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
   const focus = useCoachFocus();
   const focusScopeId = focus?.scopeId ?? 'general';
   const sidebarRef = usePanelRef();
+  const mainRef = useRef<HTMLElement>(null);
+  const { pathname } = useLocation();
   const transitionTimeout = useRef<number | undefined>(undefined);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mobileChat, setMobileChat] = useState({ focusScopeId, open: false });
@@ -73,6 +76,12 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
     animatePanelChange(() => sidebarRef.current?.collapse());
   }
 
+  // A new route starts at the top. The content panel around <main> is what scrolls, and it
+  // would otherwise keep the previous page's position (e.g. a scenario opened from far down the list).
+  useLayoutEffect(() => {
+    mainRef.current?.parentElement?.scrollTo({ top: 0 });
+  }, [pathname]);
+
   useEffect(() => {
     const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
     const handleMediaChange = () => {
@@ -103,7 +112,9 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
         className={cn('min-h-0 flex-1', isTransitioning && 'fx-coach-sidebar-transition')}
       >
         <ResizablePanel defaultSize="100%" minSize="40%" className="min-w-0">
-          <main className="relative flex h-full min-h-0 flex-col">{children}</main>
+          <main ref={mainRef} className="relative flex h-full min-h-0 flex-col">
+            {children}
+          </main>
         </ResizablePanel>
         <ResizableHandle
           withHandle
