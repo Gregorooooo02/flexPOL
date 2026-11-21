@@ -1,5 +1,7 @@
-import type { GoalBrief, GoalProfile, RoadmapAction, RoadmapSetupDraft } from '@/roadmap/types';
-import type { ToolDraft, ToolDrafts } from '@/tools/types';
+import type { BufferPlan, GoalBrief, GoalProfile, RoadmapAction, RoadmapSetupDraft } from '@/roadmap/types';
+import { preserveBufferPlan } from '@/roadmap/bufferPlan';
+import { isBufferInput, isGoalInput } from '@/tools/validation';
+import type { BufferInput, GoalPlannerInput, ToolDraft, ToolDrafts } from '@/tools/types';
 import type { JourneySource, LearningCompletion, LearningSessionState } from './types';
 
 export interface JourneySessionState {
@@ -10,6 +12,7 @@ export interface JourneySessionState {
   readonly learning: LearningSessionState;
   readonly setupDraft: RoadmapSetupDraft | null;
   readonly roadmapSource: JourneySource | null;
+  readonly bufferPlan: BufferPlan | null;
 }
 
 export type JourneySessionAction =
@@ -21,6 +24,8 @@ export type JourneySessionAction =
   | { type: 'save-roadmap'; goal: GoalBrief; profile: GoalProfile }
   | { type: 'clear-roadmap' }
   | { type: 'set-tool-draft'; draft: ToolDraft }
+  | { type: 'apply-goal-inputs'; expectedGoalId: string; input: GoalPlannerInput; today: string }
+  | { type: 'save-buffer'; expectedGoalId: string; expectedGoalSavedCents: number | undefined; input: BufferInput; source: JourneySource; separationConfirmed: true }
   | { type: 'select-action'; action: RoadmapAction }
   | { type: 'update-action'; goalId: string; actionId: string; status?: RoadmapAction['status']; reflection?: string }
   | { type: 'complete-learning'; completions: readonly LearningCompletion[] }
@@ -36,6 +41,7 @@ export function createJourneySession(): JourneySessionState {
     learning: { completions: {}, resumeNodeId: null },
     setupDraft: null,
     roadmapSource: null,
+    bufferPlan: null,
   };
 }
 
@@ -51,15 +57,28 @@ export function journeySessionReducer(state: JourneySessionState, action: Journe
       return { ...state, setupDraft: null };
     case 'save-roadmap':
       if (state.setupDraft?.goalId !== action.goal.id || action.profile.goalId !== action.goal.id) return state;
-      return { ...state, goal: action.goal, profile: action.profile, roadmapSource: state.setupDraft.source, setupDraft: null };
+      return { ...state, goal: action.goal, profile: action.profile, roadmapSource: state.setupDraft.source, setupDraft: null, bufferPlan: preserveBufferPlan(state.bufferPlan, action.goal) };
     case 'clear-roadmap':
       return { ...createJourneySession(), learning: state.learning };
     case 'set-goal':
-      return { ...state, goal: action.goal, profile: state.profile?.goalId === action.goal.id ? state.profile : null };
+      return { ...state, goal: action.goal, profile: state.profile?.goalId === action.goal.id ? state.profile : null, bufferPlan: preserveBufferPlan(state.bufferPlan, action.goal) };
     case 'set-profile':
       return action.profile.goalId === state.goal?.id ? { ...state, profile: action.profile } : state;
     case 'set-tool-draft':
       return { ...state, toolDrafts: { ...state.toolDrafts, [action.draft.tool]: action.draft } };
+    case 'apply-goal-inputs': {
+      if (state.setupDraft || state.goal?.id !== action.expectedGoalId || !isGoalInput(action.input, action.today)) return state;
+      const goal = { ...state.goal, targetCents: action.input.targetCents, goalDate: action.input.goalDate, savedCents: action.input.savedCents, monthlyContributionCents: action.input.monthlyContributionCents };
+      return { ...state, goal, bufferPlan: preserveBufferPlan(state.bufferPlan, goal) };
+    }
+    case 'save-buffer':
+      if (state.setupDraft || state.goal?.id !== action.expectedGoalId || state.goal.savedCents !== action.expectedGoalSavedCents || action.separationConfirmed !== true || !isBufferInput(action.input)) return state;
+      return { ...state, bufferPlan: {
+        goalId: state.goal.id,
+        input: { monthlyExpensesCents: action.input.monthlyExpensesCents, accessibleSavingsCents: action.input.accessibleSavingsCents, earmarkedExpensesCents: action.input.earmarkedExpensesCents, targetMonths: action.input.targetMonths },
+        source: state.bufferPlan?.goalId === state.goal.id ? state.bufferPlan.source : action.source,
+        goalSavedCentsAtConfirmation: action.expectedGoalSavedCents, separationNeedsReview: false,
+      } };
     case 'select-action':
       if (action.action.goalId !== state.goal?.id || state.actions.some((existing) =>
         existing.goalId === action.action.goalId && existing.actionId === action.action.actionId)) return state;

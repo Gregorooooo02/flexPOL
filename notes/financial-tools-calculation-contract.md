@@ -1,20 +1,22 @@
 # Financial Tools — Calculation Contract
 
-Status: foundation contract for M3 (goal/buffer) and M5 (fees). No calculations run in M1 previews.
+Status: implemented for M3 goal/buffer tools; fee arithmetic remains the contract for M5, whose UI is still a preview.
 
 ## Shared conventions
 
 - EUR only. Validated starting amounts/contributions/expenses are integer cents, parsed and displayed through `workspace/portfolio/money.ts`. Empty input is unknown, not zero. Reject negative amounts, malformed grouping, nonfinite values, and amounts outside the tool's documented bounds.
-- Initial implementation bounds: each amount EUR 0–1,000,000,000; horizons 1–600 monthly periods; annual return −90% to +50%; annual inflation 0–50%; annual percentage fee 0–20%. These are modeling limits, not recommended assumptions. No default positive return is required for a useful result.
+- Initial implementation bounds: each amount EUR 0–1,000,000,000; goal horizons 0–600 completed monthly periods (zero is supported before the first contribution anniversary); annual return −90% to +50%; annual inflation 0–50%; annual percentage fee 0–20%. These are modeling limits, not recommended assumptions. No default positive return is required for a useful result.
 - Use effective annual rates entered as percentages. For calculations convert them to fractions. A monthly rate is `(1 + annualRate) ** (1 / 12) - 1`, not `annualRate / 12`.
 - Contributions are made at the end of each monthly period. Each period first grows/charges the existing balance and then adds that period's contribution. No contribution is made at time zero.
 - Keep full floating-point precision for modeled growth, fees, and inflation; round monetary displays consistently to cents using the shared formatting boundary. Do not repeatedly round every period. Validate all derived values are finite and display a clear range error rather than Infinity/NaN.
 - The displayed ending-value difference is calculated from unrounded modeled values, not the difference between already-rounded labels. State that rounding can produce a cent difference in displayed totals.
 - These are deterministic arithmetic illustrations, not probabilities, forecasts, or synthetic market histories. AI must never provide their numeric outputs.
+- Derived amounts must remain finite, nonnegative, and roundable to safe integer cents. Reject an optional illustration that exceeds this range while retaining a valid contributions-only baseline. Do not silently clamp or format unsafe currency values.
+- Rate fields accept one decimal point or decimal comma and at most four fractional digits, with no thousands grouping. Only return may have a leading minus. Disabled assumption fields are retained in the draft but ignored.
 
 ## Goal planner
 
-Required facts: target amount and target date. Current savings and contribution are optional until a calculation is requested; ask for an explicit zero rather than silently treating a blank as zero.
+Required for calculation: target amount, target date, current savings and monthly contribution. A partial saved roadmap can omit any of these, but calculation asks for explicit values (including zero) rather than silently treating a blank as zero.
 
 Use the user's local calendar date as the calculation date. Compute completed monthly contribution anniversaries up to and including the goal date: add each month to the original calculation date, clamp the original day to that month's last day, and never let clamping drift subsequent anniversaries. The first contribution is one calendar month after the calculation date. A goal before the first anniversary has zero periods; show current savings, remaining gap, and explain that there is no monthly contribution date before the goal.
 
@@ -26,7 +28,9 @@ gap = max(0, target - contributionsOnly)
 monthlyNeeded = max(0, target - currentSavings) / months
 ```
 
-Round `monthlyNeeded` upward to the next cent so a contributions-only plan does not undershoot the target. For zero periods it is undefined, never a division by zero. A zero target/already-funded goal has no remaining contribution requirement. Past dates are invalid.
+Round `monthlyNeeded` upward to the next cent so a contributions-only plan does not undershoot the target. An unfunded zero-period goal has no calculable monthly contribution, never a division by zero. A zero target/already-funded goal needs no further contribution. Past dates are invalid.
+
+For zero periods, an unfunded target has no calculable monthly contribution, while an already-funded/zero target has a required contribution of zero. Goal dates must be today/future and no later than the clamped 600-month anniversary. Results are dated; input edits clear them and applying facts on a different local date requires recalculation.
 
 Optional advanced illustrations use a user-selected annual return. Run the same monthly recurrence as the baseline with monthly growth before each contribution; zero return must reproduce the baseline. Do not reverse-solve a required investment return or suggest more risk to close a gap.
 

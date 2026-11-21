@@ -220,7 +220,7 @@ export function LoginPage() {
 
         <DialogFooter className="justify-center sm:justify-center">
           <p className="text-center text-xs text-muted-foreground">
-            Demo login: all data in HedgeFlex is fictional and for learning only.
+            Demo login, not real authentication. Lessons and markets are fictional; personal planning entries last only for this session.
           </p>
         </DialogFooter>
       </DialogContent>

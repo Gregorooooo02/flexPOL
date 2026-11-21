@@ -13,6 +13,8 @@ import { RoadmapPage } from './roadmap/RoadmapPage';
 import { RoadmapSetupPage } from './roadmap/RoadmapSetupPage';
 import { ToolsPage } from './tools/ToolsPage';
 import { ToolPageShell } from './tools/ToolPageShell';
+import { GoalPlannerPage } from './tools/GoalPlannerPage';
+import { EmergencyBufferPage } from './tools/EmergencyBufferPage';
 
 export function App() {
   return (
@@ -31,8 +33,8 @@ export function App() {
             <Route path="roadmap" element={<RoadmapPage />} />
             <Route path="roadmap/setup" element={<RoadmapSetupPage />} />
             <Route path="tools" element={<ToolsPage />} />
-            <Route path="tools/goal-planner" element={<ToolPageShell tool="goal-planner" />} />
-            <Route path="tools/emergency-buffer" element={<ToolPageShell tool="emergency-buffer" />} />
+            <Route path="tools/goal-planner" element={<GoalPlannerPage />} />
+            <Route path="tools/emergency-buffer" element={<EmergencyBufferPage />} />
             <Route path="tools/fee-impact" element={<ToolPageShell tool="fee-impact" />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

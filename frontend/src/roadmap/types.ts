@@ -1,4 +1,5 @@
 import type { JourneySource } from '@/journey/types';
+import type { BufferInput } from '@/tools/types';
 
 export type ProfileSection = 'goal' | 'liquidity' | 'risk' | 'knowledge' | 'review';
 
@@ -44,4 +45,12 @@ export interface RoadmapAction {
   readonly status: 'todo' | 'checked' | 'later' | 'stuck';
   readonly reflection?: string;
   readonly source: JourneySource;
+}
+
+export interface BufferPlan {
+  readonly goalId: string;
+  readonly input: BufferInput;
+  readonly source: JourneySource;
+  readonly goalSavedCentsAtConfirmation: number | undefined;
+  readonly separationNeedsReview: boolean;
 }

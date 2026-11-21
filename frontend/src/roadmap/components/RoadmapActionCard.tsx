@@ -11,6 +11,7 @@ import { lessonPath } from '@/journey/learningLinks';
 import { sourceLabel, withJourneySource } from '@/journey/routes';
 import type { PracticalConnection } from '@/journey/types';
 import type { RoadmapAction } from '../types';
+import { TOOL_DEFINITIONS } from '@/tools/toolDefinitions';
 
 const STATUSES = [
   { value: 'todo', label: 'To do' }, { value: 'checked', label: 'Checked' },
@@ -47,7 +48,7 @@ export function RoadmapActionCard({ task, action, onUpdate }: {
             </form>
           </DialogContent>
         </Dialog>
-        <Link to={withJourneySource(connectionPath(action), task.source)} className={buttonVariants({ variant: 'ghost', size: 'sm' })}>{action.destination.kind === 'tool' ? 'Preview related calculator' : 'Review worksheet section'}</Link>
+        <Link to={withJourneySource(connectionPath(action), task.source)} className={buttonVariants({ variant: 'ghost', size: 'sm' })}>{action.destination.kind === 'tool' ? TOOL_DEFINITIONS[action.destination.id].available ? 'Open related calculator' : 'Preview related calculator' : 'Review worksheet section'}</Link>
       </CardFooter>
     </Card>
   );

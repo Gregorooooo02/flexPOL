@@ -1,6 +1,6 @@
 # Financial Roadmap and Practical Tools — Implementation Plan
 
-Status: M1 foundation and M2 goal/profile roadmap implemented. M3–M6 remain planned; calculators, persistent storage, and completion handoff CTAs are not implemented yet.
+Status: M1 foundation, M2 goal/profile roadmap, and M3 goal/buffer tools implemented. M4–M6 remain planned; fee calculation, persistent storage, and completion handoff CTAs are not implemented yet.
 
 ## 1. Product decision
 
@@ -270,6 +270,8 @@ Detailed execution plan: [Milestone 2 implementation plan](financial-roadmap-m2-
 Acceptance: an incomplete or conflicting profile produces understandable questions, not an investor label or recommended allocation; selected actions survive internal navigation.
 
 ### M3 — Goal planner and emergency buffer
+
+Detailed execution plan: [Milestone 3 implementation plan](financial-roadmap-m3-implementation-plan.md).
 
 - Implement pure calculations, validation, result explanations, and roadmap save/apply actions.
 - Support standalone use without goal setup.

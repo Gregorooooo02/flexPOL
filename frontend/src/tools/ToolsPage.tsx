@@ -11,17 +11,17 @@ export function ToolsPage() {
   const [search] = useSearchParams();
   const source = readJourneySource(search) ?? { kind: 'tools' as const };
   return (
-    <JourneyPage title="Practical tools" description="Start your goal and risk worksheet now, or explore the planned calculators. Calculators are not available yet.">
+    <JourneyPage status="active" activeLabel="Practical tools" title="Practical tools" description="Use the goal planner and emergency buffer, or build your goal and risk worksheet. Fee impact remains a preview.">
       <div className="grid gap-5 @2xl:grid-cols-2">
         {TOOL_IDS.map((id) => (
           <Card key={id}>
             <CardHeader>
-              <Badge variant="outline">Calculator coming later</Badge>
+              <Badge variant="outline">{TOOL_DEFINITIONS[id].available ? 'Available for this session' : 'Calculator coming later'}</Badge>
               <CardTitle><h2>{TOOL_DEFINITIONS[id].title}</h2></CardTitle>
               <CardDescription>{TOOL_DEFINITIONS[id].description}</CardDescription>
             </CardHeader>
             <CardFooter className="mt-auto">
-              <Link to={withJourneySource(toolPath(id), source)} className={buttonVariants({ variant: 'outline' })}>Preview {TOOL_DEFINITIONS[id].title.toLowerCase()}</Link>
+              <Link to={withJourneySource(toolPath(id), source)} className={buttonVariants({ variant: 'outline' })}>{TOOL_DEFINITIONS[id].available ? 'Open' : 'Preview'} {TOOL_DEFINITIONS[id].title.toLowerCase()}</Link>
             </CardFooter>
           </Card>
         ))}

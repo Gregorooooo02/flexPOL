@@ -17,6 +17,7 @@ import { GoalSummary } from './components/GoalSummary';
 import { ProfileObservations } from './components/ProfileObservations';
 import { SuggestedActions } from './components/SuggestedActions';
 import { RoadmapActionCard } from './components/RoadmapActionCard';
+import { BufferSummary } from './components/BufferSummary';
 import type { RoadmapAction } from './types';
 
 const GROUPS: readonly { value: RoadmapAction['status']; label: string }[] = [
@@ -82,6 +83,7 @@ export function RoadmapPage() {
           <section aria-labelledby="profile-observations" className="flex flex-col gap-4">
             <h2 id="profile-observations" className="font-heading text-2xl font-semibold">My constraints and questions</h2>
             <ProfileObservations observations={observations} />
+            <BufferSummary plan={state.bufferPlan?.goalId === goal.id ? state.bufferPlan : null} />
           </section>
           <section aria-labelledby="suggested-actions" className="flex flex-col gap-4">
             <h2 id="suggested-actions" className="font-heading text-2xl font-semibold">Suggested next steps</h2>
@@ -124,7 +126,7 @@ export function RoadmapPage() {
       )}
       <section aria-labelledby="explore-further" className="flex flex-col gap-3">
         <h2 id="explore-further" className="font-heading text-2xl font-semibold">Explore further</h2>
-        <div className="flex flex-wrap gap-2"><Link to="/learning" className={buttonVariants({ variant: 'outline' })}>Learning path</Link><Link to="/scenarios" className={buttonVariants({ variant: 'outline' })}>Fictional scenarios</Link><Link to={withJourneySource('/tools', { kind: 'roadmap' })} className={buttonVariants({ variant: 'outline' })}>Calculator previews</Link></div>
+        <div className="flex flex-wrap gap-2"><Link to="/learning" className={buttonVariants({ variant: 'outline' })}>Learning path</Link><Link to="/scenarios" className={buttonVariants({ variant: 'outline' })}>Fictional scenarios</Link><Link to={withJourneySource('/tools', { kind: 'roadmap' })} className={buttonVariants({ variant: 'outline' })}>Practical tools</Link></div>
       </section>
       {(goal || state.setupDraft) && <div><Button type="button" variant="ghost" onClick={() => setClearOpen(true)}>Clear my roadmap</Button></div>}
       <ConfirmRoadmapDialog open={clearOpen} onOpenChange={setClearOpen} title="Clear your personal roadmap?" description="This clears your goal, profile, worksheet draft, tasks, reflections, and personal tool drafts for this session. Your learning progress will remain. This cannot be undone." confirmLabel="Clear my roadmap" cancelLabel="Keep my roadmap" onConfirm={() => { dispatch({ type: 'clear-roadmap' }); setClearOpen(false); setBrowse(false); setAnnouncement('Your personal roadmap was cleared. Learning progress was kept.'); }} />
