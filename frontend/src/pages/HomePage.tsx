@@ -6,7 +6,6 @@ import { cn } from 'cn';
 import { getChapters } from '@/api';
 import { useAuth } from '@/auth/authContext';
 import { hedgieImage } from '@/components/coach/hedgie';
-import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
 import {
   Card,
@@ -272,12 +271,6 @@ export function HomePage() {
             </p>
           </div>
           <img src={hedgieImage('joy')} alt="" className="hidden size-28 shrink-0 object-contain @md:block @3xl:size-36" />
-        </section>
-
-        <section aria-label="Quest Arena" className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
-          <span className="font-heading font-semibold text-foreground">Quest Arena</span>
-          <Badge variant="secondary">Coming soon</Badge>
-          <span>Future quests will reward thoughtful decisions, not just luck.</span>
         </section>
 
         <footer className="flex flex-col gap-6">
