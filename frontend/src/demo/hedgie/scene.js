@@ -1,5 +1,12 @@
 import * as THREE from 'three';
-import { addLighting, createHedgehog, createMedal, createShadow } from './model.js';
+import {
+  addLighting,
+  createHedgehog,
+  createMedal,
+  createShadow,
+  disposeHedgieScene,
+  isolateHedgieResources,
+} from '../../components/hedgie/model.js';
 import {
   isWrongAnswerSpeaking,
   poseWrongAnswer,
@@ -75,6 +82,7 @@ export function prepareHedgieScene() {
   const shadow = createShadow(scene);
   const medal = createMedal(scene);
   const confetti = paperBurst(scene);
+  isolateHedgieResources(scene);
   const gaze = new THREE.Vector2();
   const pointer = new THREE.Vector2();
   let unmountViewport;
@@ -255,21 +263,7 @@ export function prepareHedgieScene() {
     dispose() {
       disposed = true;
       unmountViewport?.();
-      const geometries = new Set();
-      const materials = new Set();
-      scene.traverse((object) => {
-        if (object.isMesh) {
-          geometries.add(object.geometry);
-          for (const material of [object.material].flat()) materials.add(material);
-        }
-        if (object.isInstancedMesh) object.dispose();
-        object.shadow?.dispose();
-      });
-      for (const geometry of geometries) geometry.dispose();
-      for (const material of materials) material.dispose();
-      shadow.material.map.dispose();
-      renderer.dispose();
-      renderer.forceContextLoss();
+      disposeHedgieScene(scene, renderer);
     },
   };
 }

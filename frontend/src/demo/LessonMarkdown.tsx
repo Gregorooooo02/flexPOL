@@ -15,6 +15,9 @@ export function LessonMarkdown({ markdown, accentHex }: LessonMarkdownProps) {
     h3: ({ children }) => <h3 className="font-heading text-sm font-semibold text-foreground">{children}</h3>,
     h4: ({ children }) => <h4 className="text-sm font-semibold text-foreground">{children}</h4>,
     p: ({ children }) => <p className="leading-relaxed">{children}</p>,
+    img: ({ src, alt }) => (
+      <img src={src} alt={alt ?? ''} className="mx-auto block h-auto w-full max-w-sm" />
+    ),
     ul: ({ children }) => <ul className="ml-4 flex list-disc flex-col gap-1">{children}</ul>,
     ol: ({ children }) => <ol className="ml-4 flex list-decimal flex-col gap-1">{children}</ol>,
     li: ({ children }) => <li className="pl-1 leading-relaxed">{children}</li>,
