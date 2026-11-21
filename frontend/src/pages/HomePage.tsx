@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Link } from 'react-router';
 import { cn } from 'cn';
-import { getChapters } from '@/api';
+import { getChapters, getScenarios } from '@/api';
 import { useAuth } from '@/auth/authContext';
 import { hedgieImage } from '@/components/coach/hedgie';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +19,16 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiError } from '@/config/axios';
-import type { Chapter } from '@/model';
+import { buildLearningPath } from '@/demo/learningPath';
+import {
+  getLearningProgressStorageKey,
+  readStoredLearningProgress,
+} from '@/demo/learningProgress';
+import {
+  getScenarioProgressStorageKey,
+  readStoredScenarioProgress,
+} from '@/scenarios/scenarioProgress';
+import type { Chapter, Scenario } from '@/model';
 import { STARTING_BUDGET_CENTS } from '@/playground/config';
 import { formatMoney } from '@/workspace/portfolio/money';
 
@@ -27,6 +36,11 @@ type CourseState =
   | { status: 'loading' }
   | { status: 'error'; message: string }
   | { status: 'ready'; chapters: Chapter[] };
+
+type ScenarioCatalogueState =
+  | { status: 'loading' }
+  | { status: 'error'; message: string }
+  | { status: 'ready'; scenarios: Scenario[] };
 
 const FEATURES = [
   {
@@ -57,9 +71,21 @@ const FEATURES = [
 
 const eyebrow = 'font-heading text-xs font-semibold tracking-[0.14em] uppercase';
 
+function getLearningLevelName(level: number): string {
+  if (level === 100) return 'HedgeFlex Scholar';
+  if (level >= 80) return 'Resilient Thinker';
+  if (level >= 60) return 'Goal Planner';
+  if (level >= 40) return 'Steady Learner';
+  if (level >= 20) return 'Concept Builder';
+  return 'Curious Explorer';
+}
+
 export function HomePage() {
   const { user } = useAuth();
   const [course, setCourse] = useState<CourseState>({ status: 'loading' });
+  const [scenarioCatalogue, setScenarioCatalogue] = useState<ScenarioCatalogueState>({
+    status: 'loading',
+  });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -72,6 +98,16 @@ export function HomePage() {
           message: error instanceof ApiError ? error.message : 'Unknown error.',
         });
       });
+    getScenarios(controller.signal)
+      .then((scenarios) => setScenarioCatalogue({ status: 'ready', scenarios }))
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) {
+          setScenarioCatalogue({
+            status: 'error',
+            message: error instanceof ApiError ? error.message : 'Unknown error.',
+          });
+        }
+      });
     return () => controller.abort();
   }, []);
 
@@ -79,6 +115,81 @@ export function HomePage() {
   const firstChapter = chapters.find((chapter) => chapter.subchapters.length > 0);
   const firstLesson = firstChapter?.subchapters[0];
   const lessonCount = chapters.reduce((total, chapter) => total + chapter.subchapters.length, 0);
+  const learningPath = useMemo(
+    () => (course.status === 'ready' ? buildLearningPath(course.chapters) : null),
+    [course],
+  );
+  const userEmail = user?.email;
+  const savedProgress = useMemo(
+    () =>
+      userEmail && learningPath
+        ? readStoredLearningProgress(
+            getLearningProgressStorageKey(userEmail),
+            learningPath.flatNodes.map(({ node }) => node.id),
+          )
+        : { completedNodeIds: [], warningMessage: null },
+    [learningPath, userEmail],
+  );
+  const savedScenarioProgress = useMemo(
+    () =>
+      userEmail && scenarioCatalogue.status === 'ready'
+        ? readStoredScenarioProgress(
+            getScenarioProgressStorageKey(userEmail),
+            scenarioCatalogue.scenarios.map(({ id }) => id),
+          )
+        : { completedScenarioIds: [], warningMessage: null },
+    [scenarioCatalogue, userEmail],
+  );
+  const completedIds = useMemo(() => new Set(savedProgress.completedNodeIds), [savedProgress]);
+  const completedScenarioCount = savedScenarioProgress.completedScenarioIds.length;
+  const completedLessonCount =
+    learningPath?.flatNodes.filter(
+      ({ node }) => node.kind === 'lesson' && completedIds.has(node.id),
+    ).length ?? 0;
+  const quizCount =
+    learningPath?.flatNodes.filter(({ node }) => node.kind === 'checkpoint').length ?? 0;
+  const completedQuizCount =
+    learningPath?.flatNodes.filter(
+      ({ node }) => node.kind === 'checkpoint' && completedIds.has(node.id),
+    ).length ?? 0;
+  const nextNode = learningPath?.flatNodes.find(({ node }) => !completedIds.has(node.id))?.node;
+  const scenarioCount =
+    scenarioCatalogue.status === 'ready' ? scenarioCatalogue.scenarios.length : 0;
+  const completedLevelActivities =
+    completedLessonCount + completedQuizCount + completedScenarioCount;
+  const totalLevelActivities = lessonCount + quizCount + scenarioCount;
+  const learningLevel =
+    totalLevelActivities > 0
+      ? Math.round((completedLevelActivities / totalLevelActivities) * 100)
+      : 0;
+  const learningLevelName =
+    totalLevelActivities > 0 ? getLearningLevelName(learningLevel) : 'Ready to begin';
+  const learningLevelLoading =
+    course.status === 'loading' || scenarioCatalogue.status === 'loading';
+  const learningLevelWarning =
+    savedProgress.warningMessage ??
+    savedScenarioProgress.warningMessage ??
+    (course.status === 'error'
+      ? `${course.message} Visit Learning to retry.`
+      : scenarioCatalogue.status === 'error'
+        ? `${scenarioCatalogue.message} Visit Scenarios to retry.`
+        : null);
+  const learningLevelAvailable =
+    user !== null && !learningLevelLoading && learningLevelWarning === null;
+  const learningLevelMessage = !user
+    ? 'Sign in to see and save your personal learning level.'
+    : learningLevelLoading
+      ? 'Loading your progress…'
+      : learningLevelWarning ?? 'Progress data is unavailable.';
+  const completedNodeCount = savedProgress.completedNodeIds.length;
+  const totalNodeCount = learningPath?.flatNodes.length ?? 0;
+  const learningPathComplete = totalNodeCount > 0 && completedNodeCount >= totalNodeCount;
+  const learningAction =
+    completedNodeCount === 0
+      ? 'Start learning'
+      : learningPathComplete
+        ? 'Review learning'
+        : 'Continue learning';
 
   return (
     <div
@@ -104,13 +215,17 @@ export function HomePage() {
           </p>
         </header>
 
-        <section aria-label="Your learning journey" className="grid gap-6 @3xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] @3xl:gap-7">
+        <section
+          aria-label="Learning progress and next steps"
+          className="grid gap-6 @3xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] @3xl:gap-7 @5xl:grid-cols-[minmax(0,1.85fr)_minmax(0,1fr)]"
+        >
           <Card className="min-w-0 gap-0 border border-border border-l-2 border-l-primary bg-primary/10 py-0">
             <CardHeader className="gap-6 px-8 pt-8 @3xl:px-10 @3xl:pt-10">
               <p className={`${eyebrow} text-accent-foreground`}>Start with the basics</p>
               <CardTitle className="normal-case tracking-tight">
-                <h2 className="max-w-2xl font-heading text-5xl leading-tight font-semibold @3xl:text-6xl">
-                  Make your first investment in yourself.
+                <h2 className="max-w-2xl text-balance font-heading text-5xl leading-tight font-semibold @3xl:max-w-3xl @3xl:text-6xl @5xl:max-w-none">
+                  Make your first investment{' '}
+                  <span className="@3xl:whitespace-nowrap">in yourself.</span>
                 </h2>
               </CardTitle>
               <CardDescription className="max-w-md text-base">
@@ -126,7 +241,7 @@ export function HomePage() {
                   'transition-all duration-200 ease-out motion-reduce:transition-none hover:scale-[1.02] hover:brightness-105 hover:shadow-md active:scale-[0.97]',
                 )}
               >
-                Start learning
+                {learningAction}
                 <HugeiconsIcon
                   icon={ArrowRight01Icon}
                   strokeWidth={2}
@@ -134,54 +249,92 @@ export function HomePage() {
                   className="transition-[translate] duration-200 ease-out group-hover/button:translate-x-1 motion-reduce:transition-none"
                 />
               </Link>
-              {firstLesson && (
+              {nextNode ? (
                 <p className="min-w-0 text-sm text-muted-foreground [overflow-wrap:anywhere]">
-                  {firstLesson.code} · {firstLesson.title}
+                  {nextNode.code} · {nextNode.title}
                 </p>
-              )}
+              ) : firstLesson ? (
+                <p className="min-w-0 text-sm text-muted-foreground">All learning steps complete</p>
+              ) : null}
             </CardFooter>
           </Card>
 
-          <Card className="min-w-0 gap-6 border border-border py-8">
-            <CardHeader className="gap-5 px-8">
-              <p className={`${eyebrow} text-muted-foreground`}>Your journey</p>
-              {course.status === 'loading' ? (
-                <Skeleton className="h-12 w-32" aria-label="Loading course information" />
-              ) : course.status === 'ready' ? (
-                <CardTitle className="normal-case tracking-normal">
-                  <span className="font-heading text-7xl font-semibold tabular-nums">{lessonCount}</span>
-                  <span className="ml-2 text-sm font-normal text-muted-foreground">
-                    {lessonCount === 1 ? 'lesson' : 'lessons'}
-                  </span>
-                </CardTitle>
-              ) : (
-                <CardTitle className="normal-case tracking-normal">Course information unavailable</CardTitle>
-              )}
+          <Card className="min-w-0 gap-0 border border-border py-0">
+            <CardHeader className="gap-2 px-7 pt-7 @5xl:px-8 @5xl:pt-8">
+              <p className={`${eyebrow} text-muted-foreground`}>Your investor learning level</p>
+              <CardTitle className="normal-case tracking-tight">
+                <h2 className="font-heading text-2xl font-semibold [overflow-wrap:anywhere]">
+                  {learningLevelAvailable ? learningLevelName : 'Learning progress'}
+                </h2>
+              </CardTitle>
               <CardDescription>
-                {course.status === 'error'
-                  ? `${course.message} Visit Learning to try again.`
-                  : 'Learn at your own pace with lessons and quizzes.'}
+                Complete lessons, quizzes, and scenarios to grow your level.
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col gap-5 px-8">
-              <Separator />
-              {firstChapter && firstLesson ? (
-                <div className="flex min-w-0 items-start gap-3">
-                  <span className="flex size-9 shrink-0 items-center justify-center bg-primary font-heading text-sm font-semibold text-primary-foreground">
-                    {firstChapter.sortOrder}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="font-heading font-semibold [overflow-wrap:anywhere]">{firstChapter.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Chapter {firstChapter.sortOrder} · {firstChapter.subchapters.length} {firstChapter.subchapters.length === 1 ? 'lesson' : 'lessons'}
-                    </p>
+            <CardContent className="flex flex-col gap-5 px-7 pt-5 pb-7 @5xl:px-8 @5xl:pt-6 @5xl:pb-8">
+              <div className="flex flex-wrap items-center justify-center gap-5 @5xl:flex-col @5xl:flex-nowrap @5xl:gap-6">
+                {learningLevelAvailable ? (
+                  <div
+                    role="progressbar"
+                    aria-label="Investor learning level"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={learningLevel}
+                    aria-valuetext={`${learningLevel} out of 100 — ${learningLevelName}`}
+                    className="relative grid size-36 shrink-0 place-items-center rounded-full @5xl:size-44"
+                    style={{
+                      background: `conic-gradient(var(--primary) 0% ${learningLevel}%, var(--secondary) ${learningLevel}% 100%)`,
+                    }}
+                  >
+                    <div className="absolute inset-2 rounded-full border border-border bg-card @5xl:inset-2.5" />
+                    <div className="relative flex flex-col items-center">
+                      <span className="font-heading text-5xl font-semibold tabular-nums">
+                        {learningLevel}
+                      </span>
+                      <span className={`${eyebrow} text-muted-foreground`}>out of 100</span>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  {course.status === 'ready' ? 'Lessons will appear here when available.' : 'Explore the learning path whenever you are ready.'}
-                </p>
-              )}
+                ) : learningLevelLoading ? (
+                  <Skeleton className="size-36 rounded-full @5xl:size-44" aria-label="Loading learning level" />
+                ) : (
+                  <div
+                    role="img"
+                    aria-label="Learning level unavailable"
+                    className="grid size-36 shrink-0 place-items-center rounded-full bg-secondary text-3xl font-semibold text-muted-foreground @5xl:size-44"
+                  >
+                    —
+                  </div>
+                )}
+                {learningLevelAvailable ? (
+                  <dl className="flex min-w-[11rem] flex-1 flex-col gap-3 text-sm @5xl:grid @5xl:w-full @5xl:min-w-0 @5xl:grid-cols-3">
+                    <div className="flex justify-between gap-3 @5xl:flex-col @5xl:items-start @5xl:gap-2 @5xl:rounded-lg @5xl:bg-secondary @5xl:px-3 @5xl:py-3">
+                      <dt className="text-muted-foreground">Lessons</dt>
+                      <dd className="font-semibold tabular-nums @5xl:text-2xl">
+                        {completedLessonCount} / {lessonCount}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-3 @5xl:flex-col @5xl:items-start @5xl:gap-2 @5xl:rounded-lg @5xl:bg-secondary @5xl:px-3 @5xl:py-3">
+                      <dt className="text-muted-foreground">Final quizzes</dt>
+                      <dd className="font-semibold tabular-nums @5xl:text-2xl">
+                        {completedQuizCount} / {quizCount}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-3 @5xl:flex-col @5xl:items-start @5xl:gap-2 @5xl:rounded-lg @5xl:bg-secondary @5xl:px-3 @5xl:py-3">
+                      <dt className="text-muted-foreground">Scenarios</dt>
+                      <dd className="font-semibold tabular-nums @5xl:text-2xl">
+                        {completedScenarioCount} / {scenarioCount}
+                      </dd>
+                    </div>
+                  </dl>
+                ) : (
+                  <p
+                    role={!user || learningLevelLoading ? 'status' : 'alert'}
+                    className="min-w-[11rem] flex-1 text-sm text-muted-foreground @5xl:w-full @5xl:max-w-md @5xl:flex-none @5xl:text-center"
+                  >
+                    {learningLevelMessage}
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
         </section>
@@ -214,15 +367,50 @@ export function HomePage() {
                     {feature.step === '01' && (
                       <>
                         <span className="font-semibold">
-                          {course.status === 'ready' ? `${lessonCount} ${lessonCount === 1 ? 'lesson' : 'lessons'}` : 'Lessons & quizzes'}
+                          {course.status === 'ready'
+                            ? `${completedLessonCount} / ${lessonCount} ${lessonCount === 1 ? 'lesson' : 'lessons'}`
+                            : 'Lessons & quizzes'}
                         </span>
-                        <span className="text-xs text-muted-foreground">At your own pace</span>
+                        <span className="text-xs text-muted-foreground">
+                          {learningPathComplete
+                            ? 'Completed'
+                            : completedLessonCount > 0
+                              ? 'In progress'
+                              : 'At your own pace'}
+                        </span>
                       </>
                     )}
                     {feature.step === '02' && (
                       <>
-                        <span className="font-semibold">Fictional goals</span>
-                        <span className="text-xs text-muted-foreground">Preview only</span>
+                        <span className="font-semibold">
+                          {scenarioCatalogue.status === 'ready'
+                            ? `${completedScenarioCount} / ${scenarioCatalogue.scenarios.length} ${
+                                scenarioCatalogue.scenarios.length === 1 ? 'scenario' : 'scenarios'
+                              }`
+                            : 'Fictional scenarios'}
+                        </span>
+                        <span
+                          className="text-xs text-muted-foreground"
+                          title={
+                            scenarioCatalogue.status === 'error'
+                              ? scenarioCatalogue.message
+                              : undefined
+                          }
+                        >
+                          {savedScenarioProgress.warningMessage
+                            ? 'Progress unavailable'
+                            : scenarioCatalogue.status === 'loading'
+                              ? 'Loading…'
+                              : scenarioCatalogue.status === 'error'
+                                ? 'Visit Scenarios to retry'
+                                : scenarioCatalogue.scenarios.length === 0
+                                  ? 'Coming soon'
+                                  : completedScenarioCount >= scenarioCatalogue.scenarios.length
+                                    ? 'Completed'
+                                    : completedScenarioCount > 0
+                                      ? 'In progress'
+                                      : 'Ready to try'}
+                        </span>
                       </>
                     )}
                     {feature.step === '03' && (
