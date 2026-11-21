@@ -2,7 +2,6 @@ import type { Chapter } from '@/model';
 
 export type NodeKind = 'lesson' | 'checkpoint';
 export type NodeStatus = 'completed' | 'active' | 'locked';
-export type SandboxType = 'etf' | 'ike' | 'bonds';
 
 interface LearningNodeBase {
   readonly id: string;
@@ -33,15 +32,8 @@ interface TopicTheme {
   readonly spikyFillHex: string;
 }
 
-interface TopicSandbox {
-  readonly sandboxType: SandboxType;
-  readonly sandboxTitle: string;
-  readonly sandboxShortLabel: string;
-  readonly sandboxDescription: string;
-}
-
-/** One chapter from the backend, with the look and sandbox the learning path gives it. */
-export interface TopicDefinition extends TopicTheme, TopicSandbox {
+/** One chapter from the backend, with the look the learning path gives it. Its final test is the last node. */
+export interface TopicDefinition extends TopicTheme {
   readonly id: string;
   readonly chapterId: number;
   readonly seriesNumber: string;
@@ -90,35 +82,8 @@ const TOPIC_THEMES: readonly TopicTheme[] = [
   },
 ];
 
-/**
- * The sandboxes are still frontend-only demos (not in the backend yet), used in chapter order:
- * compounding for "Why Invest?", bonds vs a deposit for "Know Your Instruments",
- * and pension accounts for "Investing Through Life".
- */
-const TOPIC_SANDBOXES: readonly TopicSandbox[] = [
-  {
-    sandboxType: 'etf',
-    sandboxTitle: 'ETF portfolio simulator',
-    sandboxShortLabel: 'ETF portfolio',
-    sandboxDescription: 'Monthly contributions, time horizon and three rates of return.',
-  },
-  {
-    sandboxType: 'bonds',
-    sandboxTitle: 'EDO bonds vs a deposit',
-    sandboxShortLabel: 'EDO simulator',
-    sandboxDescription: 'Inflation-linked bonds with yearly compounding over 2–10 years.',
-  },
-  {
-    sandboxType: 'ike',
-    sandboxTitle: 'Tax shield: IKE vs a regular account',
-    sandboxShortLabel: 'Tax shield',
-    sandboxDescription: 'Your savings with and without the 19% capital gains tax.',
-  },
-];
-
 function toTopic(chapter: Chapter, index: number): TopicDefinition {
   const theme = TOPIC_THEMES[index % TOPIC_THEMES.length];
-  const sandbox = TOPIC_SANDBOXES[index % TOPIC_SANDBOXES.length];
   const subchapters = [...chapter.subchapters].sort((a, b) => a.sortOrder - b.sortOrder);
 
   const nodes: LearningNode[] = subchapters.map((subchapter) => ({
@@ -147,11 +112,9 @@ function toTopic(chapter: Chapter, index: number): TopicDefinition {
   if (chapter.finalQuizId !== null) {
     metaParts.push('Final test');
   }
-  metaParts.push(`Sandbox: ${sandbox.sandboxShortLabel}`);
 
   return {
     ...theme,
-    ...sandbox,
     id: `chapter-${chapter.id}`,
     chapterId: chapter.id,
     seriesNumber: String(chapter.sortOrder),
@@ -192,7 +155,8 @@ export function getNodeStatus(
   return completedIds.has(previousNode.id) ? 'active' : 'locked';
 }
 
-export function isTopicSandboxUnlocked(
+/** A chapter is completed once every node, including its final test, is. */
+export function isTopicCompleted(
   topic: TopicDefinition,
   completedIds: ReadonlySet<string>,
 ): boolean {
@@ -210,7 +174,7 @@ export function getFirstUnfinishedTopic(
   topics: readonly TopicDefinition[],
   completedIds: ReadonlySet<string>,
 ): TopicDefinition | undefined {
-  return topics.find((topic) => !isTopicSandboxUnlocked(topic, completedIds));
+  return topics.find((topic) => !isTopicCompleted(topic, completedIds));
 }
 
 export function getNextNodeAfter(path: LearningPath, nodeId: string): FlatNodeEntry | undefined {

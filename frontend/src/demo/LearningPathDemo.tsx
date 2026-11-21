@@ -4,7 +4,6 @@ import {
   BookOpen01Icon,
   Coins01Icon,
   Flag02Icon,
-  FlaskConicalIcon,
   LockIcon,
   RefreshIcon,
   Tick02Icon,
@@ -30,17 +29,15 @@ import {
   getNodeStatus,
   getPreviousNodeBefore,
   getTopicCompletedCount,
-  isTopicSandboxUnlocked,
+  isTopicCompleted,
 } from './learningPath';
-import type { LearningNode, LearningPath, NodeStatus, TopicDefinition } from './learningPath';
+import type { LearningNode, LearningPath, NodeStatus } from './learningPath';
 import { DemoToolbar } from './DemoToolbar';
 import { LessonPage } from './LessonModal';
-import { SandboxPage } from './SandboxModal';
 
 type ActiveView =
   | { readonly kind: 'path' }
-  | { readonly kind: 'lesson'; readonly nodeId: string }
-  | { readonly kind: 'sandbox'; readonly topicId: string };
+  | { readonly kind: 'lesson'; readonly nodeId: string };
 
 interface BannerState {
   readonly tone: 'neutral' | 'gold' | 'locked';
@@ -76,8 +73,9 @@ interface StageLayout {
   readonly width: number;
   readonly height: number;
   readonly nodeSlots: readonly NodeLayoutSlot[];
-  readonly sandboxSlot: NodeLayoutSlot;
-  /** pipeSegments[i] runs from node i to node i + 1, the last one to the sandbox. */
+  /** The chapter's last node (its final test), where the pipe to the next chapter starts. */
+  readonly lastSlot: NodeLayoutSlot;
+  /** pipeSegments[i] runs from node i to node i + 1. */
   readonly pipeSegments: readonly string[];
 }
 
@@ -100,8 +98,8 @@ const DESKTOP_LABEL_WIDTH = 180;
 const DESKTOP_STAGE_RIGHT_PADDING = 96;
 const DESKTOP_STAGE_HEIGHT = 330;
 
-/** The path zig-zags: first node and sandbox in the centre, the nodes between alternate left and right. */
-function slotAt(index: number, isSandbox: boolean, isDesktop: boolean): NodeLayoutSlot {
+/** The path zig-zags: first and last node in the centre, the nodes between alternate left and right. */
+function slotAt(index: number, isLast: boolean, isDesktop: boolean): NodeLayoutSlot {
   if (isDesktop) {
     const cx = DESKTOP_FIRST_NODE_X + index * DESKTOP_NODE_SPACING;
     const isTopRow = index % 2 === 0;
@@ -117,7 +115,7 @@ function slotAt(index: number, isSandbox: boolean, isDesktop: boolean): NodeLayo
 
   const cy = FIRST_NODE_Y + index * NODE_SPACING;
   const labelTop = cy - 34;
-  if (index === 0 || isSandbox) {
+  if (index === 0 || isLast) {
     return { cx: CENTER_X, cy, labelSide: 'right', labelLeft: 224, labelTop, labelWidth: 112 };
   }
   if (index % 2 === 1) {
@@ -159,27 +157,27 @@ function pipeBetween(from: NodeLayoutSlot, to: NodeLayoutSlot, isDesktop: boolea
 
 function buildStageLayout(nodeCount: number, isDesktop: boolean): StageLayout {
   const nodeSlots = Array.from({ length: nodeCount }, (_, index) =>
-    slotAt(index, false, isDesktop),
+    slotAt(index, index === nodeCount - 1, isDesktop),
   );
-  const sandboxSlot = slotAt(nodeCount, true, isDesktop);
-  const pipeSegments = nodeSlots.map((slot, index) =>
-    pipeBetween(slot, nodeSlots[index + 1] ?? sandboxSlot, isDesktop),
-  );
+  const lastSlot = nodeSlots[nodeSlots.length - 1];
+  const pipeSegments = nodeSlots
+    .slice(0, -1)
+    .map((slot, index) => pipeBetween(slot, nodeSlots[index + 1], isDesktop));
   if (isDesktop) {
     return {
-      width: sandboxSlot.cx + DESKTOP_STAGE_RIGHT_PADDING,
+      width: lastSlot.cx + DESKTOP_STAGE_RIGHT_PADDING,
       height: DESKTOP_STAGE_HEIGHT,
       nodeSlots,
-      sandboxSlot,
+      lastSlot,
       pipeSegments,
     };
   }
 
   return {
     width: STAGE_W,
-    height: sandboxSlot.cy + STAGE_BOTTOM_PADDING,
+    height: lastSlot.cy + STAGE_BOTTOM_PADDING,
     nodeSlots,
-    sandboxSlot,
+    lastSlot,
     pipeSegments,
   };
 }
@@ -209,7 +207,7 @@ function progressReducer(state: DemoProgressState, action: ProgressAction): Demo
       if (!entry) {
         return { ...state, completedList: nextList };
       }
-      const topicDone = isTopicSandboxUnlocked(entry.topic, nextSet);
+      const topicDone = isTopicCompleted(entry.topic, nextSet);
       const nextStep = getNextNodeAfter(action.path, action.nodeId);
 
       let nextBanner = state.banner;
@@ -217,8 +215,8 @@ function progressReducer(state: DemoProgressState, action: ProgressAction): Demo
         nextBanner = {
           tone: 'gold',
           message: nextStep
-            ? `Chapter ${entry.topic.title} completed. The “${entry.topic.sandboxShortLabel}” sandbox is open.`
-            : `All chapters completed. The “${entry.topic.sandboxShortLabel}” sandbox is open.`,
+            ? `Chapter ${entry.topic.title} completed. The path has moved on to module ${nextStep.node.code}.`
+            : 'All chapters completed.',
         };
       } else if (nextStep) {
         nextBanner = {
@@ -246,8 +244,8 @@ function progressReducer(state: DemoProgressState, action: ProgressAction): Demo
         banner: {
           tone: 'gold',
           message: nextStep
-            ? `Chapter ${target.title} completed. The “${target.sandboxShortLabel}” sandbox is open, and module ${nextStep.node.code} is next.`
-            : 'All chapters and sandboxes are unlocked.',
+            ? `Chapter ${target.title} completed. Module ${nextStep.node.code} is next.`
+            : 'All chapters completed.',
         },
       };
     }
@@ -456,25 +454,6 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
     [path, completedSet, triggerLockedShake, triggerNavBurst],
   );
 
-  const handleOpenSandbox = useCallback(
-    (topic: TopicDefinition) => {
-      const effectId = `sandbox-${topic.id}`;
-      if (!isTopicSandboxUnlocked(topic, completedSet)) {
-        triggerLockedShake(effectId);
-        dispatch({
-          type: 'setBanner',
-          banner: {
-            tone: 'locked',
-            message: `The “${topic.sandboxShortLabel}” sandbox opens once you complete ${topic.nodes[topic.nodes.length - 1].code}.`,
-          },
-        });
-        return;
-      }
-      triggerNavBurst(effectId, { kind: 'sandbox', topicId: topic.id });
-    },
-    [completedSet, triggerLockedShake, triggerNavBurst],
-  );
-
   const handleCompleteLesson = useCallback(
     (nodeId: string) => {
       dispatch({ type: 'completeLesson', path, nodeId });
@@ -506,21 +485,13 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
           node={entry.node}
           topic={entry.topic}
           isCompleted={completedSet.has(entry.node.id)}
-          isTopicSandboxUnlocked={isTopicSandboxUnlocked(entry.topic, completedSet)}
+          isTopicCompleted={isTopicCompleted(entry.topic, completedSet)}
           nextNodeSummary={nextEntry ? `${nextEntry.node.code} (${nextEntry.node.title})` : null}
           getNextWrongAnswerIndex={getNextWrongAnswerIndex}
           onComplete={handleCompleteLesson}
           onBack={() => goToView({ kind: 'path' })}
-          onOpenSandbox={() => goToView({ kind: 'sandbox', topicId: entry.topic.id })}
         />
       );
-    }
-  }
-
-  if (activeView.kind === 'sandbox') {
-    const topic = path.topics.find((t) => t.id === activeView.topicId);
-    if (topic) {
-      return <SandboxPage topic={topic} onBack={() => goToView({ kind: 'path' })} />;
     }
   }
 
@@ -572,23 +543,19 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
               width: stageWidth,
               height: stageHeight,
               nodeSlots,
-              sandboxSlot,
+              lastSlot,
               pipeSegments,
             } = buildStageLayout(topic.nodes.length, isDesktop);
             const doneCount = getTopicCompletedCount(topic, completedSet);
-            const sandboxUnlocked = isTopicSandboxUnlocked(topic, completedSet);
+            const topicCompleted = isTopicCompleted(topic, completedSet);
             const progressPct = Math.round((doneCount / topic.nodes.length) * 100);
             const firstNodeStatus = getNodeStatus(path, topic.nodes[0].id, completedSet);
             const entryPipeColored = topicIndex > 0 && firstNodeStatus !== 'locked';
             const nextTopic = path.topics[topicIndex + 1];
             const exitPipeColored =
               Boolean(nextTopic) &&
-              sandboxUnlocked &&
+              topicCompleted &&
               getNodeStatus(path, nextTopic.nodes[0].id, completedSet) !== 'locked';
-
-            const sandboxEffectId = `sandbox-${topic.id}`;
-            const isSandboxBursting = burstNodeId === sandboxEffectId;
-            const isSandboxShaking = shakeNodeId === sandboxEffectId;
 
             return (
               <section
@@ -717,9 +684,9 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                       {nextTopic && !isDesktop && (
                         <>
                           <line
-                            x1={sandboxSlot.cx}
-                            y1={sandboxSlot.cy}
-                            x2={sandboxSlot.cx}
+                            x1={lastSlot.cx}
+                            y1={lastSlot.cy}
+                            x2={lastSlot.cx}
                             y2={stageHeight}
                             stroke="#2d3234"
                             strokeWidth="12"
@@ -727,9 +694,9 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                           />
                           {exitPipeColored && (
                             <line
-                              x1={sandboxSlot.cx}
-                              y1={sandboxSlot.cy}
-                              x2={sandboxSlot.cx}
+                              x1={lastSlot.cx}
+                              y1={lastSlot.cy}
+                              x2={lastSlot.cx}
                               y2={stageHeight}
                               pathLength={100}
                               stroke={topic.pipeColor}
@@ -876,103 +843,6 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                         );
                       })}
 
-                      <li>
-                        <div
-                          className="absolute -translate-x-1/2 -translate-y-1/2"
-                          style={{ left: `${sandboxSlot.cx}px`, top: `${sandboxSlot.cy}px` }}
-                        >
-                          <div
-                            className={cn(
-                              'relative flex size-[86px] items-center justify-center rounded-full p-2 transition-transform',
-                              isSandboxBursting && 'fx-node-punch',
-                              isSandboxShaking && 'fx-shake',
-                            )}
-                            style={{
-                              backgroundColor: sandboxUnlocked
-                                ? topic.accentHex
-                                : isSandboxShaking
-                                  ? '#ba4d00'
-                                  : '#2d3234',
-                              boxShadow: sandboxUnlocked
-                                ? `0 0 24px -4px ${topic.accentHex}70`
-                                : undefined,
-                            }}
-                          >
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant={sandboxUnlocked ? 'default' : 'secondary'}
-                              aria-disabled={!sandboxUnlocked ? 'true' : undefined}
-                              aria-label={`Sandbox ${topic.title}: ${topic.sandboxTitle} — ${
-                                sandboxUnlocked ? 'Open' : 'Locked'
-                              }`}
-                              onClick={() => handleOpenSandbox(topic)}
-                              className={cn(
-                                'relative z-10 size-full overflow-hidden rounded-full border-0 text-[#07090a] shadow-none transition-transform active:scale-90',
-                                isSandboxBursting && 'fx-sheen',
-                                !sandboxUnlocked &&
-                                  'cursor-not-allowed bg-[#21292b] text-muted-foreground hover:bg-[#21292b]',
-                              )}
-                              style={
-                                sandboxUnlocked ? { backgroundColor: topic.accentHex } : undefined
-                              }
-                            >
-                              {sandboxUnlocked ? (
-                                <HugeiconsIcon
-                                  icon={FlaskConicalIcon}
-                                  className="size-7"
-                                  strokeWidth={2.2}
-                                />
-                              ) : (
-                                <HugeiconsIcon
-                                  icon={LockIcon}
-                                  className="size-5"
-                                  strokeWidth={2}
-                                />
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div
-                          className={cn(
-                            'absolute flex flex-col gap-0.5',
-                            sandboxSlot.labelSide === 'center'
-                              ? 'items-center text-center'
-                              : 'items-start text-left',
-                          )}
-                          style={{
-                            left: `${sandboxSlot.labelLeft}px`,
-                            top: `${sandboxSlot.labelTop}px`,
-                            width: `${sandboxSlot.labelWidth}px`,
-                          }}
-                        >
-                          <span
-                            className={cn(
-                              'font-heading text-xs font-bold tracking-wider uppercase',
-                              !sandboxUnlocked && 'text-muted-foreground',
-                            )}
-                            style={sandboxUnlocked ? { color: topic.accentHex } : undefined}
-                          >
-                            Sandbox
-                          </span>
-                          <Button
-                            type="button"
-                            variant="link"
-                            aria-disabled={!sandboxUnlocked ? 'true' : undefined}
-                            onClick={() => handleOpenSandbox(topic)}
-                            className={cn(
-                              'h-auto p-0 text-sm leading-snug font-normal tracking-normal whitespace-normal normal-case underline underline-offset-4 transition-transform active:scale-95',
-                              sandboxSlot.labelSide === 'center' ? 'text-center' : 'text-left',
-                              sandboxUnlocked
-                                ? 'text-foreground'
-                                : 'cursor-not-allowed text-muted-foreground no-underline hover:no-underline',
-                            )}
-                          >
-                            {topic.sandboxShortLabel}
-                          </Button>
-                        </div>
-                      </li>
                     </ol>
                   </div>
                 </div>

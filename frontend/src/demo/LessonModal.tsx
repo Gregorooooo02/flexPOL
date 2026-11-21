@@ -5,7 +5,6 @@ import {
   ArrowRight01Icon,
   CancelCircleIcon,
   CheckmarkCircle02Icon,
-  FlaskConicalIcon,
   RefreshIcon,
   Tick02Icon,
 } from '@hugeicons/core-free-icons';
@@ -35,12 +34,11 @@ interface LessonPageProps {
   readonly node: LearningNode;
   readonly topic: TopicDefinition;
   readonly isCompleted: boolean;
-  readonly isTopicSandboxUnlocked: boolean;
+  readonly isTopicCompleted: boolean;
   readonly nextNodeSummary: string | null;
   readonly getNextWrongAnswerIndex: () => number;
   readonly onComplete: (nodeId: string) => void;
   readonly onBack: () => void;
-  readonly onOpenSandbox: () => void;
 }
 
 interface TheorySection {
@@ -134,10 +132,6 @@ function checkpointSections(topic: TopicDefinition, quiz: Quiz): TheorySection[]
         ? `${count} covering the whole chapter, with one try each. You need at least **${quiz.passMark} correct answers** to pass.`
         : `${count} covering the whole chapter. Answer each one correctly.`,
   });
-  sections.push({
-    heading: 'What you unlock',
-    markdown: `The **${topic.sandboxShortLabel}** sandbox: ${topic.sandboxDescription}`,
-  });
   return sections;
 }
 
@@ -205,12 +199,11 @@ export function LessonPage({
   node,
   topic,
   isCompleted,
-  isTopicSandboxUnlocked,
+  isTopicCompleted,
   nextNodeSummary,
   getNextWrongAnswerIndex,
   onComplete,
   onBack,
-  onOpenSandbox,
 }: LessonPageProps) {
   const [contentState, setContentState] = useState<ContentState>({ status: 'loading' });
   const [reloadKey, setReloadKey] = useState(0);
@@ -759,8 +752,10 @@ export function LessonPage({
                 {node.title}
               </CardTitle>
               <CardDescription className="mt-1 text-foreground/85">
-                {isTopicSandboxUnlocked
-                  ? `Chapter ${topic.title} completed. The path has reached the “${topic.sandboxShortLabel}” sandbox.`
+                {isTopicCompleted
+                  ? nextNodeSummary
+                    ? `Chapter ${topic.title} completed. The path now leads to module ${nextNodeSummary}.`
+                    : `Chapter ${topic.title} completed. Every module on the path is completed.`
                   : nextNodeSummary
                     ? `The path now leads to module ${nextNodeSummary}.`
                     : 'Every module on the path is completed.'}
@@ -874,28 +869,11 @@ export function LessonPage({
 
           {step.kind === 'result' && step.passed && (
             <>
-              {isTopicSandboxUnlocked && (
-                <Button
-                  type="button"
-                  size="lg"
-                  className="w-full text-[#07090a] transition-transform active:scale-[0.97]"
-                  style={{ backgroundColor: topic.accentHex }}
-                  onClick={onOpenSandbox}
-                >
-                  <HugeiconsIcon icon={FlaskConicalIcon} strokeWidth={2.2} />
-                  Open sandbox: {topic.sandboxShortLabel}
-                </Button>
-              )}
               <Button
                 type="button"
                 size="lg"
-                variant={isTopicSandboxUnlocked ? 'outline' : 'default'}
                 className="w-full transition-transform active:scale-[0.97]"
-                style={
-                  !isTopicSandboxUnlocked
-                    ? { backgroundColor: topic.accentHex, color: '#07090a' }
-                    : undefined
-                }
+                style={{ backgroundColor: topic.accentHex, color: '#07090a' }}
                 onClick={onBack}
               >
                 Back to the path

@@ -1,6 +1,6 @@
 # HedgeFlex — Sandbox Scenarios (Chapters 2 and 3)
 
-**Status:** draft spec, not implemented yet. Chapter 1 keeps its own mission, "The Two-Year Goal" (see [learning-chapters.md](learning-chapters.md)), and is out of scope here.
+**Status:** draft spec. The scenarios are seeded into the database (`node scripts/generate-content-sql.mjs`), served by `GET /api/scenarios` and listed on the `/scenarios` page; playing, evaluating and scoring them is not implemented yet. Chapter 1 keeps its own mission, "The Two-Year Goal" (see [learning-chapters.md](learning-chapters.md)), and is out of scope here.
 
 > People, goals, amounts and events are fictional. Instruments come from the app's catalogue, but every price path is synthetic. Outcomes illustrate ideas from the lessons. They don't predict real returns and are not product recommendations.
 
