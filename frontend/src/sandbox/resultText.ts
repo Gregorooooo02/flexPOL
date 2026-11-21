@@ -5,8 +5,8 @@ import { formatMoney, formatPercent } from '@/workspace/portfolio/money';
 export const CRITERION_TITLES: Record<StarCriterionKey, string> = {
   GROWTH: 'Growth',
   GOAL: 'Goal',
-  ASSETS: 'Right instruments',
-  SHARES: 'Right shares',
+  ASSETS: 'Instruments',
+  SHARES: 'Balance',
 };
 
 /** One or two plain sentences on why a criterion was or wasn't earned. */

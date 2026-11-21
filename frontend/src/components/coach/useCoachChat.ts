@@ -19,7 +19,7 @@ export type ChatEntry =
 export type CoachMessageContext = Readonly<
   Pick<
     CoachRequest,
-    'subchapterId' | 'questionId' | 'selectedOptionId' | 'assignments' | 'number' | 'scenarioId' | 'allocations' | 'scenarioRun'
+    'subchapterId' | 'questionId' | 'selectedOptionId' | 'assignments' | 'number' | 'comparisonPrediction' | 'scenarioId' | 'allocations' | 'scenarioRun'
   >
 >;
 
