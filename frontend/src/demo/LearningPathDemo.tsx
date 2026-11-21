@@ -65,6 +65,7 @@ import type { LearningNode, LearningPath, NodeStatus } from './learningPath';
 import { DemoToolbar } from './DemoToolbar';
 import type { DemoBanner } from './DemoToolbar';
 import { LessonPage } from './LessonModal';
+import { CapstoneLesson } from '@/capstone/CapstoneLesson';
 
 type ActiveView =
   | { readonly kind: 'path' }
@@ -316,6 +317,7 @@ const LESSON_ICONS_BY_CODE: Readonly<Record<string, NodeIcon>> = {
 };
 
 function getNodeIcon(node: LearningNode): NodeIcon {
+  if (node.kind === 'capstone') return Compass01Icon;
   if (node.kind === 'checkpoint') {
     if (node.code.startsWith('2.')) return Award01Icon;
     if (node.code.startsWith('3.')) return TrophyIcon;
@@ -534,6 +536,15 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
     const entry = findNodeById(path, activeView.nodeId);
     if (entry) {
       const nextEntry = getNextNodeAfter(path, entry.node.id);
+      if (entry.node.kind === 'capstone') {
+        return (
+          <CapstoneLesson
+            isCompleted={completedSet.has(entry.node.id)}
+            onComplete={() => handleCompleteLesson(entry.node.id)}
+            onBack={() => goToView({ kind: 'path' })}
+          />
+        );
+      }
       return (
         <LessonPage
           key={entry.node.id}
