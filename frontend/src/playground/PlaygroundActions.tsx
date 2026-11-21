@@ -43,10 +43,11 @@ export function PlaygroundActions({
         ? 'Preparing the simulated market. You can build your portfolio while you wait.'
         : `The full horizon plays in ${SIMULATION_DURATION_MS / 1000} seconds and cannot be paused.`);
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-3 gap-y-2">
-      <FieldGroup className="min-w-0 max-w-40">
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-end gap-x-3 gap-y-1">
+      <FieldGroup className="min-w-0 max-w-72">
         <ChoiceField
-          label="Simulation horizon"
+          label="Horizon"
+          orientation="horizontal"
           value={String(horizonYears)}
           disabled={replay.status !== 'idle'}
           options={HORIZONS.map((horizon) => ({
