@@ -26,13 +26,12 @@ const KEY_STEPS: Record<string, Position> = {
 
 interface CoachLauncherProps {
   readonly buttonRef: RefObject<HTMLButtonElement | null>;
-  readonly desktop: boolean;
-  readonly docked: boolean;
   readonly chatOpen: boolean;
   readonly onOpen: () => void;
 }
 
-export function CoachLauncher({ buttonRef, desktop, docked, chatOpen, onOpen }: CoachLauncherProps) {
+/** The draggable floating Hedgie that opens the desktop sidebar (smaller screens use `CoachHeaderButton`). */
+export function CoachLauncher({ buttonRef, chatOpen, onOpen }: CoachLauncherProps) {
   const viewportRef = useRef<HTMLSpanElement>(null);
   const drag = useRef<Drag | null>(null);
   const suppressPointerClick = useRef(false);
@@ -124,38 +123,36 @@ export function CoachLauncher({ buttonRef, desktop, docked, chatOpen, onOpen }: 
       variant="ghost"
       size="icon"
       aria-label="Ask Hedgie"
-      aria-description={docked ? undefined : 'Drag Hedgie or use the arrow keys to move.'}
-      aria-haspopup={desktop ? undefined : 'dialog'}
-      aria-expanded={desktop ? chatOpen : undefined}
-      aria-controls={desktop ? 'coach-sidebar' : undefined}
+      aria-description="Drag Hedgie or use the arrow keys to move."
+      aria-expanded={chatOpen}
+      aria-controls="coach-sidebar"
       inert={chatOpen}
-      title={docked ? 'Ask Hedgie' : 'Ask Hedgie · Drag to move'}
+      title="Ask Hedgie · Drag to move"
       className={cn(
         'absolute z-40 size-(--hedgie-size) max-h-full max-w-full touch-none rounded-full',
         'transition-[opacity,scale,translate] hover:bg-transparent active:not-aria-[haspopup]:translate-y-0 motion-reduce:transition-none',
         chatOpen
           ? 'pointer-events-none translate-y-2 scale-90 opacity-0 duration-200 ease-in'
           : 'translate-y-0 scale-100 opacity-100 duration-[320ms] ease-out',
-        docked
-          ? 'right-1.5 bottom-1.5 cursor-pointer [--hedgie-size:3.25rem]'
-          : cn('[--hedgie-size:6rem] lg:[--hedgie-size:8rem]', dragging ? 'cursor-grabbing' : 'cursor-grab',
-            !position && 'right-4 bottom-4 group-has-[[data-coach-footer]]/coach:bottom-[min(8rem,25%)]'),
+        '[--hedgie-size:8rem]',
+        dragging ? 'cursor-grabbing' : 'cursor-grab',
+        !position && 'right-4 bottom-4 group-has-[[data-coach-footer]]/coach:bottom-[min(8rem,25%)]',
       )}
-      style={!docked && position ? {
+      style={position ? {
         left: `clamp(0px, ${position.x}px, calc(100% - var(--hedgie-size)))`,
         top: `clamp(0px, ${position.y}px, calc(100% - var(--hedgie-size)))`,
       } : undefined}
-      onPointerDown={docked ? undefined : startDrag}
-      onPointerMove={docked ? undefined : updateDrag}
-      onPointerUp={docked ? undefined : (event) => {
+      onPointerDown={startDrag}
+      onPointerMove={updateDrag}
+      onPointerUp={(event) => {
         updateDrag(event);
         endDrag(event);
       }}
       onPointerCancel={endDrag}
       onLostPointerCapture={endDrag}
-      onKeyDown={docked ? undefined : handleKeyDown}
+      onKeyDown={handleKeyDown}
       onClick={(event) => {
-        if (!docked && event.detail > 0 && suppressPointerClick.current) {
+        if (event.detail > 0 && suppressPointerClick.current) {
           suppressPointerClick.current = false;
           return;
         }

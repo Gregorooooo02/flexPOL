@@ -16,8 +16,6 @@ export interface CoachFocus {
   readonly selectedOptionId?: number;
   readonly assignments?: Assignments;
   readonly number?: number;
-  /** Keep the launcher out of exercise controls on narrow screens. */
-  readonly dockLauncher?: boolean;
   /** Whether that checked answer was right; only used to pick Hedgie's face. */
   readonly answerCorrect?: boolean;
 }
@@ -33,9 +31,9 @@ export function useCoachFocus(): CoachFocus | null {
 /** Publishes `focus` while the calling component is mounted, and clears it on unmount. */
 export function usePublishCoachFocus(focus: CoachFocus | null): void {
   const setFocus = useContext(SetCoachFocusContext);
-  const { scopeId, label, subchapterId, questionId, selectedOptionId, assignments, number, answerCorrect, dockLauncher } = focus ?? {};
+  const { scopeId, label, subchapterId, questionId, selectedOptionId, assignments, number, answerCorrect } = focus ?? {};
   useEffect(() => {
-    setFocus(scopeId === undefined || label === undefined ? null : { scopeId, label, subchapterId, questionId, selectedOptionId, assignments, number, answerCorrect, dockLauncher });
-  }, [setFocus, scopeId, label, subchapterId, questionId, selectedOptionId, assignments, number, answerCorrect, dockLauncher]);
+    setFocus(scopeId === undefined || label === undefined ? null : { scopeId, label, subchapterId, questionId, selectedOptionId, assignments, number, answerCorrect });
+  }, [setFocus, scopeId, label, subchapterId, questionId, selectedOptionId, assignments, number, answerCorrect]);
   useEffect(() => () => setFocus(null), [setFocus]);
 }
