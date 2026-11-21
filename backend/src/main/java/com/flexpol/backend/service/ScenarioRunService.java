@@ -45,7 +45,11 @@ public class ScenarioRunService {
 	private final SimulationService simulationService;
 
 	public ScenarioRunResponse run(Long scenarioId, ScenarioRunRequest request) {
-		var spec = scenarioService.getRunSpec(scenarioId);
+		return run(scenarioService.getRunSpec(scenarioId), request);
+	}
+
+	/** Runs an allocation with a spec the caller has already read (the coach also needs its debrief points). */
+	public ScenarioRunResponse run(ScenarioRunSpec spec, ScenarioRunRequest request) {
 		var brief = spec.brief();
 		var allocations = validate(brief, request);
 
@@ -63,7 +67,7 @@ public class ScenarioRunService {
 	}
 
 	/** Allocations in request order. Rejects unknown or repeated instruments, bad amounts and overspending. */
-	private static Map<Long, BigDecimal> validate(ScenarioResponse brief, ScenarioRunRequest request) {
+	static Map<Long, BigDecimal> validate(ScenarioResponse brief, ScenarioRunRequest request) {
 		if (request == null || request.allocations() == null) {
 			throw new BadRequestException("Send the allocations; an empty list keeps the whole budget in cash");
 		}
