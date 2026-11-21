@@ -25,6 +25,6 @@ public class QuestionController {
 			@PathVariable Long questionId,
 			@RequestBody AnswerSubmissionRequest request,
 			@RequestHeader(name = UserHeader.NAME, required = false) String userEmail) {
-		return questionService.checkAnswer(questionId, request.optionId(), request.attemptId(), userEmail);
+		return questionService.checkAnswer(questionId, request, userEmail);
 	}
 }

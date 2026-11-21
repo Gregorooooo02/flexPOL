@@ -66,13 +66,19 @@ Speculation isn't always wrong, but it is closer to a bet than a plan.
 
 **Explanation:** speculation is a bet on price, usually without underlying income.
 
-### Q2. What does leverage do?
-- A) It multiplies both gains and losses. ✅
-- B) It removes fees.
-- C) It guarantees a profit.
-- D) It lowers your risk.
+### Q2. An asset falls 8% in a day. A fictional position amplifies the move by 2×. How large is the loss as a positive percentage?
 
-**Explanation:** borrowed money makes every move bigger, in both directions.
+```number
+{
+  "label": "Size of the loss",
+  "unit": "%",
+  "answer": 16,
+  "hint": "Double the size of the move.",
+  "dial": { "max": 60, "step": 2 }
+}
+```
+
+**Explanation:** The position loses 16%. The multiplier magnifies down moves too.
 
 ### Q3. A social media post says: "This coin will 10x next week, buy NOW!" Which is the best reaction?
 - A) Buy immediately before you miss out.
@@ -90,10 +96,24 @@ Speculation isn't always wrong, but it is closer to a bet than a plan.
 
 **Explanation:** speculation can go to zero, so it should never threaten important goals.
 
-### Q5. What is FOMO?
-- A) A type of bond
-- B) A tax rule
-- C) A fund strategy
-- D) The fear of missing out, which pushes people to buy because others are buying ✅
+### Q5. Match three things Hedgie sees during a hype wave.
 
-**Explanation:** FOMO is an emotion, not a reason to invest.
+```assignment
+{
+  "mode": "MATCH",
+  "cards": [
+    { "id": "card-1", "text": "FOMO" },
+    { "id": "card-2", "text": "Leverage" },
+    { "id": "card-3", "text": "Hot tip" }
+  ],
+  "targets": [
+    { "id": "target-1", "text": "An unverified claim about what will jump next" },
+    { "id": "target-2", "text": "The fear that everyone else is getting ahead" },
+    { "id": "target-3", "text": "A multiplier that magnifies gains and losses" }
+  ],
+  "solution": {"card-1": "target-2", "card-2": "target-3", "card-3": "target-1"},
+  "hint": "Separate a feeling, a tool and a claim."
+}
+```
+
+**Explanation:** FOMO is the urge to jump in. Leverage scales moves. A hot tip still needs evidence.

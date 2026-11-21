@@ -10,6 +10,8 @@ interface WorkspaceLayoutProps {
   notice?: ReactNode;
   instruments: ReactNode;
   portfolio: ReactNode;
+  /** Actions kept visible in modes that render them below the workspace. */
+  actionBar?: ReactNode;
 }
 
 type Section = 'instruments' | 'portfolio';
@@ -30,6 +32,7 @@ export function WorkspaceLayout({
   notice,
   instruments,
   portfolio,
+  actionBar,
 }: WorkspaceLayoutProps) {
   const [visibleSection, setVisibleSection] = useState<Section>('instruments');
 
@@ -72,6 +75,11 @@ export function WorkspaceLayout({
           </section>
         </div>
       </div>
+      {actionBar && (
+        <div data-coach-footer className="sticky bottom-0 z-20 border-t border-border bg-card/95 backdrop-blur-sm">
+          <div className="mx-auto w-full max-w-7xl px-4 py-3">{actionBar}</div>
+        </div>
+      )}
     </div>
   );
 }

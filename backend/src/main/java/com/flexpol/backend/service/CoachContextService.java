@@ -1,11 +1,18 @@
 package com.flexpol.backend.service;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.flexpol.backend.entity.AnswerOption;
+import com.flexpol.backend.entity.AssignmentExercise;
+import com.flexpol.backend.entity.NumberExercise;
+import com.flexpol.backend.entity.PortfolioComparison;
 import com.flexpol.backend.entity.Question;
 import com.flexpol.backend.entity.QuizType;
 import com.flexpol.backend.entity.Subchapter;
+import com.flexpol.backend.exception.BadRequestException;
 import com.flexpol.backend.exception.ResourceNotFoundException;
 import com.flexpol.backend.repository.QuestionRepository;
 import com.flexpol.backend.repository.SubchapterRepository;
@@ -41,10 +48,27 @@ public class CoachContextService {
 
 	/**
 	 * @param selectedOptionId the option the learner picked and had checked, or null if they have not answered
+	 * @param assignments the card placements the learner checked, or null if they have not answered
+	 * @param number the value the learner checked, or null if they have not answered
 	 */
-	public String questionContext(Long questionId, Long selectedOptionId) {
+	public String questionContext(Long questionId, Long selectedOptionId, Map<String, String> assignments, BigDecimal number) {
 		Question question = questionRepository.findById(questionId)
 				.orElseThrow(() -> new ResourceNotFoundException("Question", questionId));
+		if (question.getAssignment() != null) {
+			if (selectedOptionId != null || number != null) {
+				throw new BadRequestException("This question accepts assignments instead of selectedOptionId");
+			}
+			return assignmentContext(question, assignments);
+		}
+		if (question.getNumberExercise() != null) {
+			if (selectedOptionId != null || assignments != null) {
+				throw new BadRequestException("This question accepts a number only");
+			}
+			return numberContext(question, number);
+		}
+		if (assignments != null || number != null) {
+			throw new BadRequestException("This question accepts selectedOptionId only");
+		}
 		boolean scored = question.getQuiz().getQuizType() == QuizType.FINAL;
 		AnswerOption selected = selectedOptionId == null ? null : question.getOptions().stream()
 				.filter(option -> option.getId().equals(selectedOptionId))
@@ -56,11 +80,65 @@ public class CoachContextService {
 						? "The learner is taking a scored chapter test (one try per question) and is on this question:"
 						: "The learner is on this practice question (they can retry until they get it right):")
 				.append("\n\nQuestion: ").append(question.getPrompt()).append('\n');
+		appendComparison(text, question.getComparison());
 		question.getOptions().stream()
 				.sorted(Comparator.comparing(AnswerOption::getLabel))
 				.forEach(option -> text.append(option.getLabel()).append(") ").append(option.getText()).append('\n'));
 		text.append('\n').append(answerGuidance(question, selected, scored));
 		return text.toString();
+	}
+
+	private static void appendComparison(StringBuilder text, PortfolioComparison comparison) {
+		if (comparison != null) {
+			text.append("The example starts with ").append(comparison.startingBalance())
+					.append(" coins per portfolio. ").append(comparison.company()).append(" falls ")
+					.append(comparison.dropPercent()).append("%. All other holdings stay unchanged.\n");
+			for (PortfolioComparison.Portfolio portfolio : comparison.portfolios()) {
+				text.append(portfolio.name()).append(": ").append(portfolio.description()).append('\n');
+			}
+		}
+	}
+
+	private static String numberContext(Question question, BigDecimal number) {
+		NumberExercise exercise = question.getNumberExercise();
+		boolean correct = number != null && QuestionService.checkNumber(exercise, number);
+		StringBuilder text = new StringBuilder("The learner is on a practice exercise.\n\nQuestion: ")
+				.append(question.getPrompt()).append('\n').append(exercise.label()).append(" (").append(exercise.unit()).append(").\n");
+		appendComparison(text, question.getComparison());
+		if (number != null) {
+			text.append("They checked ").append(number.stripTrailingZeros().toPlainString()).append(' ').append(exercise.unit()).append(". ");
+		}
+		if (correct) {
+			return text.append("Their answer is correct.").append(explanation(question)).toString();
+		}
+		return text.append("Offer a hint and let them try. Do not reveal the number. Hint: ").append(exercise.hint()).toString();
+	}
+
+	private static String assignmentContext(Question question, Map<String, String> assignments) {
+		AssignmentExercise exercise = question.getAssignment();
+		boolean correct = assignments != null && AssignmentGrading.isCorrect(exercise, assignments);
+		Map<String, String> targets = exercise.targets().stream().collect(Collectors.toMap(
+				AssignmentExercise.Target::id, AssignmentExercise.Target::text));
+		StringBuilder text = new StringBuilder("The learner is on a practice card assignment and can retry.\n\nQuestion: ")
+				.append(question.getPrompt()).append("\nCards:\n");
+		for (AssignmentExercise.Card card : exercise.cards()) {
+			text.append("- ").append(card.text());
+			if (card.prices() != null) {
+				text.append(" (price series ").append(card.prices()).append(')');
+			}
+			if (assignments != null) {
+				text.append(" — placed in: ").append(targets.get(assignments.get(card.id())));
+			}
+			text.append('\n');
+		}
+		text.append("Destinations: ").append(exercise.targets().stream().map(AssignmentExercise.Target::text)
+				.collect(Collectors.joining("; "))).append("\n\n");
+		if (correct) {
+			return text.append("They checked their placements and all are correct.").append(explanation(question)).toString();
+		}
+		return text.append(assignments == null ? "They have not checked any placements yet. " : "Some checked placements are wrong. ")
+				.append("Guide them with the core idea or a question. Do not reveal any correct placements. Hint: ")
+				.append(exercise.hint()).toString();
 	}
 
 	private static String answerGuidance(Question question, AnswerOption selected, boolean scored) {

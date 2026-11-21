@@ -60,13 +60,27 @@ the smaller the monthly amount you'll need.
 
 ## Control questions
 
-### Q1. What is the "retirement gap"?
-- A) The fee for a pension account
-- B) The time between leaving school and starting work
-- C) The difference between the income you'll need in retirement and the income you'll receive ✅
-- D) The age difference between retirees
+### Q1. Match each part of a retirement budget to the right line on the worksheet.
 
-**Explanation:** it's the shortfall your own savings must cover.
+```assignment
+{
+  "mode": "MATCH",
+  "cards": [
+    { "id": "card-1", "text": "Living costs" },
+    { "id": "card-2", "text": "Pension income" },
+    { "id": "card-3", "text": "Retirement gap" }
+  ],
+  "targets": [
+    { "id": "target-1", "text": "What still needs to come from savings or other income" },
+    { "id": "target-2", "text": "What it costs to live each month" },
+    { "id": "target-3", "text": "The monthly payment you expect to receive" }
+  ],
+  "solution": {"card-1": "target-2", "card-2": "target-3", "card-3": "target-1"},
+  "hint": "Separate what goes out, what comes in and what is left to find."
+}
+```
+
+**Explanation:** The retirement gap is the spending still to cover after pension income.
 
 ### Q2. Why might public pensions provide less in the future?
 - A) Because people live longer and there are fewer workers per retiree ✅
@@ -76,13 +90,19 @@ the smaller the monthly amount you'll need.
 
 **Explanation:** demographic change puts pressure on public pension systems.
 
-### Q3. You'll need 2,500 coins a month and expect a 1,500 coin pension. What is the monthly gap?
-- A) 500 coins
-- B) 1,000 coins ✅
-- C) 1,500 coins
-- D) 4,000 coins
+### Q3. Hedgie expects to spend 2,500 coins a month and receive a 1,500-coin pension. How much must come from elsewhere each month?
 
-**Explanation:** 2,500 − 1,500 = 1,000.
+```number
+{
+  "label": "Monthly retirement gap",
+  "unit": "coins",
+  "answer": 1000,
+  "hint": "Subtract the expected pension from the expected spending.",
+  "dial": { "max": 2500, "step": 100 }
+}
+```
+
+**Explanation:** 2,500 − 1,500 gives a 1,000-coin monthly gap.
 
 ### Q4. Why is investing usually better than cash savings for closing a retirement gap?
 - A) Investing has no risk.

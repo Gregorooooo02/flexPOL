@@ -63,26 +63,59 @@ Higher possible growth comes with **risk**. Investments can fall in value, somet
 
 **Explanation:** the number of coins stays the same, but inflation reduces their purchasing power.
 
-### Q2. What is compounding?
-- A) Earning returns on your earlier returns ✅
-- B) Moving money from savings into investments
-- C) Paying fees on your investments
-- D) Splitting money between several investments
+### Q2. Hedgie puts 1,000 coins in a fictional account growing 5% a year. Find the first year with at least 2,000 coins.
 
-**Explanation:** with compounding, growth builds on earlier growth, so the effect gets stronger over time.
+```number
+{
+  "label": "Turn the calendar",
+  "unit": "years",
+  "answer": 15,
+  "hint": "Find a year above 2,000, then move back one year to check whether you can get there earlier.",
+  "lab": {
+    "kind": "COMPOUNDING",
+    "max": 25,
+    "step": 1,
+    "initial": 0,
+    "balance": 1000,
+    "rate": 5
+  }
+}
+```
 
-### Q3. Using the Rule of 72, how long does money take to double at an 8% yearly return?
-- A) About 6 years
-- B) About 9 years ✅
-- C) About 12 years
-- D) About 18 years
+**Explanation:** The balance crosses 2,000 coins in year 15. The account also earns growth on the coins it gained in previous years.
+
+### Q3. Use the Rule of 72 to estimate how long it takes to double at 8% a year.
+
+```number
+{
+  "label": "Estimated time to double",
+  "unit": "years",
+  "answer": 9,
+  "hint": "Divide 72 by the annual rate as a whole number.",
+  "dial": { "max": 24, "step": 1 }
+}
+```
 
 **Explanation:** 72 ÷ 8 = 9 years.
 
-### Q4. Which statement best describes the difference between saving and investing?
-- A) Saving is always better than investing.
-- B) Saving keeps money safe and accessible; investing aims for growth but goes up and down. ✅
-- C) There is no difference.
-- D) Investing is always better than saving.
+### Q4. Give each story a home. Which money needs quick access, and which has time to grow?
 
-**Explanation:** they do different jobs. Most people need both.
+```assignment
+{
+  "mode": "SORT",
+  "cards": [
+    { "id": "repairs", "text": "Emergency bike repairs" },
+    { "id": "retire", "text": "Retirement in 30 years" },
+    { "id": "rent", "text": "Rent due next month" },
+    { "id": "future", "text": "A child’s fund in 18 years" }
+  ],
+  "targets": [
+    { "id": "access", "text": "Keep it accessible" },
+    { "id": "growth", "text": "Give it time to grow" }
+  ],
+  "solution": {"repairs": "access", "retire": "growth", "rent": "access", "future": "growth"},
+  "hint": "Ask how soon a real expense could make you withdraw the money."
+}
+```
+
+**Explanation:** Money for a bill or a repair needs to be available soon. A goal decades away has more time to ride out changes in value.

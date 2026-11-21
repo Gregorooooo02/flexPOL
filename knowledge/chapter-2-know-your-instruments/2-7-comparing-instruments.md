@@ -75,13 +75,27 @@ Most plans combine several instruments. That mix is called an **allocation**.
 
 **Explanation:** each tool fits some jobs better than others.
 
-### Q3. Match the goal to the instrument: an emergency fund, retirement in 30 years, a home deposit needed in exactly 2 years.
-- A) Index fund, cash, single stock
-- B) Speculative asset, cash, index fund
-- C) Single stock, term deposit, cash
-- D) Cash, broad index fund, 2-year term deposit ✅
+### Q3. Pair each goal with the best fit among these three fictional instruments.
 
-**Explanation:** each goal's horizon and liquidity needs point to a different tool.
+```assignment
+{
+  "mode": "MATCH",
+  "cards": [
+    { "id": "card-1", "text": "An emergency fund" },
+    { "id": "card-2", "text": "Retirement in 30 years" },
+    { "id": "card-3", "text": "A deposit due in two years" }
+  ],
+  "targets": [
+    { "id": "target-1", "text": "Broad market basket" },
+    { "id": "target-2", "text": "Instrument that unlocks in two years" },
+    { "id": "target-3", "text": "Accessible Cash" }
+  ],
+  "solution": {"card-1": "target-3", "card-2": "target-1", "card-3": "target-2"},
+  "hint": "Which goal could force you to withdraw tomorrow?"
+}
+```
+
+**Explanation:** Check the deadline and access needs of each goal before picking the instrument.
 
 ### Q4. What is an "allocation"?
 - A) A fee charged by a fund
@@ -91,10 +105,16 @@ Most plans combine several instruments. That mix is called an **allocation**.
 
 **Explanation:** an allocation is the mix of instruments in a plan.
 
-### Q5. Which instrument fits a goal in 1 year the worst?
-- A) A 1-year term deposit
-- B) Cash
-- C) A short-term savings account
-- D) A single volatile stock ✅
+### Q5. Hedgie starts with 2,000 coins, puts 25% in a basket and 15% in bonds. How much is left in cash?
 
-**Explanation:** a big drop right before the deadline would leave no time to recover.
+```number
+{
+  "label": "Cash left",
+  "unit": "coins",
+  "answer": 1200,
+  "hint": "Subtract the two allocated shares from 100%.",
+  "dial": { "max": 3000, "step": 100 }
+}
+```
+
+**Explanation:** 60% of 2,000 coins remains in cash, or 1,200 coins.

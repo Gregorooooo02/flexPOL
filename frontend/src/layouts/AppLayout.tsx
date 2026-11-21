@@ -67,6 +67,11 @@ export function AppLayout() {
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
+              {!user && (
+                <Link to="/login" className={buttonVariants({ size: 'sm' })}>
+                  Log in
+                </Link>
+              )}
               {user && (
                 <div className="hidden items-center gap-2 md:flex">
                   <span className="max-w-48 truncate text-sm text-muted-foreground" title={user.email}>
@@ -181,9 +186,15 @@ export function AppLayout() {
           </div>
         </header>
 
-        <CoachSidebar>
-          <Outlet />
-        </CoachSidebar>
+        {user ? (
+          <CoachSidebar>
+            <Outlet />
+          </CoachSidebar>
+        ) : (
+          <main className="relative flex min-h-0 flex-1 flex-col">
+            <Outlet />
+          </main>
+        )}
       </div>
     </CoachFocusProvider>
   );
