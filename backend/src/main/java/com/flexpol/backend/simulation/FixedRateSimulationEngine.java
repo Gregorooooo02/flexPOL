@@ -4,6 +4,7 @@ import java.math.RoundingMode;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.flexpol.backend.model.FixedRateParameters;
 import com.flexpol.backend.model.SimulationContext;
@@ -26,20 +27,31 @@ public class FixedRateSimulationEngine implements SimulationEngine {
 	}
 
 	@Override
-	public SimulationTrajectory simulate(SimulationContext context) {
-		if (context.endDate().isBefore(context.startDate())) {
-			throw new IllegalArgumentException("Simulation end date must not precede its start date");
-		}
+	public void validateParameters(Map<String, Object> parameters) {
+		parameters(parameters);
+	}
+
+	private static FixedRateParameters parameters(Map<String, Object> values) {
 		var parameters = new FixedRateParameters(
-				SimulationValues.decimalParameter(context.parameters(), "annualNominalRate"),
-				SimulationValues.integerParameter(context.parameters(), "compoundsPerYear"),
-				SimulationValues.integerParameter(context.parameters(), "termMonths"),
-				context.parameters().get("maturityPolicy") instanceof String policy ? policy : null);
+				SimulationValues.decimalParameter(values, "annualNominalRate"),
+				SimulationValues.integerParameter(values, "compoundsPerYear"),
+				SimulationValues.integerParameter(values, "termMonths"),
+				values.get("maturityPolicy") instanceof String policy ? policy : null);
 		double rate = parameters.annualNominalRate().doubleValue();
 		if (!Double.isFinite(rate) || parameters.compoundsPerYear() <= 0 || parameters.termMonths() <= 0
 				|| 1 + rate / parameters.compoundsPerYear() <= 0 || !"STOP".equals(parameters.maturityPolicy())) {
 			throw new IllegalStateException("Invalid fixed-rate parameters; only STOP maturity policy is supported");
 		}
+		return parameters;
+	}
+
+	@Override
+	public SimulationTrajectory simulate(SimulationContext context) {
+		if (context.endDate().isBefore(context.startDate())) {
+			throw new IllegalArgumentException("Simulation end date must not precede its start date");
+		}
+		var parameters = parameters(context.parameters());
+		double rate = parameters.annualNominalRate().doubleValue();
 		var maturity = context.startDate().plusMonths(parameters.termMonths());
 		var end = context.endDate().isAfter(maturity) ? maturity : context.endDate();
 		List<SimulationPoint> points = new ArrayList<>();

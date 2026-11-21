@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "currency": "EUR",
+  "disclaimer": "This is a fictional competition in a synthetic market, not investment advice. A higher simulated return can reflect risk-taking and luck, not a better real-world investment decision.",
+  "rules": [
+    "Both players receive the same budget, investment horizon and instrument whitelist.",
+    "Invest only in the listed instruments in the assigned category. Uninvested cash earns 0%.",
+    "No borrowing, leverage or short selling. Allocations cannot exceed the starting budget.",
+    "Confirmed allocation changes are saved to the server. At the planning deadline, the latest server-acknowledged portfolio is locked automatically.",
+    "Manual submission is final. No trading is allowed after submission or during the simulation.",
+    "Both portfolios experience the same synthetic market. The higher final portfolio value wins, even if both portfolios lose money. Equal final values to the cent are a draw.",
+    "If either portfolio has no invested money at timeout, the match is cancelled without ranking-point changes.",
+    "Instruments move independently in this model. Correlations, fees, taxes and inflation are not simulated."
+  ],
+  "templates": [
+    {
+      "id": "research-teams-stocks",
+      "version": 1,
+      "title": "Research team showdown",
+      "background": "Two fictional research teams are testing different allocations among the same available company stocks. Each team starts with identical resources and faces the same synthetic market.",
+      "objective": "Build a stock portfolio and finish the shared investment horizon with a higher total value than the opposing team.",
+      "category": "STOCK",
+      "categoryLabel": "Company stocks",
+      "options": [
+        {
+          "budget": 5000,
+          "durationDays": 365
+        },
+        {
+          "budget": 10000,
+          "durationDays": 1095
+        },
+        {
+          "budget": 20000,
+          "durationDays": 1825
+        }
+      ]
+    },
+    {
+      "id": "market-lab-equity-etfs",
+      "version": 1,
+      "title": "The market basket challenge",
+      "background": "Two fictional market-lab teams are comparing allocations among the same equity ETFs. Both teams can hold cash and have the same starting budget and investment horizon.",
+      "objective": "Choose an equity ETF allocation and finish the shared investment horizon with a higher total portfolio value than the other team.",
+      "category": "EQUITY_ETF",
+      "categoryLabel": "Equity ETFs",
+      "options": [
+        {
+          "budget": 5000,
+          "durationDays": 1095
+        },
+        {
+          "budget": 10000,
+          "durationDays": 1825
+        },
+        {
+          "budget": 20000,
+          "durationDays": 365
+        }
+      ]
+    }
+  ]
+}

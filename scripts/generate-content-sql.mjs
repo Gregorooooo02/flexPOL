@@ -4,6 +4,7 @@
 // The sandbox scenarios (knowledge/sandbox-scenarios.json) go between the GENERATED SCENARIOS
 // markers, after the instrument seed, because they reference instruments and chapters.
 // Everything outside the markers (for example the USER seed rows) is kept.
+// Also validates knowledge/duel-scenarios.json and copies it to a generated classpath resource.
 //
 // Usage (from the repository root):  node scripts/generate-content-sql.mjs
 
@@ -15,6 +16,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const KNOWLEDGE = join(ROOT, "knowledge");
 const DATA_SQL = join(ROOT, "backend", "src", "main", "resources", "data.sql");
 const SCENARIOS_JSON = join(KNOWLEDGE, "sandbox-scenarios.json");
+const DUEL_SCENARIOS_JSON = join(KNOWLEDGE, "duel-scenarios.json");
+const DUEL_RESOURCE = join(ROOT, "backend", "src", "main", "resources", "duel-scenarios.json");
 const BEGIN = "-- BEGIN GENERATED CONTENT (scripts/generate-content-sql.mjs, do not edit by hand)";
 const END = "-- END GENERATED CONTENT";
 const SCENARIOS_BEGIN = "-- BEGIN GENERATED SCENARIOS (scripts/generate-content-sql.mjs, do not edit by hand)";
@@ -268,6 +271,50 @@ function scenariosToSql(chapters, data, seededInstruments) {
   return { body: out.join("\n"), ids };
 }
 
+// ---------- Duel templates (generated resource, not SQL) ----------
+
+function validateDuelTemplates(data) {
+  const check = (condition, message) => {
+    if (!condition) fail(`duel-scenarios.json: ${message}`);
+  };
+  const text = (value, field) => check(typeof value === "string" && value.trim().length > 0, `${field} must not be blank`);
+  const fields = (value, allowed, where) => {
+    check(value !== null && typeof value === "object" && !Array.isArray(value), `${where} must be an object`);
+    for (const key of Object.keys(value)) check(allowed.includes(key), `${where}: unknown field ${key}`);
+  };
+  fields(data, ["schemaVersion", "currency", "disclaimer", "rules", "templates"], "root");
+  check(data.schemaVersion === 1, "schemaVersion must be 1");
+  check(data.currency === "EUR", "currency must be EUR");
+  text(data.disclaimer, "disclaimer");
+  check(Array.isArray(data.rules) && data.rules.length > 0, "rules must not be empty");
+  data.rules.forEach((rule) => text(rule, "rule"));
+  check(Array.isArray(data.templates) && data.templates.length > 0, "templates must not be empty");
+  const ids = new Set();
+  for (const template of data.templates) {
+    fields(template, ["id", "version", "title", "background", "objective", "category", "categoryLabel", "options"], "template");
+    check(typeof template.id === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(template.id), "template id must be a nonempty kebab-case key");
+    check(!ids.has(template.id), `duplicate template id: ${template.id}`);
+    ids.add(template.id);
+    const where = `template ${template.id}`;
+    check(Number.isSafeInteger(template.version) && template.version > 0 && template.version <= 2147483647, `${where}: version must be a positive Java integer`);
+    for (const key of ["title", "background", "objective", "categoryLabel"]) text(template[key], `${where}: ${key}`);
+    check(["STOCK", "EQUITY_ETF"].includes(template.category), `${where}: category must be STOCK or EQUITY_ETF`);
+    check(Array.isArray(template.options) && template.options.length > 0, `${where}: options must not be empty`);
+    const options = new Set();
+    for (const option of template.options) {
+      fields(option, ["budget", "durationDays"], `${where}: option`);
+      check(typeof option.budget === "number" && Number.isFinite(option.budget) && option.budget > 0 && option.budget <= 1e12
+        && /^\d+(?:\.\d{1,2})?$/.test(String(option.budget)), `${where}: budget must be positive whole cents, at most 1000000000000`);
+      check(Number.isInteger(option.durationDays) && option.durationDays >= 1 && option.durationDays <= 3650,
+        `${where}: durationDays must be between 1 and 3650`);
+      const key = `${option.budget}:${option.durationDays}`;
+      check(!options.has(key), `${where}: duplicate budget/horizon option`);
+      options.add(key);
+    }
+  }
+  return data;
+}
+
 // ---------- write ----------
 
 // Replaces the text between the markers, or appends the block when the markers are missing.
@@ -286,12 +333,15 @@ const seededInstruments = new Set(
   [...current.matchAll(/^INSERT INTO instrument \([^)]*\) VALUES \((\d+),/gm)].map((m) => Number(m[1])),
 );
 const scenarios = scenariosToSql(chapters, JSON.parse(read(SCENARIOS_JSON)), seededInstruments);
+const duelTemplates = validateDuelTemplates(JSON.parse(read(DUEL_SCENARIOS_JSON)));
 
 let updated = replaceBlock(current, BEGIN, END, body);
 updated = replaceBlock(updated, SCENARIOS_BEGIN, SCENARIOS_END, scenarios.body);
 writeFileSync(DATA_SQL, updated, "utf8");
+writeFileSync(DUEL_RESOURCE, `${JSON.stringify(duelTemplates, null, 2)}\n`, "utf8");
 
 console.log(
   `Wrote ${ids.chapter} chapters, ${ids.subchapter} subchapters, ${ids.quiz} quizzes, ` +
     `${ids.question} questions, ${ids.answer_option} options, ${scenarios.ids.scenario} scenarios to ${DATA_SQL}`,
 );
+console.log(`Wrote ${duelTemplates.templates.length} Duel templates to ${DUEL_RESOURCE}`);

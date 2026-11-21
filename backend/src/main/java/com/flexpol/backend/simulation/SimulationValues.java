@@ -11,6 +11,9 @@ final class SimulationValues {
 	}
 
 	static BigDecimal decimalParameter(Map<String, Object> parameters, String name) {
+		if (parameters == null) {
+			throw new IllegalStateException("Simulation parameters must be an object");
+		}
 		Object value = parameters.get(name);
 		if (!(value instanceof Number)) {
 			throw new IllegalStateException("Missing or non-numeric simulation parameter: " + name);

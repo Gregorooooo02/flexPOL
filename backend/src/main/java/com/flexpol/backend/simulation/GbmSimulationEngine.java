@@ -4,6 +4,7 @@ import java.math.RoundingMode;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import com.flexpol.backend.model.GbmParameters;
@@ -27,19 +28,31 @@ public class GbmSimulationEngine implements SimulationEngine {
 	}
 
 	@Override
-	public SimulationTrajectory simulate(SimulationContext context) {
-		if (context.endDate().isBefore(context.startDate())) {
-			throw new IllegalArgumentException("Simulation end date must not precede its start date");
-		}
+	public void validateParameters(Map<String, Object> parameters) {
+		parameters(parameters);
+	}
+
+	private static GbmParameters parameters(Map<String, Object> values) {
 		var parameters = new GbmParameters(
-				SimulationValues.decimalParameter(context.parameters(), "annualExpectedReturn"),
-				SimulationValues.decimalParameter(context.parameters(), "annualVolatility"),
-				SimulationValues.integerParameter(context.parameters(), "periodsPerYear"));
+				SimulationValues.decimalParameter(values, "annualExpectedReturn"),
+				SimulationValues.decimalParameter(values, "annualVolatility"),
+				SimulationValues.integerParameter(values, "periodsPerYear"));
 		double mu = parameters.annualExpectedReturn().doubleValue();
 		double sigma = parameters.annualVolatility().doubleValue();
 		if (!Double.isFinite(mu) || !Double.isFinite(sigma) || sigma < 0 || parameters.periodsPerYear() <= 0) {
 			throw new IllegalStateException("Invalid GBM return, volatility, or periods per year");
 		}
+		return parameters;
+	}
+
+	@Override
+	public SimulationTrajectory simulate(SimulationContext context) {
+		if (context.endDate().isBefore(context.startDate())) {
+			throw new IllegalArgumentException("Simulation end date must not precede its start date");
+		}
+		var parameters = parameters(context.parameters());
+		double mu = parameters.annualExpectedReturn().doubleValue();
+		double sigma = parameters.annualVolatility().doubleValue();
 
 		double dt = 1.0 / parameters.periodsPerYear();
 		double value = context.initialInvestment().doubleValue();

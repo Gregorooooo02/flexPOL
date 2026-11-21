@@ -15,6 +15,7 @@ export type {
   SimulationConfiguration,
 } from './instrument';
 export type { SimulationPoint, SimulationRequest, SimulationResult } from './simulation';
+export type { DuelAllowedInstrument, DuelScenario } from './duel';
 export type {
   Scenario,
   ScenarioInstrument,
