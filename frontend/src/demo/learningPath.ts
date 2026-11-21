@@ -1,6 +1,7 @@
 import type { Chapter } from '@/model';
+import { content as capstoneContent } from '@/capstone/plan';
 
-export type NodeKind = 'lesson' | 'checkpoint';
+export type NodeKind = 'lesson' | 'checkpoint' | 'capstone';
 export type NodeStatus = 'completed' | 'active' | 'locked';
 
 interface LearningNodeBase {
@@ -21,7 +22,11 @@ export interface CheckpointNode extends LearningNodeBase {
   readonly quizId: number;
 }
 
-export type LearningNode = LessonNode | CheckpointNode;
+export interface CapstoneNode extends LearningNodeBase {
+  readonly kind: 'capstone';
+}
+
+export type LearningNode = LessonNode | CheckpointNode | CapstoneNode;
 
 interface TopicTheme {
   readonly bandClassName: string;
@@ -125,6 +130,19 @@ export function buildLearningPath(chapters: readonly Chapter[]): LearningPath {
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map(toTopic)
     .filter((topic) => topic.nodes.length > 0);
+  // This local, private reflection is not a backend quiz and has no saved attempt.
+  if (topics.length > 0) {
+    topics.push({
+      ...TOPIC_THEMES[0],
+      id: 'capstone',
+      chapterId: -1,
+      seriesNumber: 'Final',
+      title: capstoneContent.title,
+      metaLabel: 'Six questions · Your next step',
+      objective: capstoneContent.objective,
+      nodes: [{ kind: 'capstone', id: 'capstone', code: 'Final', title: capstoneContent.title }],
+    });
+  }
   const flatNodes = topics.flatMap((topic) => topic.nodes.map((node) => ({ topic, node })));
   return { topics, flatNodes };
 }

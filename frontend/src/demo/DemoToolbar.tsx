@@ -105,7 +105,7 @@ export function DemoToolbar({
           >
             <HugeiconsIcon icon={FastForwardIcon} strokeWidth={2} />
             <span className="truncate">
-              {firstUnfinishedTopicTitle !== null ? `Complete ${firstUnfinishedTopicTitle}` : 'All done'}
+              {firstUnfinishedTopicTitle !== null ? 'Complete' : 'All done'}
             </span>
           </Button>
           <Button
