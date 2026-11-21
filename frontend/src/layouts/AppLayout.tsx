@@ -196,7 +196,6 @@ export function AppLayout() {
           </main>
         )}
       </div>
-      </div>
     </CoachFocusProvider>
   );
 }
