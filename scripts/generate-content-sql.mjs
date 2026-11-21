@@ -3,7 +3,9 @@
 // into backend/src/main/resources/data.sql, between the GENERATED CONTENT markers.
 // The sandbox scenarios (knowledge/sandbox-scenarios.json) go between the GENERATED SCENARIOS
 // markers, after the instrument seed, because they reference instruments and chapters.
-// Everything outside the markers (for example the USER seed rows) is kept.
+// Everything outside the markers is kept. The SQL must run on both H2 and PostgreSQL:
+// locally through spring.sql.init, on PostgreSQL through the Flyway migration R__Seed_content.
+// Demo users are not here: see demo-users.sql and the Flyway V2 migration.
 //
 // Usage (from the repository root):  node scripts/generate-content-sql.mjs
 
