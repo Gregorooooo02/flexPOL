@@ -32,4 +32,8 @@ export type {
   ScenarioRunRequest,
   ScenarioRunResponse,
   ScenarioScore,
+  ScenarioStarRating,
+  ShareRangeResult,
+  StarCriterion,
+  StarCriterionKey,
 } from './scenarioRun';

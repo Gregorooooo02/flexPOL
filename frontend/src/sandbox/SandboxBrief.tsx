@@ -85,7 +85,7 @@ export function SandboxBrief({
                     <span className="sr-only">{met ? 'Met: ' : 'Broken: '}</span>
                     {rule.label}
                     <span className="block text-xs text-muted-foreground">
-                      {met ? 'Met' : `Broken · costs ${scenario.scoring.rulePenaltyPoints} points`} ·{' '}
+                      {met ? 'Met' : 'Broken · costs a star'} ·{' '}
                       {rule.type === 'MAX_TOTAL_SHARE' ? 'together' : 'each'} at most {formatShare(rule.maxShare)}
                     </span>
                   </span>

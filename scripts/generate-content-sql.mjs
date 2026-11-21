@@ -3,7 +3,9 @@
 // into backend/src/main/resources/data.sql, between the GENERATED CONTENT markers.
 // The sandbox scenarios (knowledge/sandbox-scenarios.json) go between the GENERATED SCENARIOS
 // markers, after the instrument seed, because they reference instruments and chapters.
-// Everything outside the markers (for example the USER seed rows) is kept.
+// Everything outside the markers is kept. The SQL must run on both H2 and PostgreSQL:
+// locally through spring.sql.init, on PostgreSQL through the Flyway migration R__Seed_content.
+// Demo users are not here: see demo-users.sql and the Flyway V2 migration.
 //
 // Usage (from the repository root):  node scripts/generate-content-sql.mjs
 
@@ -316,7 +318,7 @@ function toSql(chapters) {
 // Runs after toSql(), which gives every chapter and subchapter its id.
 function scenariosToSql(chapters, data, seededInstruments) {
   const out = [];
-  const ids = { scenario: 0, scenario_rule: 0, scenario_allocation: 0 };
+  const ids = { scenario: 0, scenario_rule: 0, scenario_allocation: 0, scenario_share_range: 0 };
   const next = (t) => ++ids[t];
   const { defaults } = data;
   const cash = defaults.cash.key;
@@ -328,6 +330,10 @@ function scenariosToSql(chapters, data, seededInstruments) {
   data.scenarios.forEach((s, index) => {
     const where = `sandbox-scenarios.json ${s.code}`;
     const chapter = chapterByNumber.get(s.chapterId) ?? fail(`${where}: unknown chapter ${s.chapterId}`);
+    const evaluation = s.evaluation ?? fail(`${where}: evaluation is missing`);
+    // Suitable and range instruments must be ones the scenario allows.
+    const allowed = (instrumentId, what) =>
+      s.instrumentIds.includes(Number(instrumentId)) ? instrument(instrumentId, where) : fail(`${where}: ${what} ${instrumentId} isn't allowed in the scenario`);
     const id = next("scenario");
     out.push(`-- Scenario ${s.code}: ${s.title}`);
     out.push(insert("scenario", {
@@ -337,6 +343,7 @@ function scenariosToSql(chapters, data, seededInstruments) {
       target: s.target, floor: s.floor, max_drawdown: s.maxDrawdown,
       growth_weight: s.weights.growth, stability_weight: s.weights.stability,
       rule_penalty_points: defaults.rulePenaltyPoints, scenario_seed: s.scenarioSeed, retirement_gap: s.retirementGap ?? null,
+      min_instruments: evaluation.minInstruments, evaluation_explanation: evaluation.explanation,
     }));
     s.lessonCodes.forEach((code, i) => {
       const sub = subchapterByCode.get(code) ?? fail(`${where}: unknown lesson ${code}`);
@@ -370,6 +377,19 @@ function scenariosToSql(chapters, data, seededInstruments) {
         if (key === cash) continue;
         out.push(insert("scenario_allocation_share", { allocation_id: allocationId, instrument_id: instrument(key, where), share }));
       }
+    });
+    evaluation.suitableInstrumentIds.forEach((instrumentId, i) =>
+      out.push(insert("scenario_suitable_instrument", { scenario_id: id, sort_order: i, instrument_id: allowed(instrumentId, "suitable instrument") })),
+    );
+    evaluation.shareRanges.forEach((range, i) => {
+      const rangeId = next("scenario_share_range");
+      out.push(insert("scenario_share_range", {
+        id: rangeId, scenario_id: id, sort_order: i + 1, label: range.label, includes_cash: range.includesCash,
+        each_instrument: range.each ?? false, min_share: range.min, max_share: range.max,
+      }));
+      range.instrumentIds.forEach((instrumentId, j) =>
+        out.push(insert("scenario_share_range_instrument", { share_range_id: rangeId, sort_order: j, instrument_id: allowed(instrumentId, "share range instrument") })),
+      );
     });
     s.debriefPoints.forEach((point, i) => out.push(insert("scenario_debrief_point", { scenario_id: id, sort_order: i, point_text: point })));
     (s.notSimulated ?? []).forEach((note, i) => out.push(insert("scenario_not_simulated", { scenario_id: id, sort_order: i, note_text: note })));

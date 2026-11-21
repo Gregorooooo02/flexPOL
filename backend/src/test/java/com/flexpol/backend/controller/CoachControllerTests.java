@@ -219,7 +219,7 @@ class CoachControllerTests {
 				.andReturn().getResponse().getContentAsString();
 		String conversationId = JsonPath.read(body, "$.conversationId");
 		assertThat(jdbcTemplate.queryForObject(
-				"SELECT u.email FROM coach_conversation c JOIN USER u ON u.id = c.user_id WHERE c.id = ?",
+				"SELECT u.email FROM coach_conversation c JOIN app_user u ON u.id = c.user_id WHERE c.id = ?",
 				String.class, conversationId))
 				.isEqualTo(JAN);
 

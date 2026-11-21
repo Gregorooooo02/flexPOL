@@ -115,7 +115,7 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
   );
 
   return (
-    // group/coach: a page with a workspace action bar lifts the floating buttons above it.
+    // group/coach: a page with a sticky footer marked data-coach-footer lifts the floating launcher above it.
     <div className="group/coach relative flex min-h-0 flex-1 flex-col">
       <ResizablePanelGroup
         orientation="horizontal"

@@ -51,6 +51,42 @@ export interface ScenarioScore {
   brokenRules: string[];
 }
 
+/** Growth is worth two stars; goal, assets and shares one each. */
+export type StarCriterionKey = 'GROWTH' | 'GOAL' | 'ASSETS' | 'SHARES';
+
+export interface StarCriterion {
+  key: StarCriterionKey;
+  stars: number;
+  earned: boolean;
+}
+
+/** A shares-star range with the learner's share; for an `each` range, `share` is the largest one. */
+export interface ShareRangeResult {
+  label: string;
+  includesCash: boolean;
+  each: boolean;
+  instrumentIds: number[];
+  min: number;
+  max: number;
+  share: number;
+  met: boolean;
+}
+
+/**
+ * 1–5 stars (`earned` is the plain 0–5 sum; `stars` never goes below one). The suitable
+ * instruments, ranges and explanation only arrive with a result, never in the brief.
+ */
+export interface ScenarioStarRating {
+  stars: number;
+  earned: number;
+  criteria: StarCriterion[];
+  suitableInstrumentIds: number[];
+  minInstruments: number;
+  unsuitableInstrumentIds: number[];
+  shareRanges: ShareRangeResult[];
+  explanation: string;
+}
+
 export interface ScenarioRunResponse {
   scenarioId: number;
   currency: string;
@@ -69,5 +105,7 @@ export interface ScenarioRunResponse {
   largestDrop: number;
   /** No shortfall and the final value reached the scenario's target. */
   goalMet: boolean;
+  /** The 0–100 plan score (knowledge/sandbox-scenarios.md §4); the UI shows `stars`. */
   score: ScenarioScore;
+  stars: ScenarioStarRating;
 }

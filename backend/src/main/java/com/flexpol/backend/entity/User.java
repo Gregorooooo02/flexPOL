@@ -10,8 +10,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/** Table is {@code app_user}: {@code USER} is a reserved word in PostgreSQL and H2. */
 @Entity
-@Table(name = "USER")
+@Table(name = "app_user")
 @Getter
 @Setter
 @NoArgsConstructor

@@ -25,6 +25,7 @@ import { ApiError } from '@/config/axios';
 import type { AssetClass, Scenario } from '@/model';
 import { RISK_LABELS } from '@/workspace/instruments';
 import { formatDayCount, formatDays, formatEuros, formatShare } from './format';
+import { StarRating } from '@/sandbox/StarRating';
 import { parseScenarioId, scenarioPlayPath } from './routes';
 
 type LoadState =
@@ -240,7 +241,7 @@ function ScenarioBrief({ scenario }: { readonly scenario: Scenario }) {
                 ))}
               </ul>
               <Note>
-                Rules are advice, not limits: you can break one, but each costs {scoring.rulePenaltyPoints} points.
+                Rules are advice, not limits: you can break one, but it costs a star.
               </Note>
             </>
           ) : (
@@ -250,30 +251,25 @@ function ScenarioBrief({ scenario }: { readonly scenario: Scenario }) {
 
         <Section icon={ChartLineData01Icon} title="How you're scored">
           <ul role="list" className="flex flex-col gap-3">
-            <li className="flex flex-col gap-0.5">
-              <span className="font-medium text-foreground">Growth · {formatShare(scoring.growthWeight)} of the score</span>
-              <span className="text-xs text-muted-foreground">
-                Full points for ending with {formatEuros(scoring.target)} or more, none at {formatEuros(scoring.floor)}{' '}
-                or less.{hasMoneyNeeds && ' None at all if a payment can’t be made.'}
-              </span>
-            </li>
-            <li className="flex flex-col gap-0.5">
-              <span className="font-medium text-foreground">
-                Stability · {formatShare(scoring.stabilityWeight)} of the score
-              </span>
-              <span className="text-xs text-muted-foreground">
-                Full points if the largest drop stays within {formatShare(scoring.maxDrawdown)}, none at a drop of{' '}
-                {formatShare(scoring.maxDrawdown * 2)}.
-              </span>
-            </li>
-            {scenario.rules.length > 0 && (
-              <li className="flex flex-col gap-0.5">
-                <span className="font-medium text-foreground">Rules · −{scoring.rulePenaltyPoints} points each</span>
-                <span className="text-xs text-muted-foreground">For every rule the plan breaks.</span>
-              </li>
-            )}
+            <ScoreStar stars={2} title="Growth">
+              End with more than {formatEuros(scenario.budget)}, counting money paid out along the way.
+            </ScoreStar>
+            <ScoreStar stars={1} title="Goal">
+              End with at least {formatEuros(scoring.target)}
+              {hasMoneyNeeds ? ' and pay every bill in full on time.' : '.'}
+            </ScoreStar>
+            <ScoreStar stars={1} title="Right instruments">
+              Pick instruments that suit {persona.name}&apos;s situation. Cash is always fine.
+            </ScoreStar>
+            <ScoreStar stars={1} title="Right shares">
+              Split the money between cash and investments in proportions that fit the goal and horizon. There&apos;s a
+              range, not one right number.
+            </ScoreStar>
           </ul>
-          <Note>The score runs from 0 to 100. It rewards a plan that fits the goal, not the highest return.</Note>
+          <Note>
+            Up to five stars, and every run earns at least one. Which instruments and ranges fit is revealed with your
+            result.
+          </Note>
         </Section>
       </div>
 
@@ -361,6 +357,18 @@ function Section({
       </CardHeader>
       <CardContent className="flex flex-col gap-3 px-4 text-sm">{children}</CardContent>
     </Card>
+  );
+}
+
+function ScoreStar({ stars, title, children }: { readonly stars: number; readonly title: string; readonly children: ReactNode }) {
+  return (
+    <li className="flex flex-col gap-0.5">
+      <span className="flex flex-wrap items-center gap-2 font-medium text-foreground">
+        {title}
+        <StarRating stars={stars} max={stars} size="sm" />
+      </span>
+      <span className="text-xs text-muted-foreground">{children}</span>
+    </li>
   );
 }
 
