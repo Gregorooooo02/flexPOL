@@ -272,6 +272,27 @@
   }
 }
 
+@keyframes fx-active-beacon {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.22);
+    opacity: 0;
+  }
+}
+
+@keyframes fx-orb-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(18px, -16px, 0) scale(1.06);
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .fx-coach-sidebar-transition [data-panel] {
     transition: flex-grow 320ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -288,6 +309,14 @@
   .fx-pipe-fill {
     stroke-dasharray: 100;
     animation: fx-pipe-draw 580ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .fx-active-beacon {
+    animation: fx-active-beacon 2.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  }
+
+  .fx-orb-drift {
+    animation: fx-orb-drift 16s ease-in-out infinite;
   }
 
   .fx-sheen::after {

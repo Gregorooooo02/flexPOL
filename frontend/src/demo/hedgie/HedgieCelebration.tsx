@@ -40,8 +40,8 @@ export function HedgieCelebration({ loadScene }: HedgieCelebrationProps) {
   }, [loadScene]);
 
   return (
-    <div className="w-full max-w-[20rem] justify-self-center">
-      <div className="relative z-10 mx-auto mb-1 w-fit rounded-2xl bg-[#ffcf45] px-4 py-2 text-sm font-bold text-[#211600] after:absolute after:-bottom-1 after:left-1/2 after:size-2.5 after:-translate-x-1/2 after:rotate-45 after:bg-inherit">
+    <div className="flex h-full min-h-0 w-full max-w-[20rem] flex-col items-center justify-center">
+      <div className="relative z-10 mx-auto mb-1 w-fit shrink-0 rounded-2xl bg-[#ffcf45] px-4 py-1.5 text-sm font-bold text-[#211600] after:absolute after:-bottom-1 after:left-1/2 after:size-2.5 after:-translate-x-1/2 after:rotate-45 after:bg-inherit">
         Congratulations!
       </div>
       <button
@@ -49,11 +49,12 @@ export function HedgieCelebration({ loadScene }: HedgieCelebrationProps) {
         disabled={!ready}
         onClick={() => sceneRef.current?.celebrate()}
         aria-label="Celebrate with Hedgie"
-        className="peer block w-full cursor-pointer touch-manipulation rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffcf45] disabled:cursor-default"
+        style={{ containerType: 'size' }}
+        className="peer flex min-h-0 w-full flex-1 cursor-pointer touch-manipulation items-center justify-center rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffcf45] disabled:cursor-default"
       >
         <span
           aria-hidden="true"
-          className="relative block aspect-[1.16] w-full bg-[radial-gradient(ellipse_at_center,#ffcf4526,transparent_68%)]"
+          className="relative block aspect-[1.16] h-[min(100cqh,calc(100cqw/1.16),17rem)] bg-[radial-gradient(ellipse_at_center,#ffcf4526,transparent_68%)]"
         >
           <img
             src={hedgieImage('joy')}
@@ -68,7 +69,7 @@ export function HedgieCelebration({ loadScene }: HedgieCelebrationProps) {
           />
         </span>
       </button>
-      <div className="mb-3 min-h-4 text-xs text-foreground/70 peer-enabled:peer-hover:text-[#9a6a00] dark:peer-enabled:peer-hover:text-[#ffcf45]">
+      <div className="mt-1 min-h-4 shrink-0 text-xs text-foreground/70 peer-enabled:peer-hover:text-[#9a6a00] dark:peer-enabled:peer-hover:text-[#ffcf45]">
         {ready && 'Tap or click to celebrate'}
       </div>
     </div>
