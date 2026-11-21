@@ -258,10 +258,10 @@ function ScenarioBrief({ scenario }: { readonly scenario: Scenario }) {
               End with at least {formatEuros(scoring.target)}
               {hasMoneyNeeds ? ' and pay every bill in full on time.' : '.'}
             </ScoreStar>
-            <ScoreStar stars={1} title="Right instruments">
+            <ScoreStar stars={1} title="Instruments">
               Pick instruments that suit {persona.name}&apos;s situation. Cash is always fine.
             </ScoreStar>
-            <ScoreStar stars={1} title="Right shares">
+            <ScoreStar stars={1} title="Balance">
               Split the money between cash and investments in proportions that fit the goal and horizon. There&apos;s a
               range, not one right number.
             </ScoreStar>
