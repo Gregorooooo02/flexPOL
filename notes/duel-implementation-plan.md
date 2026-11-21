@@ -1,8 +1,13 @@
 # 1v1 Duel: implementation plan
 
-Status: implementation in progress; only the scenario-generation foundation is complete. Defaults below remain recommendations except where encoded in the implemented template content.
+Status: implementation in progress; scenario generation and the backend planning lifecycle are complete. Defaults below remain recommendations except where encoded in the implemented content/configuration.
 
-Implementation progress: the first scenario-generation slice is implemented in `DuelScenarioService`: two validated authored templates, generated classpath content, eligible-category selection, immutable brief snapshots, a public DTO/TypeScript contract and focused service tests. No match/queue/realtime/evaluation/ranking/UI implementation yet. Match persistence must reuse one generated spec for both participants. The remaining milestones below still apply; M1's evaluation work is not complete.
+Implementation progress:
+
+- `DuelScenarioService`: two validated authored templates, generated classpath content, eligible-category selection, immutable brief snapshots and public Java/TypeScript contracts.
+- `DuelMatchService`: persisted shared scenario, participants and revisioned allocations; owned snapshots; atomic manual submission; UTC briefing/planning deadlines; timeout auto-lock and empty cancellation. User/match locks prevent overlapping active matches and late edits. `DuelCoordinator` is a bounded scheduled adapter; focused clock/concurrency service tests cover the lifecycle.
+- Current handoff: `EVALUATING` means immutable portfolios ready for a future evaluator, not an implemented simulation. Cancelled matches are terminal; evaluation matches still count as active. Creation and commands are internal service calls only; no HTTP entry points are exposed.
+- No queue/realtime/evaluation/replay/ranking/UI implementation yet. M1's evaluation and M2's result settlement remain incomplete. The remaining milestones below are the full-feature roadmap, not a claim that the whole Duel is playable.
 
 ## 1. Scope and player journey
 
