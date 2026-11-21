@@ -44,9 +44,12 @@ public class CoachService {
 	private static final String LESSON_SECTION = "\n\nThe learner is currently studying this lesson:\n\n{lesson}";
 	/** Appended to the system prompt when the learner asks while on a quiz question. */
 	private static final String QUESTION_SECTION = "\n\nRight now, {question}";
+	/** Appended to the system prompt when the learner asks from a sandbox scenario. */
+	private static final String SCENARIO_SECTION = "\n\nRight now the learner is working on a sandbox scenario.\n\n{scenario}";
 
 	private final ChatClient chatClient;
 	private final CoachContextService contextService;
+	private final CoachScenarioContextService scenarioContextService;
 	private final CoachConversationService conversationService;
 	private final String systemPrompt;
 	private final boolean configured;
@@ -55,6 +58,7 @@ public class CoachService {
 			ChatClient.Builder chatClientBuilder,
 			ChatMemory chatMemory,
 			CoachContextService contextService,
+			CoachScenarioContextService scenarioContextService,
 			CoachConversationService conversationService,
 			@Value("classpath:prompts/coach-system.md") Resource systemPrompt,
 			@Value("${spring.ai.openai.api-key:}") String apiKey) {
@@ -62,6 +66,7 @@ public class CoachService {
 				.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
 				.build();
 		this.contextService = contextService;
+		this.scenarioContextService = scenarioContextService;
 		this.conversationService = conversationService;
 		this.systemPrompt = read(systemPrompt);
 		this.configured = StringUtils.hasText(apiKey);
@@ -71,7 +76,7 @@ public class CoachService {
 	}
 
 	/**
-	 * Sends one learner message to the coach, with the lesson and quiz question they are on as context.
+	 * Sends one learner message to the coach, with the lesson, quiz question or sandbox scenario they are on as context.
 	 * Without a {@code conversationId} a new conversation starts; its id is returned in the response.
 	 * With {@code userEmail} (the {@code X-User-Email} header) the conversation belongs to that learner,
 	 * and only they can continue it ({@link CoachConversationService}).
@@ -93,6 +98,12 @@ public class CoachService {
 		if (request.number() != null && request.questionId() == null) {
 			throw new BadRequestException("number requires questionId");
 		}
+		if (request.allocations() != null && request.scenarioId() == null) {
+			throw new BadRequestException("allocations requires scenarioId");
+		}
+		if (request.scenarioRun() != null && request.scenarioId() == null) {
+			throw new BadRequestException("scenarioRun requires scenarioId");
+		}
 		String requestedConversation = request.conversationId() == null ? null : normalize(request.conversationId());
 
 		// Context goes in as template parameters, so braces in lesson or question text are never parsed.
@@ -106,6 +117,11 @@ public class CoachService {
 			system.append(QUESTION_SECTION);
 			params.put("question", contextService.questionContext(
 					request.questionId(), request.selectedOptionId(), request.assignments(), request.number()));
+		}
+		if (request.scenarioId() != null) {
+			system.append(SCENARIO_SECTION);
+			params.put("scenario", scenarioContextService.scenarioContext(
+					request.scenarioId(), request.allocations(), Boolean.TRUE.equals(request.scenarioRun())));
 		}
 		// After the context checks, so a rejected request doesn't leave an empty conversation behind.
 		String conversation = conversationService.resolve(requestedConversation, userEmail);

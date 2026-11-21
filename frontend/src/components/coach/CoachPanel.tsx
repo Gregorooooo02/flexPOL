@@ -29,7 +29,7 @@ import {
   MessageScrollerViewport,
 } from '@/components/ui/message-scroller';
 import { Spinner } from '@/components/ui/spinner';
-import type { Assignments } from '@/model';
+import type { Assignments, ScenarioAllocation } from '@/model';
 import { hedgieImage, moodForReply } from './hedgie';
 import type { HedgieMood } from './hedgie';
 import { HedgieAvatar } from './HedgieAvatar';
@@ -59,6 +59,12 @@ export interface CoachPanelProps {
   readonly selectedOptionId?: number;
   readonly assignments?: Assignments;
   readonly number?: number;
+  /** The sandbox scenario the learner is in, their plan (euros, the rest is cash) and whether they have run it. */
+  readonly scenarioId?: number;
+  readonly allocations?: readonly ScenarioAllocation[];
+  readonly scenarioRun?: boolean;
+  /** The run's stars. Only picks Hedgie's face. */
+  readonly scenarioStars?: number;
   /** Whether that checked answer was right. Only picks Hedgie's face (joy or encouragement). */
   readonly answerCorrect?: boolean;
   /** Shown in the header so the learner knows what the coach can see, e.g. "Question 2/4". */
@@ -88,6 +94,10 @@ export function CoachPanel({
   selectedOptionId,
   assignments,
   number,
+  scenarioId,
+  allocations,
+  scenarioRun,
+  scenarioStars,
   answerCorrect,
   contextLabel,
   title = 'Ask Hedgie',
@@ -107,8 +117,8 @@ export function CoachPanel({
     }
     sendToCoach(
       text,
-      { subchapterId, questionId, selectedOptionId, assignments, number },
-      moodForReply({ questionId, answerCorrect }),
+      { subchapterId, questionId, selectedOptionId, assignments, number, scenarioId, allocations, scenarioRun },
+      moodForReply({ questionId, answerCorrect, scenarioStars }),
     );
     setDraft('');
   }
