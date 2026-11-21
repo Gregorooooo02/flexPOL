@@ -617,13 +617,7 @@ export function LessonPage({
           >
             <Card size="sm" className="border border-border bg-card/90 py-4">
               <CardHeader className="px-4">
-                <Badge
-                  className="px-2 py-0.5"
-                  style={{ backgroundColor: 'var(--secondary)', color: topic.accentTextHex }}
-                >
-                  Question {step.kind === 'question' ? step.index + 1 : 0} of {questionCount}
-                </Badge>
-                <CardTitle className="mt-1.5 text-base leading-snug normal-case tracking-normal">
+                <CardTitle className="text-base leading-snug normal-case tracking-normal">
                   {currentQuestion.prompt}
                 </CardTitle>
               </CardHeader>

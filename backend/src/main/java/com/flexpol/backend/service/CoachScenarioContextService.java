@@ -208,8 +208,8 @@ public class CoachScenarioContextService {
 		return switch (key) {
 			case GROWTH -> "Growth";
 			case GOAL -> "Goal reached";
-			case ASSETS -> "Right instruments";
-			case SHARES -> "Right shares";
+			case ASSETS -> "Instruments";
+			case SHARES -> "Balance";
 		};
 	}
 
