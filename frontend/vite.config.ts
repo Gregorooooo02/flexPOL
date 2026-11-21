@@ -14,7 +14,7 @@ export default defineConfig({
   server: {
     // Forward API calls to the Spring Boot backend, so the browser sees one origin (no CORS needed)
     proxy: {
-      '/api': 'http://localhost:8080',
+      '/api': { target: 'http://localhost:8080', ws: true },
     },
   },
 })

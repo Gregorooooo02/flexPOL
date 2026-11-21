@@ -1,6 +1,8 @@
 # Duel matchmaking and realtime: next implementation slice
 
-Status: planned, not implemented. The match lifecycle, ranking settlement and participant REST API already exist. This slice lets two learners enter that lifecycle without an internal fixture call.
+Status: implemented. FIFO matchmaking, queue/ticket HTTP endpoints, private native WebSocket notifications and frontend transport/proxy support now exist. No Duel screens or provider are mounted yet.
+
+Verification: 83 backend tests pass, including seven new focused queue/realtime/event tests; frontend build/lint pass with existing warnings. A temporary real-client walkthrough passed 73 assertions using automatic pairing, direct/Vite-proxied upgrades, a third queued learner, reconnect, origin/replay/expiry rejection, stale cancellation, offline timeout and settlement. A separate transport smoke verified external WSS URL construction, revision filtering, fresh-ticket reconnect and cleanup. The implementation uses bounded native asynchronous socket sends and application `ping`/`PONG` liveness; `/ws` handler priority precedes the REST UUID route, and application request logging redacts upgrade tickets.
 
 ## 1. Deliverable and boundaries
 

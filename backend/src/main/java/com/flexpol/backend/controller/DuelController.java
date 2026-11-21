@@ -8,14 +8,20 @@ import com.flexpol.backend.dto.DuelPortfolioRequest;
 import com.flexpol.backend.dto.DuelResultResponse;
 import com.flexpol.backend.dto.DuelSettlementResponse;
 import com.flexpol.backend.service.DuelApiService;
+import com.flexpol.backend.service.DuelQueueApiService;
+import com.flexpol.backend.dto.DuelQueueResponse;
+import com.flexpol.backend.dto.DuelQueueHeartbeat;
+import com.flexpol.backend.dto.DuelRealtimeTicketResponse;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +32,34 @@ import lombok.RequiredArgsConstructor;
 public class DuelController {
 
 	private final DuelApiService duels;
+	private final DuelQueueApiService queue;
+
+	@GetMapping("/queue")
+	public DuelQueueResponse queueStatus(@RequestHeader(name = UserHeader.NAME, required = false) String email) {
+		return queue.status(email);
+	}
+
+	@PostMapping("/queue")
+	public DuelQueueResponse joinQueue(@RequestHeader(name = UserHeader.NAME, required = false) String email) {
+		return queue.join(email);
+	}
+
+	@DeleteMapping("/queue")
+	public DuelQueueResponse leaveQueue(@RequestParam UUID entryId,
+			@RequestHeader(name = UserHeader.NAME, required = false) String email) {
+		return queue.leave(email, entryId);
+	}
+
+	@PostMapping("/queue/heartbeat")
+	public DuelQueueResponse heartbeat(@RequestBody DuelQueueHeartbeat request,
+			@RequestHeader(name = UserHeader.NAME, required = false) String email) {
+		return queue.heartbeat(email, request.entryId());
+	}
+
+	@PostMapping("/realtime-ticket")
+	public DuelRealtimeTicketResponse ticket(@RequestHeader(name = UserHeader.NAME, required = false) String email) {
+		return queue.ticket(email);
+	}
 
 	@GetMapping("/me")
 	public DuelMeResponse me(@RequestHeader(name = UserHeader.NAME, required = false) String userEmail) {

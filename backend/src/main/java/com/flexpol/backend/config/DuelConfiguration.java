@@ -10,12 +10,35 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration(proxyBeanMethods = false)
 @EnableScheduling
-@EnableConfigurationProperties(DuelProperties.class)
+@EnableConfigurationProperties({ DuelProperties.class, DuelMatchmakingProperties.class })
 public class DuelConfiguration {
 
 	@Bean
 	Clock duelClock() {
 		return Clock.systemUTC();
+	}
+
+	@Bean
+	ThreadPoolTaskExecutor duelMatchmakingExecutor() {
+		var executor = new ThreadPoolTaskExecutor();
+		executor.setThreadNamePrefix("duel-matchmaking-");
+		executor.setCorePoolSize(1);
+		executor.setMaxPoolSize(1);
+		executor.setQueueCapacity(0);
+		executor.setWaitForTasksToCompleteOnShutdown(true);
+		executor.setAwaitTerminationSeconds(5);
+		return executor;
+	}
+
+	@Bean
+	ThreadPoolTaskExecutor duelSocketCloseExecutor() {
+		var executor = new ThreadPoolTaskExecutor();
+		executor.setThreadNamePrefix("duel-socket-close-");
+		executor.setCorePoolSize(2);
+		executor.setMaxPoolSize(2);
+		executor.setQueueCapacity(128);
+		executor.setAwaitTerminationSeconds(5);
+		return executor;
 	}
 
 	@Bean

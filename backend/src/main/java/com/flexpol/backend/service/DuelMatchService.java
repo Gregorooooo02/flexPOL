@@ -60,6 +60,7 @@ public class DuelMatchService {
 	private final JsonMapper jsonMapper;
 	private final Clock clock;
 	private final DuelProperties properties;
+	private final DuelEvents events;
 
 	/** Future matchmaking entry point; no public arbitrary-opponent creation endpoint. */
 	public UUID createMatch(Long firstUserId, Long secondUserId) {
@@ -90,6 +91,7 @@ public class DuelMatchService {
 		addParticipant(match, firstUserId.equals(lowerId) ? lower : higher, 1);
 		addParticipant(match, secondUserId.equals(lowerId) ? lower : higher, 2);
 		matchRepository.saveAndFlush(match);
+		events.match(match, DuelEvents.participants(match), true);
 		return match.getId();
 	}
 
@@ -158,6 +160,7 @@ public class DuelMatchService {
 		participant.setSubmittedAt(now);
 		participant.setSubmissionSource(DuelSubmissionSource.MANUAL);
 		finishPlanning(match, now);
+		if (match.getPhase() == DuelPhase.PLANNING) events.match(match, DuelEvents.participants(match), false);
 		return snapshot(match, learnerId, now);
 	}
 
@@ -220,10 +223,11 @@ public class DuelMatchService {
 		}
 		if (match.getPhase() == DuelPhase.REPLAY && !now.isBefore(match.getReplayEndsAt())) {
 			ratingService.settleLocked(match, readResult(match.getId()), now);
+			events.match(match, DuelEvents.participants(match), false);
 		}
 	}
 
-	private static void finishPlanning(DuelMatch match, Instant now) {
+	private void finishPlanning(DuelMatch match, Instant now) {
 		if (match.getPhase() != DuelPhase.PLANNING
 				|| match.getParticipants().stream().anyMatch(player -> player.getSubmittedAt() == null)) {
 			return;
@@ -278,7 +282,7 @@ public class DuelMatchService {
 		return allocations;
 	}
 
-	private static void replaceDraft(DuelMatch match, DuelParticipant player, Map<Long, BigDecimal> amounts, Instant now) {
+	private void replaceDraft(DuelMatch match, DuelParticipant player, Map<Long, BigDecimal> amounts, Instant now) {
 		var existing = player.getAllocations().stream()
 				.collect(Collectors.toMap(DuelAllocation::getInstrumentId, Function.identity()));
 		// Reconcile in place: deleting/reinserting unchanged IDs can violate the unique key at flush.
@@ -295,7 +299,8 @@ public class DuelMatchService {
 		});
 		player.setDraftRevision(player.getDraftRevision() + 1);
 		player.setSavedAt(now);
-		changed(match);
+		match.setRevision(match.getRevision() + 1);
+		events.match(match, Set.of(player.getUser().getId()), false);
 	}
 
 	private DuelScenarioSpec readSpec(DuelMatch match) {
@@ -320,7 +325,8 @@ public class DuelMatchService {
 				match.getRatingFormulaVersion(), now, players, portfolio);
 	}
 
-	private static void changed(DuelMatch match) {
+	private void changed(DuelMatch match) {
 		match.setRevision(match.getRevision() + 1);
+		events.match(match, DuelEvents.participants(match), false);
 	}
 }

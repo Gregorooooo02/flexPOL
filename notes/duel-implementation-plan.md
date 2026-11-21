@@ -1,6 +1,6 @@
 # 1v1 Duel: implementation plan
 
-Status: implementation in progress; the backend lifecycle and participant REST API are complete. Defaults below remain recommendations except where encoded in the implemented content/configuration.
+Status: implementation in progress; backend lifecycle, REST API, FIFO matchmaking and WebSocket notifications are complete. Frontend transport is ready; Duel screens are not built. Defaults below remain recommendations except where encoded in the implemented content/configuration.
 
 Implementation progress:
 
@@ -10,12 +10,13 @@ Implementation progress:
 - `DuelEvaluationService`, `DuelEvaluationJobService` and `DuelEvaluationWorker`: bounded background delivery, expiring token claims, shared paths, cent-exact valuation, immutable results, draw/winner calculation and fail-closed recovery. Result access is participant-only and does not expose seeds/model parameters. Focused service tests include catalogue edits, duplicate/expired claims, rounding and failures.
 - Replay/settlement: evaluation commit assigns a fixed two-second `EVALUATED` lead-in and ten-second `REPLAY`. The coordinator and owned reads advance to `FINISHED` without browser acknowledgements or resetting deadlines. `DuelRatingService` initializes accounts at 1,000, applies the versioned 10–40-point budget-normalized gap formula with a zero floor, and commits both audit entries, balances and final phase atomically. Participant-only settlement reads return historical before/delta/after values. Focused service tests include boundary times, late catch-up, concurrent settlement and rollback.
 - REST boundary: six participant endpoints expose profiles/recovery references, snapshots, draft saves, submission, results and settlement. `DuelApiService` resolves the mock header and preserves non-rollback conflict behavior; private success/error responses use `no-store`. Frontend request functions/types are ready. Service tests and a temporary real-HTTP walkthrough verified ownership, errors, privacy, recovery and settlement.
-- Current handoff: the backend can complete `BRIEFING` → `PLANNING` → `EVALUATING` → `EVALUATED` → `REPLAY` → `FINISHED`, or cancel/fail safely. Players remain active through replay and are released only after settlement, cancellation or failure. Only creation remains internal; matchmaking will be its first public entry path.
-- No queue/realtime/replay UI or other Duel screens yet. FIFO matchmaking and WebSocket notifications are next. The remaining milestones below are the full-feature roadmap, not a claim that the whole Duel is playable.
+- Matchmaking/realtime: HTTP queue join/leave/heartbeat/status, token reservations and short independent creation transactions create one persisted match for the oldest eligible pair. Single-use WebSocket tickets bind private commit-only notifications to a learner; REST recovery remains authoritative. Native browser transport/proxy support is implemented but not mounted. Focused service tests and a temporary real HTTP/WebSocket walkthrough cover both direct/proxied connections, pairing, races, reconnect, timeout and settlement.
+- Current handoff: learners can join through HTTP and complete `BRIEFING` → `PLANNING` → `EVALUATING` → `EVALUATED` → `REPLAY` → `FINISHED`, or cancel/fail safely. No arbitrary-opponent creation endpoint exists; queue pairing calls the internal creation service. Players remain active until settlement, cancellation or failure.
+- No Duel lobby/briefing/workspace/replay/results UI exists yet. Those screens are next; the remaining milestones below are the full-feature roadmap, not a claim that the entire user-facing mode is playable.
 
-Implemented REST contract: [Duel REST API plan](duel-rest-api-plan.md). Match creation remains internal until matchmaking is implemented.
+Implemented participant REST contract: [Duel REST API plan](duel-rest-api-plan.md).
 
-Next implementation slice: [Duel matchmaking and realtime plan](duel-matchmaking-plan.md), covering FIFO queue reservations/presence, native WebSocket tickets/notifications and frontend transport without adding screens yet.
+Implemented matchmaking/realtime contract: [Duel matchmaking and realtime plan](duel-matchmaking-plan.md). Next: lobby/briefing routes and the route-scoped session owner, then investing workspace and results UI.
 
 ## 1. Scope and player journey
 

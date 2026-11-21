@@ -11,6 +11,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
+	@ExceptionHandler(DuelQueueConflictException.class)
+	public ProblemDetail handleQueueConflict(DuelQueueConflictException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+	}
+
+	@ExceptionHandler(DuelCapacityException.class)
+	public ProblemDetail handleDuelCapacity(DuelCapacityException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
+	}
+
 	@ExceptionHandler(DuelConflictException.class)
 	public ProblemDetail handleDuelConflict(DuelConflictException ex) {
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());

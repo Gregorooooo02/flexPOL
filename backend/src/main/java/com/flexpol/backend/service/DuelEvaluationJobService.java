@@ -35,6 +35,7 @@ public class DuelEvaluationJobService {
 	private final JsonMapper jsonMapper;
 	private final Clock clock;
 	private final DuelProperties properties;
+	private final DuelEvents events;
 
 	@Transactional(readOnly = true)
 	public List<UUID> findPendingIds() {
@@ -94,6 +95,7 @@ public class DuelEvaluationJobService {
 		match.setReplayEndsAt(match.getReplayStartsAt().plus(properties.replayDuration()));
 		clearClaim(match);
 		match.setRevision(match.getRevision() + 1);
+		events.match(match, DuelEvents.participants(match), false);
 		return true;
 	}
 
@@ -115,6 +117,7 @@ public class DuelEvaluationJobService {
 		match.setFailedAt(clock.instant());
 		clearClaim(match);
 		match.setRevision(match.getRevision() + 1);
+		events.match(match, DuelEvents.participants(match), false);
 	}
 
 	private static void clearClaim(DuelMatch match) {

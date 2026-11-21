@@ -174,3 +174,30 @@ export interface DuelRatingChange {
   delta: number;
   pointsAfter: number;
 }
+
+export type DuelQueueState = 'IDLE' | 'WAITING' | 'MATCHING' | 'MATCHED';
+
+export interface DuelQueue {
+  state: DuelQueueState;
+  entryId: string | null;
+  joinedAt: string | null;
+  leaseExpiresAt: string | null;
+  matchId: string | null;
+  heartbeatIntervalMs: number;
+  serverNow: string;
+}
+
+export interface DuelRealtimeTicket {
+  ticket: string;
+  expiresAt: string;
+  /** Relative to the API base, not the page origin. */
+  webSocketPath: string;
+}
+
+export interface DuelNotification {
+  type: 'QUEUE_CHANGED' | 'MATCH_FOUND' | 'MATCH_CHANGED' | 'RATING_CHANGED' | 'PONG';
+  matchId: string | null;
+  revision: number | null;
+  entryId: string | null;
+  serverNow: string;
+}
