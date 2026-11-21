@@ -791,7 +791,7 @@ export function LessonPage({
         <HedgieWrongAnswer key={wrongAnswerIndex} reactionIndex={wrongAnswerIndex} loadScene={loadHedgie} />
       )}
 
-      <footer className="sticky bottom-0 z-20 border-t border-border bg-card/90 backdrop-blur-sm">
+      <footer data-coach-footer className="sticky bottom-0 z-20 border-t border-border bg-card/90 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-md flex-col gap-2 px-4 py-3 lg:max-w-3xl">
           {step.kind === 'theory' && content && (
             <Button
