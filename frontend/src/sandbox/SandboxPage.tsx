@@ -438,6 +438,18 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
             status={status}
             dates={visibleDates}
             equity={equity}
+            actions={
+              <SandboxActions
+                scenarioId={scenario.id}
+                phase={phase}
+                canRun={catalogue.status === 'ready' && selectedId === null}
+                hasHoldings={hasHoldings}
+                failed={run.status === 'error'}
+                unavailableReason={unavailableReason}
+                onRun={runSimulation}
+                onChangePlan={changePlan}
+              />
+            }
             titleRef={pageTitleRef}
           />
         }
@@ -450,7 +462,7 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
               <Alert>
                 <AlertTitle>Couldn’t run the simulation</AlertTitle>
                 <AlertDescription className="[overflow-wrap:anywhere]">
-                  {run.message} Your plan is kept. Use Try again below.
+                  {run.message} Your plan is kept. Use Try again in the header.
                 </AlertDescription>
               </Alert>
             )}
@@ -499,18 +511,6 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
             titleRef={portfolioTitleRef}
             onOpen={openInstrument}
             onRemove={removePosition}
-          />
-        }
-        actionBar={
-          <SandboxActions
-            scenarioId={scenario.id}
-            phase={phase}
-            canRun={catalogue.status === 'ready' && selectedId === null}
-            hasHoldings={hasHoldings}
-            failed={run.status === 'error'}
-            unavailableReason={unavailableReason}
-            onRun={runSimulation}
-            onChangePlan={changePlan}
           />
         }
       />

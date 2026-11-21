@@ -38,6 +38,20 @@ public interface DuelMatchRepository extends JpaRepository<DuelMatch, UUID> {
 	boolean hasActiveMatch(Long userId, Collection<DuelPhase> phases);
 
 	@Query("""
+			select m.id from DuelParticipant p join p.match m
+			where p.user.id = :userId and m.phase in :phases
+			order by m.createdAt desc, m.id desc
+			""")
+	List<UUID> findActiveReferences(Long userId, Collection<DuelPhase> phases, Pageable page);
+
+	@Query("""
+			select m.id from DuelParticipant p join p.match m
+			where p.user.id = :userId and m.phase in :phases
+			order by coalesce(m.finishedAt, m.cancelledAt, m.failedAt, m.createdAt) desc, m.id desc
+			""")
+	List<UUID> findTerminalReferences(Long userId, Collection<DuelPhase> phases, Pageable page);
+
+	@Query("""
 			select m.id from DuelMatch m where m.phase = :phase
 			and (m.evaluationClaimToken is null or m.evaluationClaimExpiresAt <= :now)
 			order by m.evaluationStartedAt, m.id

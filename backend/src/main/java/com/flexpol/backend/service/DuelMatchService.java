@@ -49,8 +49,6 @@ import tools.jackson.databind.json.JsonMapper;
 @Transactional(noRollbackFor = DuelConflictException.class)
 public class DuelMatchService {
 
-	private static final Set<DuelPhase> ACTIVE_PHASES = Set.of(DuelPhase.BRIEFING, DuelPhase.PLANNING, DuelPhase.EVALUATING,
-			DuelPhase.EVALUATED, DuelPhase.REPLAY);
 	private static final Set<DuelPhase> RESULT_PHASES = Set.of(DuelPhase.EVALUATED, DuelPhase.REPLAY, DuelPhase.FINISHED);
 
 	private final DuelMatchRepository matchRepository;
@@ -73,7 +71,7 @@ public class DuelMatchService {
 		var higherId = Math.max(firstUserId, secondUserId);
 		var lower = lockUser(lowerId);
 		var higher = lockUser(higherId);
-		if (matchRepository.hasActiveMatch(lowerId, ACTIVE_PHASES) || matchRepository.hasActiveMatch(higherId, ACTIVE_PHASES)) {
+		if (matchRepository.hasActiveMatch(lowerId, DuelPhase.ACTIVE_PHASES) || matchRepository.hasActiveMatch(higherId, DuelPhase.ACTIVE_PHASES)) {
 			throw new DuelConflictException("A learner already has an active Duel");
 		}
 		// Both user rows are already locked in the global order; initialize accounts before a match can be evaluated.

@@ -7,3 +7,4 @@ export { loginUser } from './userApi';
 export { getInstrumentHistory, getInstruments } from './instrumentApi';
 export { simulateBatch } from './simulationApi';
 export { getScenario, getScenarios, runScenario } from './scenarioApi';
+export { getDuel, getDuelMe, getDuelResult, getDuelSettlement, saveDuelDraft, submitDuelPortfolio } from './duelApi';

@@ -1,6 +1,6 @@
 # 1v1 Duel: implementation plan
 
-Status: implementation in progress; the backend service lifecycle through replay timing and ranking settlement is complete. Defaults below remain recommendations except where encoded in the implemented content/configuration.
+Status: implementation in progress; the backend lifecycle and participant REST API are complete. Defaults below remain recommendations except where encoded in the implemented content/configuration.
 
 Implementation progress:
 
@@ -9,8 +9,13 @@ Implementation progress:
 - `DuelMarketService` freezes the secret seed, engine definitions/versions, common UTC start date and valuation rule at creation. `SimulationService.simulateFrozen` evaluates detached inputs with full point-date alignment; it leaves the existing public simulation contracts unchanged.
 - `DuelEvaluationService`, `DuelEvaluationJobService` and `DuelEvaluationWorker`: bounded background delivery, expiring token claims, shared paths, cent-exact valuation, immutable results, draw/winner calculation and fail-closed recovery. Result access is participant-only and does not expose seeds/model parameters. Focused service tests include catalogue edits, duplicate/expired claims, rounding and failures.
 - Replay/settlement: evaluation commit assigns a fixed two-second `EVALUATED` lead-in and ten-second `REPLAY`. The coordinator and owned reads advance to `FINISHED` without browser acknowledgements or resetting deadlines. `DuelRatingService` initializes accounts at 1,000, applies the versioned 10–40-point budget-normalized gap formula with a zero floor, and commits both audit entries, balances and final phase atomically. Participant-only settlement reads return historical before/delta/after values. Focused service tests include boundary times, late catch-up, concurrent settlement and rollback.
-- Current handoff: the backend can complete `BRIEFING` → `PLANNING` → `EVALUATING` → `EVALUATED` → `REPLAY` → `FINISHED`, or cancel/fail safely. Players remain active through replay and are released only after settlement, cancellation or failure. Creation, submissions, profiles, result and settlement reads are internal service calls only; no HTTP entry points are exposed.
-- No queue/realtime/replay UI or other Duel screens yet. REST integration is next. The remaining milestones below are the full-feature roadmap, not a claim that the whole Duel is playable.
+- REST boundary: six participant endpoints expose profiles/recovery references, snapshots, draft saves, submission, results and settlement. `DuelApiService` resolves the mock header and preserves non-rollback conflict behavior; private success/error responses use `no-store`. Frontend request functions/types are ready. Service tests and a temporary real-HTTP walkthrough verified ownership, errors, privacy, recovery and settlement.
+- Current handoff: the backend can complete `BRIEFING` → `PLANNING` → `EVALUATING` → `EVALUATED` → `REPLAY` → `FINISHED`, or cancel/fail safely. Players remain active through replay and are released only after settlement, cancellation or failure. Only creation remains internal; matchmaking will be its first public entry path.
+- No queue/realtime/replay UI or other Duel screens yet. FIFO matchmaking and WebSocket notifications are next. The remaining milestones below are the full-feature roadmap, not a claim that the whole Duel is playable.
+
+Implemented REST contract: [Duel REST API plan](duel-rest-api-plan.md). Match creation remains internal until matchmaking is implemented.
+
+Next implementation slice: [Duel matchmaking and realtime plan](duel-matchmaking-plan.md), covering FIFO queue reservations/presence, native WebSocket tickets/notifications and frontend transport without adding screens yet.
 
 ## 1. Scope and player journey
 

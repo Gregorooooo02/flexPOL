@@ -1,4 +1,4 @@
-import type { Ref } from 'react';
+import type { ReactNode, Ref } from 'react';
 import { cn } from 'cn';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -9,7 +9,7 @@ import { ValueChart } from '@/workspace/components/ValueChart';
 import { formatHistoryDate } from '@/workspace/history';
 import { formatMoney, formatPercent } from '@/workspace/portfolio/money';
 
-/** Numbers only, like the Playground header; every button lives in the action bar. */
+/** Scenario information and controls share the workspace header, like the Playground. */
 export function SandboxHeader({
   scenario,
   totalCents,
@@ -23,6 +23,7 @@ export function SandboxHeader({
   status,
   dates,
   equity,
+  actions,
   titleRef,
 }: {
   scenario: Scenario;
@@ -37,6 +38,7 @@ export function SandboxHeader({
   status: string;
   dates: readonly string[];
   equity: readonly number[];
+  actions: ReactNode;
   titleRef?: Ref<HTMLHeadingElement>;
 }) {
   // Money paid out for the person's needs isn't a loss, so the change adds it back.
@@ -115,6 +117,7 @@ export function SandboxHeader({
           />
         </div>
       )}
+      {actions}
     </div>
   );
 }

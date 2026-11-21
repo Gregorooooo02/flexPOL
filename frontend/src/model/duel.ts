@@ -1,4 +1,5 @@
 import type { AssetClass, RiskLevel } from './instrument';
+import type { ProblemDetail } from './problemDetail';
 
 // Mirrors DuelScenarioResponse. No simulation parameters or market seeds.
 export interface DuelScenario {
@@ -133,6 +134,20 @@ export interface DuelInstrumentResult {
 export interface DuelRating {
   userId: number;
   points: number;
+}
+
+// Mirrors DuelMeResponse. References may change phase immediately; reload the referenced match.
+export interface DuelMe {
+  rating: DuelRating;
+  activeMatchId: string | null;
+  latestTerminalMatchId: string | null;
+  serverNow: string;
+}
+
+/** Optional extension retained by ApiError.problem; consumers may instead reload the snapshot on 409. */
+export interface DuelConflictProblem extends ProblemDetail {
+  status: 409;
+  match?: DuelMatch;
 }
 
 // Mirrors DuelSettlementResponse. These historical balances never change after settlement.
