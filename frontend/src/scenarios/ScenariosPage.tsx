@@ -160,7 +160,7 @@ function LoadingTiles() {
       <Skeleton className="h-6 w-64" />
       <div className={GRID_CLASS} aria-hidden="true">
         {Array.from({ length: 6 }, (_, index) => (
-          <Skeleton key={index} className="h-96" />
+          <Skeleton key={index} className="h-56" />
         ))}
       </div>
     </div>

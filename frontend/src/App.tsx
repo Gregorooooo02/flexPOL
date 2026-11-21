@@ -14,7 +14,8 @@ export function App() {
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route index element={<HomePage />} />
-          <Route path="demo" element={<DemoPage />} />
+          <Route path="learning" element={<DemoPage />} />
+          <Route path="demo" element={<Navigate to="/learning" replace />} />
           <Route path="scenarios" element={<ScenariosPage />} />
           <Route path="playground" element={<PlaygroundPage />} />
         </Route>

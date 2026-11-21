@@ -37,12 +37,12 @@ export function AppLayout() {
               Home
             </NavLink>
             <NavLink
-              to="/demo"
+              to="/learning"
               className={({ isActive }) =>
                 buttonVariants({ variant: isActive ? 'secondary' : 'ghost', size: 'sm' })
               }
             >
-              Demo
+              Learning
             </NavLink>
             <NavLink
               to="/scenarios"
