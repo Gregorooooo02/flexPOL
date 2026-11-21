@@ -110,7 +110,7 @@ const STAGE_W = 340;
 const DESKTOP_STAGE_MAX_W = 768;
 const NODE_SPACING = 140;
 const FIRST_NODE_Y_SIDE = 76;
-const FIRST_NODE_Y_STACKED = 144;
+const FIRST_NODE_Y_STACKED = 116;
 const STAGE_BOTTOM_PADDING = 76;
 const CENTER_X = 170;
 const LEFT_X = 68;
@@ -567,7 +567,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
       <div className="flex min-h-0 flex-1 flex-col">
         <div
           ref={pathTrackRef}
-          className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain pb-24"
+          className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain pb-32"
           role="region"
           aria-label="Learning path"
           tabIndex={isDesktop ? 0 : undefined}
@@ -611,8 +611,8 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                   }}
                 />
 
-                <div className="pointer-events-none absolute inset-x-4 inset-y-4 z-20">
-                  <div className="pointer-events-auto sticky top-4 w-60 border border-border bg-card/95 px-3.5 py-2.5 shadow-sm backdrop-blur-md sm:w-64">
+                <div className="pointer-events-none absolute inset-x-3 inset-y-3 z-20 lg:inset-x-4 lg:inset-y-4">
+                  <div className="pointer-events-auto sticky top-3 w-fit max-w-[calc(100%-1.5rem)] border border-border bg-card px-3 py-2 shadow-sm lg:top-4 lg:w-64 lg:bg-card/95 lg:px-3.5 lg:py-2.5 lg:backdrop-blur-md">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-2">
                         <Badge
@@ -623,7 +623,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                         </Badge>
                         <h2
                           id={`topic-heading-${topic.id}`}
-                          className="truncate font-heading text-base font-semibold tracking-tight text-foreground"
+                          className="font-heading text-base leading-snug font-semibold tracking-tight text-foreground"
                         >
                           {topic.title}
                         </h2>
@@ -635,11 +635,11 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                         {doneCount}/{topic.nodes.length}
                       </span>
                     </div>
-                    <p className="mt-1 truncate text-xs text-muted-foreground">{topic.metaLabel}</p>
+                    <p className="mt-1 hidden truncate text-xs text-muted-foreground lg:block">{topic.metaLabel}</p>
                     <Progress
                       value={progressPct}
                       aria-label={`${topic.title} progress`}
-                      className="mt-2 [&_[data-slot=progress-track]]:h-1"
+                      className="mt-1.5 lg:mt-2 [&_[data-slot=progress-track]]:h-1"
                       style={{ '--primary': topic.accentHex } as Record<string, string>}
                     />
                   </div>
