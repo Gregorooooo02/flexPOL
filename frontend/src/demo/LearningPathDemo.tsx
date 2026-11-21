@@ -9,13 +9,33 @@ import {
 } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
+  Activity01Icon,
+  AlarmClockIcon,
+  Analytics01Icon,
+  Award01Icon,
+  BadgePercentIcon,
+  BalanceScaleIcon,
+  BankIcon,
+  BarChartIcon,
   BookOpen01Icon,
-  Cancel01Icon,
   Coins01Icon,
+  Compass01Icon,
+  Fire02Icon,
   Flag02Icon,
-  LockIcon,
+  GroupLayersIcon,
+  Home01Icon,
+  HourglassIcon,
+  Layers01Icon,
+  MoneySafeIcon,
+  PiggyBankIcon,
+  Plant01Icon,
   RefreshIcon,
+  Route01Icon,
+  SquareLock02Icon,
+  Target02Icon,
   Tick02Icon,
+  TrophyIcon,
+  UmbrellaDollarIcon,
 } from '@hugeicons/core-free-icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -49,27 +69,24 @@ import {
   writeStoredLearningProgress,
 } from './learningProgress';
 import { DemoToolbar } from './DemoToolbar';
+import type { DemoBanner } from './DemoToolbar';
 import { LessonPage } from './LessonModal';
+import { CapstoneLesson } from '@/capstone/CapstoneLesson';
 
 type ActiveView =
   | { readonly kind: 'path' }
   | { readonly kind: 'lesson'; readonly nodeId: string };
 
-interface BannerState {
-  readonly tone: 'neutral' | 'gold' | 'locked';
-  readonly message: string;
-}
-
 interface DemoProgressState {
   readonly completedList: readonly string[];
-  readonly banner: BannerState | null;
+  readonly banner: DemoBanner | null;
 }
 
 type ProgressAction =
   | { readonly type: 'completeLesson'; readonly path: LearningPath; readonly nodeId: string }
   | { readonly type: 'completeTopic'; readonly path: LearningPath }
   | { readonly type: 'reset'; readonly path: LearningPath }
-  | { readonly type: 'setBanner'; readonly banner: BannerState }
+  | { readonly type: 'setBanner'; readonly banner: DemoBanner }
   | { readonly type: 'dismissBanner' };
 
 type LoadState =
@@ -99,8 +116,9 @@ interface StageLayout {
 const STAGE_W = 340;
 const DESKTOP_STAGE_MAX_W = 768;
 const NODE_SPACING = 140;
-const FIRST_NODE_Y = 64;
-const STAGE_BOTTOM_PADDING = 66;
+const FIRST_NODE_Y_SIDE = 76;
+const FIRST_NODE_Y_STACKED = 116;
+const STAGE_BOTTOM_PADDING = 76;
 const CENTER_X = 170;
 const LEFT_X = 68;
 const RIGHT_X = 272;
@@ -113,13 +131,14 @@ function slotAt(
   isLast: boolean,
   isDesktop: boolean,
   stageWidth: number,
+  firstNodeY: number,
 ): NodeLayoutSlot {
-  const cy = FIRST_NODE_Y + index * NODE_SPACING;
+  const cy = firstNodeY + index * NODE_SPACING;
   if (isDesktop) {
     const centerX = stageWidth / 2;
-    const leftX = stageWidth * 0.2;
-    const rightX = stageWidth * 0.8;
-    const labelWidth = stageWidth * 0.46;
+    const leftX = stageWidth * 0.28;
+    const rightX = stageWidth * 0.72;
+    const labelWidth = stageWidth * 0.34;
     if (index === 0 || isLast) {
       return {
         cx: centerX,
@@ -183,10 +202,11 @@ function buildStageLayout(
   nodeCount: number,
   isDesktop: boolean,
   desktopStageWidth: number,
+  firstNodeY: number,
 ): StageLayout {
   const width = isDesktop ? desktopStageWidth : STAGE_W;
   const nodeSlots = Array.from({ length: nodeCount }, (_, index) =>
-    slotAt(index, index === nodeCount - 1, isDesktop, width),
+    slotAt(index, index === nodeCount - 1, isDesktop, width, firstNodeY),
   );
   const lastSlot = nodeSlots[nodeSlots.length - 1];
   const pipeSegments = nodeSlots
@@ -221,7 +241,7 @@ function createInitialProgress(
         : {
             tone: 'neutral',
             message: first
-              ? `Start with module ${first.code}, “${first.title}”. Click the circle or the title to open the lesson.`
+              ? `Start with ${first.code} “${first.title}”.`
               : 'The learning path is empty.',
           }
       : {
@@ -298,17 +318,48 @@ function progressReducer(state: DemoProgressState, action: ProgressAction): Demo
   }
 }
 
-function renderNodeIcon(node: LearningNode, status: NodeStatus) {
-  if (status === 'completed') {
-    return <HugeiconsIcon icon={Tick02Icon} className="size-7" strokeWidth={2.5} />;
-  }
-  if (status === 'locked') {
-    return <HugeiconsIcon icon={LockIcon} className="size-5" strokeWidth={2} />;
-  }
+type NodeIcon = typeof BookOpen01Icon;
+
+const LESSON_ICONS_BY_CODE: Readonly<Record<string, NodeIcon>> = {
+  '1.1': Analytics01Icon,
+  '1.2': Target02Icon,
+  '1.3': HourglassIcon,
+  '1.4': Activity01Icon,
+  '1.5': Layers01Icon,
+  '2.1': PiggyBankIcon,
+  '2.2': BankIcon,
+  '2.3': BarChartIcon,
+  '2.4': GroupLayersIcon,
+  '2.5': BadgePercentIcon,
+  '2.6': Fire02Icon,
+  '2.7': BalanceScaleIcon,
+  '3.1': Route01Icon,
+  '3.2': Plant01Icon,
+  '3.3': Home01Icon,
+  '3.4': UmbrellaDollarIcon,
+  '3.5': AlarmClockIcon,
+  '3.6': MoneySafeIcon,
+  '3.7': Compass01Icon,
+};
+
+function getNodeIcon(node: LearningNode): NodeIcon {
+  if (node.kind === 'capstone') return Compass01Icon;
   if (node.kind === 'checkpoint') {
-    return <HugeiconsIcon icon={Flag02Icon} className="size-6" strokeWidth={2.2} />;
+    if (node.code.startsWith('2.')) return Award01Icon;
+    if (node.code.startsWith('3.')) return TrophyIcon;
+    return Flag02Icon;
   }
-  return <HugeiconsIcon icon={BookOpen01Icon} className="size-6" strokeWidth={2.2} />;
+  return LESSON_ICONS_BY_CODE[node.code] ?? BookOpen01Icon;
+}
+
+function renderNodeIcon(node: LearningNode, status: NodeStatus) {
+  return (
+    <HugeiconsIcon
+      icon={getNodeIcon(node)}
+      className={cn('size-6', status === 'locked' && 'opacity-55')}
+      strokeWidth={2.2}
+    />
+  );
 }
 
 /** Loads the chapters from the backend, then shows the learning path built from them. */
@@ -431,7 +482,7 @@ function LearningPathView({
   }, []);
 
   useLayoutEffect(() => {
-    if (!isDesktop || activeView.kind !== 'path') {
+    if (activeView.kind !== 'path') {
       return;
     }
 
@@ -446,7 +497,7 @@ function LearningPathView({
     const observer = new ResizeObserver(updateWidth);
     observer.observe(pathTrack);
     return () => observer.disconnect();
-  }, [activeView.kind, isDesktop]);
+  }, [activeView.kind]);
 
   useEffect(() => {
     return () => {
@@ -543,16 +594,25 @@ function LearningPathView({
     const entry = findNodeById(path, activeView.nodeId);
     if (entry) {
       const nextEntry = getNextNodeAfter(path, entry.node.id);
+      if (entry.node.kind === 'capstone') {
+        return (
+          <CapstoneLesson
+            isCompleted={completedSet.has(entry.node.id)}
+            onComplete={() => handleCompleteLesson(entry.node.id)}
+            onBack={() => goToView({ kind: 'path' })}
+          />
+        );
+      }
       return (
         <LessonPage
           key={entry.node.id}
           node={entry.node}
           topic={entry.topic}
           isCompleted={completedSet.has(entry.node.id)}
-          isTopicCompleted={isTopicCompleted(entry.topic, completedSet)}
-          nextNodeSummary={nextEntry ? `${nextEntry.node.code} (${nextEntry.node.title})` : null}
+          nextNodeKind={nextEntry?.node.kind ?? null}
           getNextWrongAnswerIndex={getNextWrongAnswerIndex}
           onComplete={handleCompleteLesson}
+          onNext={nextEntry ? () => goToView({ kind: 'lesson', nodeId: nextEntry.node.id }) : null}
           onBack={() => goToView({ kind: 'path' })}
         />
       );
@@ -561,68 +621,36 @@ function LearningPathView({
 
   return (
     <div
-      className="flex flex-1 flex-col lg:h-[calc(100svh-var(--app-header-height))] lg:min-h-0"
+      className="relative flex h-[calc(100svh-var(--app-header-height))] min-h-0 flex-1 flex-col overflow-hidden"
     >
       <DemoToolbar
         completedCount={completedList.length}
         totalCount={path.flatNodes.length}
         firstUnfinishedTopicTitle={firstUnfinishedTopic?.title ?? null}
+        banner={banner}
         onCompleteCurrentTopic={handleCompleteCurrentTopic}
         onReset={handleReset}
+        onDismissBanner={() => dispatch({ type: 'dismissBanner' })}
       />
 
-      <div className="flex-1 lg:flex lg:min-h-0 lg:flex-col">
-        <div
-          role="status"
-          aria-live="polite"
-          className={cn('border-b border-border bg-card/60 px-4 py-3 lg:shrink-0', !banner && 'hidden')}
-        >
-          {banner && (
-            <div className="mx-auto max-w-md lg:max-w-7xl lg:px-8">
-              <Card
-                size="sm"
-                className={cn(
-                  'border py-2.5 transition-colors',
-                  banner.tone === 'gold'
-                    ? 'border-[#e17101] bg-[#973b00]/20'
-                    : banner.tone === 'locked'
-                      ? 'border-[#ba4d00] bg-[#973b00]/15'
-                      : 'border-border bg-card',
-                )}
-              >
-                <CardContent className="flex items-center gap-3 px-3.5 text-sm leading-relaxed text-foreground/90">
-                  <span className="min-w-0 flex-1">{banner.message}</span>
-                  <Button
-                    type="button"
-                    size="icon-sm"
-                    variant="ghost"
-                    aria-label="Dismiss notification"
-                    onClick={() => dispatch({ type: 'dismissBanner' })}
-                    className="-my-1.5 -mr-1.5 shrink-0"
-                  >
-                    <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </div>
-
+      <div className="flex min-h-0 flex-1 flex-col">
         <div
           ref={pathTrackRef}
-          className="flex flex-col lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-y-contain"
+          className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-y-contain pb-32"
           role="region"
           aria-label="Learning path"
           tabIndex={isDesktop ? 0 : undefined}
         >
           {path.topics.map((topic, topicIndex) => {
+            const firstNodeY =
+              isDesktop && pathTrackWidth >= 680 ? FIRST_NODE_Y_SIDE : FIRST_NODE_Y_STACKED;
             const {
               width: stageWidth,
               height: stageHeight,
               nodeSlots,
               lastSlot,
               pipeSegments,
-            } = buildStageLayout(topic.nodes.length, isDesktop, desktopStageWidth);
+            } = buildStageLayout(topic.nodes.length, isDesktop, desktopStageWidth, firstNodeY);
             const doneCount = getTopicCompletedCount(topic, completedSet);
             const topicCompleted = isTopicCompleted(topic, completedSet);
             const progressPct = Math.round((doneCount / topic.nodes.length) * 100);
@@ -633,90 +661,87 @@ function LearningPathView({
               Boolean(nextTopic) &&
               topicCompleted &&
               getNodeStatus(path, nextTopic.nodes[0].id, completedSet) !== 'locked';
+            const centerLineX = isDesktop ? desktopStageWidth / 2 : CENTER_X;
 
             return (
               <section
                 key={topic.id}
                 aria-labelledby={`topic-heading-${topic.id}`}
                 className={cn(
-                  'border-b border-border px-4 py-8 lg:flex lg:w-full lg:flex-none lg:flex-col lg:px-4 lg:py-8',
+                  'relative border-b border-border px-4 py-0 lg:flex lg:w-full lg:flex-none lg:flex-col lg:px-4 lg:py-0',
                   topic.bandClassName,
                 )}
-                style={{
-                  backgroundImage: topic.ambientGlow,
-                  backgroundSize: isDesktop ? '100% 100%' : undefined,
-                  backgroundRepeat: isDesktop ? 'no-repeat' : undefined,
-                }}
               >
-                <div className="mx-auto flex w-full max-w-md flex-col items-center lg:max-w-3xl">
-                  <Card
-                    size="sm"
-                    className="w-full border border-border bg-card/85 py-3.5 backdrop-blur-xs"
-                  >
-                    <CardHeader className="min-w-0 px-4">
-                      <div className="flex min-w-0 items-center justify-between gap-2">
-                        <div className="flex min-w-0 flex-1 items-center gap-2">
-                          <Badge
-                            className="px-2 py-0.5 text-[#07090a]"
-                            style={{ backgroundColor: topic.accentHex }}
-                          >
-                            {topic.seriesNumber}
-                          </Badge>
-                          <CardTitle
-                            id={`topic-heading-${topic.id}`}
-                            className="min-w-0 break-words"
-                          >
-                            {topic.title}
-                          </CardTitle>
-                        </div>
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 overflow-hidden"
+                  style={{
+                    backgroundImage: `radial-gradient(ellipse 70% 42% at 50% 50%, ${withAlpha(topic.pipeColor, 18)}, transparent 75%)`,
+                  }}
+                />
+
+                <div className="pointer-events-none absolute inset-x-3 inset-y-3 z-20 lg:inset-x-4 lg:inset-y-4">
+                  <div className="pointer-events-auto sticky top-3 w-fit max-w-[calc(100%-1.5rem)] border border-border bg-card px-3 py-2 shadow-sm lg:top-4 lg:w-64 lg:bg-card/95 lg:px-3.5 lg:py-2.5 lg:backdrop-blur-md">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-2">
                         <Badge
-                          variant="outline"
-                          className="shrink-0 border border-border px-2 py-0.5 tabular-nums"
-                          style={{ color: topic.accentTextHex }}
+                          className="shrink-0 px-2 py-0.5 text-xs font-bold text-[#07090a]"
+                          style={{ backgroundColor: topic.accentHex }}
                         >
-                          {doneCount}/{topic.nodes.length}
+                          {topic.seriesNumber}
                         </Badge>
+                        <h2
+                          id={`topic-heading-${topic.id}`}
+                          className="font-heading text-base leading-snug font-semibold tracking-tight text-foreground"
+                        >
+                          {topic.title}
+                        </h2>
                       </div>
-                      <CardDescription className="text-xs">{topic.metaLabel}</CardDescription>
-                      <Progress
-                        value={progressPct}
-                        aria-label={`${topic.title} progress`}
-                        className="mt-1.5 [&_[data-slot=progress-track]]:h-1.5"
-                        style={
-                          {
-                            '--primary': topic.accentHex,
-                          } as Record<string, string>
-                        }
-                      />
-                    </CardHeader>
-                  </Card>
+                      <span
+                        className="shrink-0 font-heading text-xs font-semibold tabular-nums"
+                        style={{ color: topic.accentTextHex }}
+                      >
+                        {doneCount}/{topic.nodes.length}
+                      </span>
+                    </div>
+                    <p className="mt-1 hidden truncate text-xs text-muted-foreground lg:block">{topic.metaLabel}</p>
+                    <Progress
+                      value={progressPct}
+                      aria-label={`${topic.title} progress`}
+                      className="mt-1.5 lg:mt-2 [&_[data-slot=progress-track]]:h-1"
+                      style={{ '--primary': topic.accentHex } as Record<string, string>}
+                    />
+                  </div>
+                </div>
+
+                <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center">
 
                   <div
-                    className="relative mt-2 shrink-0 lg:mt-12"
+                    className="relative z-10 shrink-0"
                     style={{ width: `${stageWidth}px`, height: `${stageHeight}px` }}
                   >
                     <svg
-                      className="pointer-events-none absolute inset-0 size-full"
+                      className="pointer-events-none absolute inset-0 size-full overflow-visible"
                       viewBox={`0 0 ${stageWidth} ${stageHeight}`}
                       aria-hidden="true"
                     >
                       {topicIndex > 0 && (
                         <>
                           <line
-                            x1={isDesktop ? desktopStageWidth / 2 : CENTER_X}
-                            y1={0}
-                            x2={isDesktop ? desktopStageWidth / 2 : CENTER_X}
-                            y2={FIRST_NODE_Y}
+                            x1={centerLineX}
+                            y1={-2}
+                            x2={centerLineX}
+                            y2={firstNodeY}
                             stroke="var(--border)"
                             strokeWidth="12"
                             strokeLinecap="round"
                           />
                           {entryPipeColored && (
                             <line
-                              x1={isDesktop ? desktopStageWidth / 2 : CENTER_X}
-                              y1={0}
-                              x2={isDesktop ? desktopStageWidth / 2 : CENTER_X}
-                              y2={FIRST_NODE_Y}
+                              x1={centerLineX}
+                              y1={-2}
+                              x2={centerLineX}
+                              y2={firstNodeY}
                               pathLength={100}
                               stroke={topic.pipeColor}
                               strokeWidth="12"
@@ -763,7 +788,7 @@ function LearningPathView({
                             x1={lastSlot.cx}
                             y1={lastSlot.cy}
                             x2={lastSlot.cx}
-                            y2={stageHeight}
+                            y2={stageHeight + 2}
                             stroke="var(--border)"
                             strokeWidth="12"
                             strokeLinecap="round"
@@ -773,7 +798,7 @@ function LearningPathView({
                               x1={lastSlot.cx}
                               y1={lastSlot.cy}
                               x2={lastSlot.cx}
-                              y2={stageHeight}
+                              y2={stageHeight + 2}
                               pathLength={100}
                               stroke={topic.pipeColor}
                               strokeWidth="12"
@@ -815,6 +840,13 @@ function LearningPathView({
                               className="absolute -translate-x-1/2 -translate-y-1/2"
                               style={{ left: `${slot.cx}px`, top: `${slot.cy}px` }}
                             >
+                              {status === 'active' && (
+                                <div
+                                  aria-hidden="true"
+                                  className="pointer-events-none absolute -inset-12 rounded-full opacity-25 blur-2xl"
+                                  style={{ backgroundColor: topic.accentHex }}
+                                />
+                              )}
                               <div
                                 className={cn(
                                   'relative flex size-[86px] origin-center items-center justify-center rounded-full p-2 transition-[scale,box-shadow] duration-[350ms] ease-[cubic-bezier(0.76,0,0.24,1)] motion-reduce:transition-none',
@@ -834,6 +866,13 @@ function LearningPathView({
                                         : undefined,
                                 }}
                               >
+                                {status === 'active' && (
+                                  <span
+                                    aria-hidden="true"
+                                    className="fx-active-beacon pointer-events-none absolute inset-0 rounded-full"
+                                    style={{ border: `2px solid ${topic.accentHex}` }}
+                                  />
+                                )}
                                 <Button
                                   type="button"
                                   size="icon"
@@ -856,6 +895,19 @@ function LearningPathView({
                                   {renderNodeIcon(node, status)}
                                 </Button>
 
+                                {status === 'completed' && (
+                                  <Badge
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute -bottom-2.5 left-1/2 z-20 size-6 -translate-x-1/2 justify-center rounded-full border-2 border-background text-[#07090a]"
+                                    style={{ backgroundColor: topic.pipeColor }}
+                                  >
+                                    <HugeiconsIcon
+                                      icon={Tick02Icon}
+                                      className="size-3.5!"
+                                      strokeWidth={2.6}
+                                    />
+                                  </Badge>
+                                )}
                                 {status === 'active' && (
                                   <Badge
                                     aria-hidden="true"
@@ -866,6 +918,18 @@ function LearningPathView({
                                       icon={Coins01Icon}
                                       className="size-3.5!"
                                       strokeWidth={2.4}
+                                    />
+                                  </Badge>
+                                )}
+                                {status === 'locked' && (
+                                  <Badge
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute -bottom-2.5 left-1/2 z-20 size-6 -translate-x-1/2 justify-center rounded-full border-2 border-background bg-secondary text-muted-foreground"
+                                  >
+                                    <HugeiconsIcon
+                                      icon={SquareLock02Icon}
+                                      className="size-3.5!"
+                                      strokeWidth={2.2}
                                     />
                                   </Badge>
                                 )}

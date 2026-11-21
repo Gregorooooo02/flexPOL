@@ -8,4 +8,6 @@
 **/.env.*
 backend/seed-data/raw
 notes
-knowledge
+knowledge/*
+!knowledge/final-lesson.json
+infra

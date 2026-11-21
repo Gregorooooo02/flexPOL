@@ -3,6 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { useRef } from 'react';
 import type { RefObject } from 'react';
 import { cn } from 'cn';
+import { hedgieImage } from '@/components/coach/hedgie';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,6 +31,7 @@ export function SandboxResultDialog({
   finalFocus,
   onOpenChange,
   onChangePlan,
+  onAskCoach,
 }: {
   open: boolean;
   scenario: Scenario;
@@ -38,6 +40,8 @@ export function SandboxResultDialog({
   finalFocus: RefObject<HTMLElement | null>;
   onOpenChange: (open: boolean) => void;
   onChangePlan: () => void;
+  /** Closes the popup and asks Hedgie for feedback on this run. */
+  onAskCoach: () => void;
 }) {
   const { stars } = run;
   const gainCents = Math.round((run.finalValue + run.paidOut - run.budget) * 100);
@@ -142,7 +146,7 @@ export function SandboxResultDialog({
         </ul>
 
         <section aria-label={`What fits ${scenario.persona.name}`} className="flex flex-col gap-1 border-l-2 border-primary bg-secondary/60 px-3 py-2">
-          <h3 className="text-[0.625rem] font-semibold tracking-widest text-muted-foreground uppercase">
+          <h3 className="text-[0.6875rem] font-semibold tracking-widest text-muted-foreground uppercase">
             What fits {scenario.persona.name}
           </h3>
           <p className="text-sm leading-relaxed [overflow-wrap:anywhere]">{stars.explanation}</p>
@@ -192,6 +196,10 @@ export function SandboxResultDialog({
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Close
+          </Button>
+          <Button type="button" variant="outline" onClick={onAskCoach}>
+            <img src={hedgieImage('hint')} alt="" aria-hidden="true" className="size-5" data-icon="inline-start" />
+            Ask Hedgie for feedback
           </Button>
           <Button type="button" onClick={onChangePlan}>
             Change plan
