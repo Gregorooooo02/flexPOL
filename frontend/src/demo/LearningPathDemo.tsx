@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   BookOpen01Icon,
+  Cancel01Icon,
   Coins01Icon,
   Flag02Icon,
   LockIcon,
@@ -30,6 +31,7 @@ import {
   getPreviousNodeBefore,
   getTopicCompletedCount,
   isTopicCompleted,
+  withAlpha,
 } from './learningPath';
 import type { LearningNode, LearningPath, NodeStatus } from './learningPath';
 import { DemoToolbar } from './DemoToolbar';
@@ -46,14 +48,15 @@ interface BannerState {
 
 interface DemoProgressState {
   readonly completedList: readonly string[];
-  readonly banner: BannerState;
+  readonly banner: BannerState | null;
 }
 
 type ProgressAction =
   | { readonly type: 'completeLesson'; readonly path: LearningPath; readonly nodeId: string }
   | { readonly type: 'completeTopic'; readonly path: LearningPath }
   | { readonly type: 'reset'; readonly path: LearningPath }
-  | { readonly type: 'setBanner'; readonly banner: BannerState };
+  | { readonly type: 'setBanner'; readonly banner: BannerState }
+  | { readonly type: 'dismissBanner' };
 
 type LoadState =
   | { readonly status: 'loading' }
@@ -253,6 +256,8 @@ function progressReducer(state: DemoProgressState, action: ProgressAction): Demo
       return createInitialProgress(action.path);
     case 'setBanner':
       return { ...state, banner: action.banner };
+    case 'dismissBanner':
+      return { ...state, banner: null };
   }
 }
 
@@ -509,26 +514,40 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
       />
 
       <div className="flex-1 lg:flex lg:min-h-0 lg:flex-col">
-        <div className="border-b border-border bg-card/60 px-4 py-3 lg:shrink-0">
-          <div className="mx-auto max-w-md lg:max-w-7xl lg:px-8">
-            <Card
-              size="sm"
-              className={cn(
-                'border py-2.5 transition-colors',
-                banner.tone === 'gold'
-                  ? 'border-[#e17101] bg-[#973b00]/20'
-                  : banner.tone === 'locked'
-                    ? 'border-[#ba4d00] bg-[#973b00]/15'
-                    : 'border-border bg-card',
-              )}
-              role="status"
-              aria-live="polite"
-            >
-              <CardContent className="px-3.5 text-xs leading-relaxed text-foreground/90">
-                {banner.message}
-              </CardContent>
-            </Card>
-          </div>
+        <div
+          role="status"
+          aria-live="polite"
+          className={cn('border-b border-border bg-card/60 px-4 py-3 lg:shrink-0', !banner && 'hidden')}
+        >
+          {banner && (
+            <div className="mx-auto max-w-md lg:max-w-7xl lg:px-8">
+              <Card
+                size="sm"
+                className={cn(
+                  'border py-2.5 transition-colors',
+                  banner.tone === 'gold'
+                    ? 'border-[#e17101] bg-[#973b00]/20'
+                    : banner.tone === 'locked'
+                      ? 'border-[#ba4d00] bg-[#973b00]/15'
+                      : 'border-border bg-card',
+                )}
+              >
+                <CardContent className="flex items-center gap-3 px-3.5 text-sm leading-relaxed text-foreground/90">
+                  <span className="min-w-0 flex-1">{banner.message}</span>
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label="Dismiss notification"
+                    onClick={() => dispatch({ type: 'dismissBanner' })}
+                    className="-my-1.5 -mr-1.5 shrink-0"
+                  >
+                    <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
 
         <div
@@ -596,7 +615,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                         <Badge
                           variant="outline"
                           className="shrink-0 border border-border px-2 py-0.5 tabular-nums"
-                          style={{ color: topic.accentHex }}
+                          style={{ color: topic.accentTextHex }}
                         >
                           {doneCount}/{topic.nodes.length}
                         </Badge>
@@ -631,7 +650,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                             y1={0}
                             x2={CENTER_X}
                             y2={FIRST_NODE_Y}
-                            stroke="#2d3234"
+                            stroke="var(--border)"
                             strokeWidth="12"
                             strokeLinecap="round"
                           />
@@ -646,7 +665,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                               strokeWidth="12"
                               strokeLinecap="round"
                               className="fx-pipe-fill"
-                              style={{ filter: `drop-shadow(0 0 6px ${topic.pipeColor}66)` }}
+                              style={{ filter: `drop-shadow(0 0 6px ${withAlpha(topic.pipeColor, 40)})` }}
                             />
                           )}
                         </>
@@ -659,7 +678,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                             <path
                               d={pathD}
                               fill="none"
-                              stroke="#2d3234"
+                              stroke="var(--border)"
                               strokeWidth="12"
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -674,7 +693,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 className="fx-pipe-fill"
-                                style={{ filter: `drop-shadow(0 0 6px ${topic.pipeColor}66)` }}
+                                style={{ filter: `drop-shadow(0 0 6px ${withAlpha(topic.pipeColor, 40)})` }}
                               />
                             )}
                           </g>
@@ -688,7 +707,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                             y1={lastSlot.cy}
                             x2={lastSlot.cx}
                             y2={stageHeight}
-                            stroke="#2d3234"
+                            stroke="var(--border)"
                             strokeWidth="12"
                             strokeLinecap="round"
                           />
@@ -703,7 +722,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                               strokeWidth="12"
                               strokeLinecap="round"
                               className="fx-pipe-fill"
-                              style={{ filter: `drop-shadow(0 0 6px ${topic.pipeColor}66)` }}
+                              style={{ filter: `drop-shadow(0 0 6px ${withAlpha(topic.pipeColor, 40)})` }}
                             />
                           )}
                         </>
@@ -731,7 +750,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                               ? topic.accentHex
                               : isShaking
                                 ? '#ba4d00'
-                                : '#2d3234';
+                                : 'var(--border)';
 
                         return (
                           <li key={node.id}>
@@ -749,7 +768,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                                   backgroundColor: ringColor,
                                   boxShadow:
                                     status === 'active'
-                                      ? `0 0 24px -4px ${topic.accentHex}70`
+                                      ? `0 0 24px -4px ${withAlpha(topic.accentHex, 44)}`
                                       : isBursting
                                         ? `0 0 32px ${topic.accentHex}`
                                         : undefined,
@@ -766,12 +785,12 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                                     'relative z-10 size-full overflow-hidden rounded-full border-0 shadow-none transition-transform active:scale-90',
                                     isBursting && 'fx-sheen',
                                     status === 'completed' && 'bg-card hover:bg-secondary',
-                                    status === 'active' && 'bg-[#07090a] hover:bg-card',
+                                    status === 'active' && 'bg-background hover:bg-card',
                                     status === 'locked' &&
-                                      'cursor-not-allowed bg-[#21292b] text-muted-foreground hover:bg-[#21292b]',
+                                      'cursor-not-allowed bg-secondary text-muted-foreground hover:bg-secondary',
                                   )}
                                   style={
-                                    status !== 'locked' ? { color: topic.accentHex } : undefined
+                                    status !== 'locked' ? { color: topic.accentTextHex } : undefined
                                   }
                                 >
                                   {renderNodeIcon(node, status)}
@@ -814,7 +833,7 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
                                   status === 'locked' && 'text-muted-foreground',
                                 )}
                                 style={
-                                  status !== 'locked' ? { color: topic.accentHex } : undefined
+                                  status !== 'locked' ? { color: topic.accentTextHex } : undefined
                                 }
                               >
                                 {node.code}

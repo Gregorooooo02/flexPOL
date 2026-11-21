@@ -35,7 +35,7 @@ export function ScenarioTile({ scenario }: { readonly scenario: Scenario }) {
 
       <CardContent className="mt-auto px-4">
         <div className="flex flex-col gap-1 border-l-2 border-primary bg-secondary/60 px-3 py-2">
-          <p className="flex items-center gap-1.5 text-[0.625rem] font-semibold tracking-widest text-muted-foreground uppercase">
+          <p className="flex items-center gap-1.5 text-[0.75rem] font-semibold tracking-widest text-muted-foreground uppercase">
             <HugeiconsIcon icon={Target02Icon} className="size-3.5 shrink-0" strokeWidth={2} aria-hidden="true" />
             Goal
           </p>

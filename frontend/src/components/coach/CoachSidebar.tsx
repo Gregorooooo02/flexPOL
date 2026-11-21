@@ -20,6 +20,8 @@ import { hedgieImage } from './hedgie';
 import { useCoachChat } from './useCoachChat';
 
 const DESKTOP_MEDIA_QUERY = '(min-width: 64rem)';
+/** Width of the Hedgie sidebar the first time it opens; capped by the panel's maxSize (45%). */
+const SIDEBAR_DEFAULT_WIDTH = '32rem';
 
 const QUESTION_SUGGESTIONS = [
   'Help me with this question',
@@ -42,6 +44,7 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
   const focusScopeId = focus?.scopeId ?? 'general';
   const sidebarRef = usePanelRef();
   const transitionTimeout = useRef<number | undefined>(undefined);
+  const hasOpenedSidebar = useRef(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mobileChat, setMobileChat] = useState({ focusScopeId, open: false });
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -65,7 +68,15 @@ export function CoachSidebar({ children }: CoachSidebarProps) {
 
   function openSidebar() {
     setSidebarOpen(true);
-    animatePanelChange(() => sidebarRef.current?.expand());
+    animatePanelChange(() => {
+      // The first open uses the default width; later opens restore the width the learner left it at.
+      if (hasOpenedSidebar.current) {
+        sidebarRef.current?.expand();
+      } else {
+        hasOpenedSidebar.current = true;
+        sidebarRef.current?.resize(SIDEBAR_DEFAULT_WIDTH);
+      }
+    });
   }
 
   function closeSidebar() {
@@ -196,11 +207,13 @@ function CoachChatSession({
         aria-hidden={!sidebarOpen}
         inert={!sidebarOpen}
         className={cn(
-          'h-full min-h-0 p-3 transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none',
+          'h-full min-h-0 bg-card p-3 transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none',
           sidebarOpen ? 'translate-x-0 opacity-100' : 'translate-x-3 opacity-0',
         )}
       >
-        <CoachPanel {...panelProps} onClose={onCloseSidebar} className="h-full min-h-0" />
+        <CoachPanel {...panelProps} onClose={onCloseSidebar}
+          className="h-full min-h-0 shadow-none ring-0"
+        />
       </aside>
       <Dialog open={mobileChatOpen} onOpenChange={onMobileChatOpenChange}>
         <DialogContent className="h-[min(40rem,85svh)] p-0 lg:hidden" showCloseButton={false}>
