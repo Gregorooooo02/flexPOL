@@ -146,7 +146,7 @@ export function SandboxResultDialog({
         </ul>
 
         <section aria-label={`What fits ${scenario.persona.name}`} className="flex flex-col gap-1 border-l-2 border-primary bg-secondary/60 px-3 py-2">
-          <h3 className="text-[0.625rem] font-semibold tracking-widest text-muted-foreground uppercase">
+          <h3 className="text-[0.6875rem] font-semibold tracking-widest text-muted-foreground uppercase">
             What fits {scenario.persona.name}
           </h3>
           <p className="text-sm leading-relaxed [overflow-wrap:anywhere]">{stars.explanation}</p>

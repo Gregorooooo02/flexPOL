@@ -101,7 +101,7 @@ export function DemoToolbar({
             variant="secondary"
             disabled={firstUnfinishedTopicTitle === null}
             onClick={onCompleteCurrentTopic}
-            className="min-w-0 flex-1 px-2 text-[0.75rem] tracking-normal transition-transform active:scale-95 sm:flex-none sm:px-3 sm:text-xs sm:tracking-widest"
+            className="min-w-0 flex-1 px-2 text-[0.8125rem] tracking-normal transition-transform active:scale-95 sm:flex-none sm:px-3 sm:text-xs sm:tracking-widest"
           >
             <HugeiconsIcon icon={FastForwardIcon} strokeWidth={2} />
             <span className="truncate">

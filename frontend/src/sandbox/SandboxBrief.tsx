@@ -25,7 +25,7 @@ export function SandboxBrief({
   return (
     <section aria-label="Mission" className="flex flex-col gap-4 border border-border bg-card p-4">
       <div className="flex flex-col gap-1 border-l-2 border-primary bg-secondary/60 px-3 py-2">
-        <p className="flex items-center gap-1.5 text-[0.625rem] font-semibold tracking-widest text-muted-foreground uppercase">
+        <p className="flex items-center gap-1.5 text-[0.6875rem] font-semibold tracking-widest text-muted-foreground uppercase">
           <HugeiconsIcon icon={Target02Icon} className="size-3.5 shrink-0" strokeWidth={2} aria-hidden="true" />
           Goal · {formatEuros(scenario.budget)} over {formatDays(scenario.durationDays)}
         </p>
