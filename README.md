@@ -16,7 +16,7 @@ Java 25, Spring Boot, Spring Data JPA, Spring AI, OpenAI API, PostgreSQL (Supaba
 
 ### THE PROBLEM
 
-Many beginner self-directed investors know the vocabulary (risk, diversification, ETFs, bonds) but freeze when they have to make an actual decision: how much to put where, for which goal, and for how long. Courses and articles stay theoretical, trading apps reward speculation and short-term returns, and learning by losing real money is expensive and discouraging. The gap between knowing a concept and confidently applying it affects people at every life stage, from a first job to the year before retirement, and it leads to money left idle in cash or put into products that don't fit the goal.
+For people new to investing, terms like “risk,” “diversification,” “ETFs” and “bonds” may sound familiar, but their meaning—and what to do with them—often isn’t clear. This unfamiliar language can make investing feel intimidating, complicated and only for experts, leaving beginners unsure where to start. Courses and articles often stay theoretical, while trading apps can encourage speculation and short-term returns. Learning by losing real money is expensive and discouraging. Beginners need a safe way to understand the basics, practice decisions and see how different choices fit different goals and life stages—from a first job to the year before retirement. Without that bridge, money can stay idle or end up in investments that don’t match the person’s needs.
 
 ### YOUR SOLUTION
 
