@@ -9,7 +9,7 @@ region     = "europe-central2"
 service_name = "hedgeflex"
 # Deployed from the console by digest; it is the image tagged sha-8888d50, 1.2 and latest.
 # To deploy, put the workflow's sha-xxxxxxx tag here and apply.
-image_tag = "1.4"
+image_tag = "1.5"
 
 # SPRING_PROFILES_ACTIVE=postgres is already set in the image.
 env = {}
