@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
 import { getInstrumentHistory, getInstruments, getScenario, runScenario } from '@/api';
+import { useAuth } from '@/auth/authContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +23,10 @@ import { SIMULATION_DURATION_MS } from '@/playground/config';
 import { advanceReplay, createReplay } from '@/playground/replay';
 import type { ReplayState } from '@/playground/replay';
 import { parseScenarioId } from '@/scenarios/routes';
+import {
+  getScenarioProgressStorageKey,
+  recordScenarioCompletion,
+} from '@/scenarios/scenarioProgress';
 import { WorkspaceLayout } from '@/workspace/WorkspaceLayout';
 import { AllocationBar } from '@/workspace/components/AllocationBar';
 import { InstrumentList } from '@/workspace/components/InstrumentList';
@@ -137,6 +142,7 @@ function SandboxLoader({ scenarioId }: { readonly scenarioId: number }) {
  * Playground's fixed ten seconds. Like the Playground, all state lives in this page.
  */
 function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
+  const { user } = useAuth();
   const budgetCents = Math.round(scenario.budget * 100);
   const [portfolio, dispatch] = useReducer(portfolioReducer, budgetCents, createPortfolio);
   const [catalogue, setCatalogue] = useState<LoadState<Instrument[]>>({ status: 'loading' });
@@ -151,6 +157,7 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
   const [replay, setReplay] = useState<ReplayState>(createReplay);
   const [previousStars, setPreviousStars] = useState<number | null>(null);
   const [resultOpen, setResultOpen] = useState(false);
+  const [scenarioProgressWarning, setScenarioProgressWarning] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState('');
   const replayRef = useRef(replay);
   const replayStartedAt = useRef(0);
@@ -240,6 +247,15 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
       if (next.status === 'finished') {
         setAnnouncement('Simulation complete. Your result is shown in a dialog.');
         setResultOpen(true);
+        if (user?.email) {
+          const saved = recordScenarioCompletion(
+            getScenarioProgressStorageKey(user.email),
+            scenario.id,
+          );
+          setScenarioProgressWarning(
+            saved ? null : 'Your scenario completion could not be saved in this browser.',
+          );
+        }
       }
     };
     const timer = window.setInterval(tick, 100);
@@ -255,7 +271,7 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
       document.removeEventListener('visibilitychange', tick);
       window.removeEventListener('focus', tick);
     };
-  }, [replay.status, timeline, updateReplay]);
+  }, [replay.status, scenario.id, timeline, updateReplay, user?.email]);
 
   const phase: SandboxPhase =
     run.status === 'submitting'
@@ -399,6 +415,7 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
     runRequest.current?.abort();
     const controller = new AbortController();
     runRequest.current = controller;
+    setScenarioProgressWarning(null);
     setRun({ status: 'submitting' });
     setAnnouncement('Running your plan in the scenario’s market…');
     runScenario(scenario.id, request, controller.signal)
@@ -425,6 +442,7 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
   function changePlan() {
     if (run.status !== 'ready' || replayRef.current.status !== 'finished') return;
     setPreviousStars(run.data.stars.stars);
+    setScenarioProgressWarning(null);
     setResultOpen(false);
     setRun({ status: 'idle' });
     updateReplay(createReplay());
@@ -469,6 +487,12 @@ function SandboxWorkspace({ scenario }: { readonly scenario: Scenario }) {
         }
         notice={
           <div className="flex flex-col gap-5">
+            {scenarioProgressWarning && (
+              <Alert>
+                <AlertTitle>Scenario progress not saved</AlertTitle>
+                <AlertDescription>{scenarioProgressWarning}</AlertDescription>
+              </Alert>
+            )}
             {phase === 'finished' && run.status === 'ready' && (
               <SandboxResult
                 run={run.data}

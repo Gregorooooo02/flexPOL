@@ -49,6 +49,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { cn } from 'cn';
 import { getChapters } from '@/api';
+import { useAuth } from '@/auth/authContext';
 import { ApiError } from '@/config/axios';
 import {
   buildLearningPath,
@@ -62,6 +63,11 @@ import {
   withAlpha,
 } from './learningPath';
 import type { LearningNode, LearningPath, NodeStatus } from './learningPath';
+import {
+  getLearningProgressStorageKey,
+  readStoredLearningProgress,
+  writeStoredLearningProgress,
+} from './learningProgress';
 import { DemoToolbar } from './DemoToolbar';
 import type { DemoBanner } from './DemoToolbar';
 import { LessonPage } from './LessonModal';
@@ -216,16 +222,36 @@ function buildStageLayout(
   };
 }
 
-function createInitialProgress(path: LearningPath): DemoProgressState {
+function createInitialProgress(
+  path: LearningPath,
+  completedList: readonly string[] = [],
+  warningMessage: string | null = null,
+): DemoProgressState {
   const first = path.flatNodes[0]?.node;
+  const completedSet = new Set(completedList);
+  const nextEntry = path.flatNodes.find(({ node }) => !completedSet.has(node.id));
+  const banner: DemoBanner = warningMessage
+    ? { tone: 'locked', message: warningMessage }
+    : nextEntry
+      ? completedList.length > 0
+        ? {
+            tone: 'gold',
+            message: `Welcome back. Continue with module ${nextEntry.node.code}, “${nextEntry.node.title}”.`,
+          }
+        : {
+            tone: 'neutral',
+            message: first
+              ? `Start with ${first.code} “${first.title}”.`
+              : 'The learning path is empty.',
+          }
+      : {
+          tone: 'gold',
+          message: path.flatNodes.length > 0 ? 'All chapters completed.' : 'The learning path is empty.',
+        };
+
   return {
-    completedList: [],
-    banner: {
-      tone: 'neutral',
-      message: first
-        ? `Start with ${first.code} “${first.title}”.`
-        : 'The learning path is empty.',
-    },
+    completedList: [...completedList],
+    banner,
   };
 }
 
@@ -338,6 +364,7 @@ function renderNodeIcon(node: LearningNode, status: NodeStatus) {
 
 /** Loads the chapters from the backend, then shows the learning path built from them. */
 export function LearningPathDemo() {
+  const { user } = useAuth();
   const [loadState, setLoadState] = useState<LoadState>({ status: 'loading' });
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -365,7 +392,9 @@ export function LearningPathDemo() {
   }, []);
 
   if (loadState.status === 'ready' && loadState.path.topics.length > 0) {
-    return <LearningPathView path={loadState.path} />;
+    return user ? (
+      <LearningPathView key={user.email} path={loadState.path} userEmail={user.email} />
+    ) : null;
   }
 
   return (
@@ -398,11 +427,28 @@ export function LearningPathDemo() {
   );
 }
 
-function LearningPathView({ path }: { readonly path: LearningPath }) {
+function LearningPathView({
+  path,
+  userEmail,
+}: {
+  readonly path: LearningPath;
+  readonly userEmail: string;
+}) {
+  const storageKey = getLearningProgressStorageKey(userEmail);
   const [{ completedList, banner }, dispatch] = useReducer(
     progressReducer,
-    path,
-    createInitialProgress,
+    { path, storageKey },
+    ({ path: initialPath, storageKey: initialStorageKey }) => {
+      const savedProgress = readStoredLearningProgress(
+        initialStorageKey,
+        initialPath.flatNodes.map(({ node }) => node.id),
+      );
+      return createInitialProgress(
+        initialPath,
+        savedProgress.completedNodeIds,
+        savedProgress.warningMessage,
+      );
+    },
   );
   const [activeView, setActiveView] = useState<ActiveView>({ kind: 'path' });
   const [isDesktop, setIsDesktop] = useState(
@@ -415,6 +461,18 @@ function LearningPathView({ path }: { readonly path: LearningPath }) {
   const pathTrackRef = useRef<HTMLDivElement>(null);
   const wrongAnswerCount = useRef(0);
   const getNextWrongAnswerIndex = useCallback(() => wrongAnswerCount.current++, []);
+
+  useEffect(() => {
+    if (!writeStoredLearningProgress(storageKey, completedList)) {
+      dispatch({
+        type: 'setBanner',
+        banner: {
+          tone: 'locked',
+          message: 'Your learning progress could not be saved in this browser. It may be lost when you leave.',
+        },
+      });
+    }
+  }, [completedList, storageKey]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
